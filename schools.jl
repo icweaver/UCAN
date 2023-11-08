@@ -27,23 +27,83 @@ md"""
 # US School System Overview 🍎
 
 Overview of different school types across all US states and territories.
+
+!!! note
+
+	For interactive use, download this notebook and run locally. These [Pluto](https://plutojl.org/) notebooks behave very similarly to Excel spreadsheets, so changing values in one cell will automatically update all dependent cells.
+"""
+
+# ╔═╡ b9e2dcec-6a83-47fb-a49c-5dc34ea1c166
+md"""
+**State:**
+"""
+
+# ╔═╡ de1de6c4-39de-4548-a7b8-47305128f7f1
+md"""
+**Control:**
+"""
+
+# ╔═╡ 5405b5e3-eb42-4c89-b230-306f527a2836
+@bind control MultiCheckBox([
+	1 => "Public",
+	2 => "Private not-for-profit",
+	3 => "Private for-profit",
+]; default=[1])
+
+# ╔═╡ bff2552b-79fe-48e0-b684-83a7f74b7e38
+md"""
+**Level:**
+"""
+
+# ╔═╡ 5d21683e-c34d-4efb-906e-a9b015c2e53b
+begin
+	degrees = [
+		"< 1 academic year",
+		"1 - <2 academic years",
+		"Associate’s degree",
+		"2 - <4 academic years",
+		"Bachelor’s degree",
+		"Postbaccalaureate",
+		"Master’s degree",
+		"Post-master’s\ncertificate",
+		"Doctor’s degree",
+	];
+	
+	degree_levels = [i => degree for (i, degree) ∈ enumerate(degrees)]
+	
+	@bind level MultiCheckBox(degree_levels;
+		select_all = true,
+		orientation = :column,
+		default = [1, 2, 3, 4],
+	)
+end
+
+# ╔═╡ 923fb8e7-dd5d-4b49-a25d-bbfb55a37fab
+md"""
+**Only show schools that are part of multi-institutions:** $(@bind system CheckBox())
 """
 
 # ╔═╡ f24b6a53-2e24-4ac8-b5a7-5ca0b301882a
 md"""
-## Data
+## Data explanation
 
 Dataset taken from [IPEDS](https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=2021&surveyNumber=1&sid=afbc262b-7477-44a3-9961-7f69fca449cf&rtid=7)
 
-I decided to go with the HD2021 dataset because it is the most recent complete dataset of accredited schools in the US. The complete glossary of field descriptions for each column in the dataset below is available [here](https://nces.ed.gov/ipeds/datacenter/data/HD2021_Dict.zip).
+We use the HD2021 dataset because it is the most recent complete dataset of accredited schools in the US. The complete glossary of field descriptions for each column in the dataset is available [here](https://nces.ed.gov/ipeds/datacenter/data/HD2021_Dict.zip).
 """
 
 # ╔═╡ e9abb9a7-20d9-4901-ac43-b07d986cbc46
 df_raw = CSV.read(Downloads.download("https://raw.githubusercontent.com/icweaver/unistellar_notes/main/data/hd2021.csv"), DataFrame)
 
+# ╔═╡ fbbf0d7f-ef9e-4192-bd84-a848a8a2634a
+begin
+	state_list = df_raw.STABBR |> unique |> sort
+	@bind state MultiCheckBox(state_list; default=state_list, select_all=true)
+end
+
 # ╔═╡ 7689e4da-3fdb-4deb-81f8-041646f59e44
 md"""
-Here are the key selected fields I decided to focus on:
+We focus on the following fields:
 """
 
 # ╔═╡ 54b69301-7cc9-4f00-880f-0801bda6065b
@@ -89,65 +149,8 @@ Here are the key selected fields I decided to focus on:
 	* `F1SYSNAM`: Name of multi-institution or multi-campus organization
 	<br><br>
 	* `STABBR`: USPS state abbreviations
-"""
-
-# ╔═╡ d5642ac5-2f5c-44cb-a7be-c6adfe89bd94
-md"""
-## Visualizations
-"""
-
-# ╔═╡ 3c9a35fe-a9dd-4963-85a3-d618112f466a
-md"""
-### School types
-"""
-
-# ╔═╡ b9e2dcec-6a83-47fb-a49c-5dc34ea1c166
-md"""
-**State:**
-"""
-
-# ╔═╡ fbbf0d7f-ef9e-4192-bd84-a848a8a2634a
-@bind state MultiCheckBox(sort(unique(df_raw.STABBR)); select_all=true)
-
-# ╔═╡ de1de6c4-39de-4548-a7b8-47305128f7f1
-md"""
-**Control:**
-"""
-
-# ╔═╡ 5405b5e3-eb42-4c89-b230-306f527a2836
-@bind control MultiCheckBox([
-	1 => "Public",
-	2 => "Private not-for-profit",
-	3 => "Private for-profit",
-])
-
-# ╔═╡ bff2552b-79fe-48e0-b684-83a7f74b7e38
-md"""
-**Level:**
-"""
-
-# ╔═╡ 5d21683e-c34d-4efb-906e-a9b015c2e53b
-begin
-	degrees = [
-		"< 1 academic year",
-		"1 - <2 academic years",
-		"Associate’s degree",
-		"2 - <4 academic years",
-		"Bachelor’s degree",
-		"Postbaccalaureate",
-		"Master’s degree",
-		"Post-master’s\ncertificate",
-		"Doctor’s degree",
-	];
-	
-	degree_levels = [i => degree for (i, degree) ∈ enumerate(degrees)]
-	
-	@bind level MultiCheckBox(degree_levels; select_all=true, orientation=:column)
-end
-
-# ╔═╡ 923fb8e7-dd5d-4b49-a25d-bbfb55a37fab
-md"""
-**System:** $(@bind system CheckBox())
+	<br><br>
+	* `ADMINURL`: School website
 """
 
 # ╔═╡ 401bd703-ed02-49c4-bd9d-2340151817f8
@@ -160,7 +163,7 @@ begin
 			:HLOFFER ∈ level
 		end
 	
-		@select :INSTNM :ADMINURL :CONTROL :HLOFFER :F1SYSTYP :F1SYSNAM :STABBR
+		@select :INSTNM :CONTROL :HLOFFER :F1SYSTYP :F1SYSNAM :STABBR :ADMINURL
 	
 		sort([:STABBR, :INSTNM])
 	
@@ -168,9 +171,6 @@ begin
 
 	system && @rsubset! df :F1SYSTYP == system
 end;
-
-# ╔═╡ dc39bd55-8e78-4058-b993-2593e248be2c
-gdf_states = groupby(df, :STABBR);
 
 # ╔═╡ 77b4a66b-4598-464d-81bd-427cc37b524c
 md"""
@@ -197,8 +197,8 @@ end
 
 # ╔═╡ 87ec2453-0a9d-47ee-996e-7cb528661c0d
 md"""
-### Map
-[Interactive map](https://nces.ed.gov/ipeds/collegemap/#) from NCES
+## Simplified map
+[Interactive map](https://nces.ed.gov/ipeds/collegemap/#) from NCES.
 """
 
 # ╔═╡ 440cc542-b0ec-4f13-bd7b-e9f17e8aa57d
@@ -1991,14 +1991,6 @@ version = "3.5.0+0"
 
 # ╔═╡ Cell order:
 # ╟─cbd8012e-04b1-481e-8626-232bade9ceed
-# ╟─f24b6a53-2e24-4ac8-b5a7-5ca0b301882a
-# ╠═e9abb9a7-20d9-4901-ac43-b07d986cbc46
-# ╟─7689e4da-3fdb-4deb-81f8-041646f59e44
-# ╟─54b69301-7cc9-4f00-880f-0801bda6065b
-# ╠═401bd703-ed02-49c4-bd9d-2340151817f8
-# ╟─d5642ac5-2f5c-44cb-a7be-c6adfe89bd94
-# ╠═dc39bd55-8e78-4058-b993-2593e248be2c
-# ╟─3c9a35fe-a9dd-4963-85a3-d618112f466a
 # ╟─b9e2dcec-6a83-47fb-a49c-5dc34ea1c166
 # ╟─fbbf0d7f-ef9e-4192-bd84-a848a8a2634a
 # ╟─de1de6c4-39de-4548-a7b8-47305128f7f1
@@ -2009,6 +2001,11 @@ version = "3.5.0+0"
 # ╟─77b4a66b-4598-464d-81bd-427cc37b524c
 # ╟─eed10de6-7b12-4e1b-9775-84fae0db6763
 # ╟─21082908-d316-4980-b54f-6cd5ca09cd61
+# ╟─f24b6a53-2e24-4ac8-b5a7-5ca0b301882a
+# ╠═e9abb9a7-20d9-4901-ac43-b07d986cbc46
+# ╟─7689e4da-3fdb-4deb-81f8-041646f59e44
+# ╟─54b69301-7cc9-4f00-880f-0801bda6065b
+# ╟─401bd703-ed02-49c4-bd9d-2340151817f8
 # ╟─87ec2453-0a9d-47ee-996e-7cb528661c0d
 # ╟─440cc542-b0ec-4f13-bd7b-e9f17e8aa57d
 # ╠═5709131a-4180-4db6-a0a3-214de12194b8
