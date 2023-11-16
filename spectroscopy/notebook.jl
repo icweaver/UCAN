@@ -28,19 +28,23 @@ md"""
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img = download("https://www.dropbox.com/scl/fi/atrdagikfcsvx6k9zf57l/ring_nebula.png?rlkey=kh9qvsywpxrtbrjh6z7g1kdr7&dl=1") |> load
+img = load("data/Vega.png") 
+#download("https://www.dropbox.com/scl/fi/atrdagikfcsvx6k9zf57l/ring_nebula.png?rlkey=kh9qvsywpxrtbrjh6z7g1kdr7&dl=1") |> load
 
 # ╔═╡ a9495266-d769-410f-8a2d-c7b305ba3e09
-size(img)
+nrows, ncols = size(img)
 
 # ╔═╡ 73aca605-f1d6-4623-b2b3-81e72145a32f
-@bind window Slider(1:80; show_value=true)
+@bind row_window Slider(1:(nrows ÷ 2)-1; show_value=true)
+
+# ╔═╡ 107009fc-368c-4a44-b1dd-3eafcd50098d
+row_center, col_center = (nrows, ncols) .÷ 2
 
 # ╔═╡ 37025e3a-8782-4b30-9de3-10825d017a3e
-img[1200-window:1200+window, :]
+img[(row_center - row_window):(row_center + row_window), :]
 
 # ╔═╡ 2a5496f0-f7b8-4ade-ad60-6b4250816d42
-img[1200, :]
+img[row_center, :]
 
 # ╔═╡ e267bee0-8de3-4190-9893-163ee5326496
 img_view = channelview(img)
@@ -1463,11 +1467,12 @@ version = "17.4.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╠═205f4b56-8343-11ee-0ebd-5713fac733ae
+# ╟─205f4b56-8343-11ee-0ebd-5713fac733ae
 # ╟─aa95b11c-c310-4919-a95d-c145ecab5925
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═a9495266-d769-410f-8a2d-c7b305ba3e09
 # ╠═73aca605-f1d6-4623-b2b3-81e72145a32f
+# ╠═107009fc-368c-4a44-b1dd-3eafcd50098d
 # ╠═37025e3a-8782-4b30-9de3-10825d017a3e
 # ╠═2a5496f0-f7b8-4ade-ad60-6b4250816d42
 # ╠═e267bee0-8de3-4190-9893-163ee5326496
