@@ -4,16 +4,6 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-end
-
 # ╔═╡ e46b678e-0448-4e31-a465-0a82c7380ab8
 using PlutoUI, CSV, AstroImages, DataFramesMeta, PythonCall, PlutoPlotly, Images
 
@@ -65,36 +55,23 @@ md"""
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img = load("data/Betelgeuse.fit")
+img_fits = load("data/Betelgeuse.fit")
 #download("https://www.dropbox.com/scl/fi/atrdagikfcsvx6k9zf57l/ring_nebula.png?rlkey=kh9qvsywpxrtbrjh6z7g1kdr7&dl=1") |> load
 
 # ╔═╡ 0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
-size(img)
+img_info(img_fits)
 
-# ╔═╡ a9495266-d769-410f-8a2d-c7b305ba3e09
-nrows, ncols = size(img)
+# ╔═╡ 1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
+slice_fits = img_fits[:, 200:400]
 
-# ╔═╡ 73aca605-f1d6-4623-b2b3-81e72145a32f
-@bind row_window Slider(1:(nrows ÷ 2)-1; show_value=true)
+# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
+prof_1D_fits = sum(slice_fits; dims=2) |> vec
 
-# ╔═╡ 107009fc-368c-4a44-b1dd-3eafcd50098d
-row_center, col_center = (nrows, ncols) .÷ 2
+# ╔═╡ f3c25775-1d34-4870-8847-a3a5d9c01f7e
+img_info(prof_1D_fits)
 
-# ╔═╡ 37025e3a-8782-4b30-9de3-10825d017a3e
-#slice = img[(row_center - row_window):(row_center + row_window), :]
-slice = img[:, 230:350]
-
-# ╔═╡ 2a5496f0-f7b8-4ade-ad60-6b4250816d42
-prof_1D_color = sum(slice; dims=2)
-
-# ╔═╡ fe66c2e2-912d-47e8-86d8-870ab5ca9ed6
-size(prof_1D_color)
-
-# ╔═╡ 8abab78e-5c1d-4901-bbc0-37f08212e03a
-prof_1D = channelview(prof_1D_color)[begin, :, :] |> vec
-
-# ╔═╡ 9fe36a67-bf1c-476f-ad49-e0620b41968e
-plot(prof_1D)
+# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
+plot(prof_1D_fits)
 
 # ╔═╡ 6216fc67-55d1-48a3-9c7a-14b47a320c66
 md"""
@@ -1517,17 +1494,13 @@ version = "17.4.0+0"
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╠═a3b0fffa-1d77-41e7-aeae-089b018e6a42
 # ╠═a15d47c9-6393-4aba-a31c-c10b49e228ea
-# ╠═f7dd6681-2792-4753-b016-2c7358a343a9
+# ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
-# ╠═a9495266-d769-410f-8a2d-c7b305ba3e09
-# ╠═73aca605-f1d6-4623-b2b3-81e72145a32f
-# ╠═107009fc-368c-4a44-b1dd-3eafcd50098d
-# ╠═37025e3a-8782-4b30-9de3-10825d017a3e
-# ╠═2a5496f0-f7b8-4ade-ad60-6b4250816d42
-# ╠═fe66c2e2-912d-47e8-86d8-870ab5ca9ed6
-# ╠═8abab78e-5c1d-4901-bbc0-37f08212e03a
-# ╠═9fe36a67-bf1c-476f-ad49-e0620b41968e
+# ╠═1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
+# ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
+# ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
+# ╠═f9868858-6982-4906-8b52-38e058e98279
 # ╟─6216fc67-55d1-48a3-9c7a-14b47a320c66
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
