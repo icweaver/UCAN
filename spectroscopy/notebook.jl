@@ -22,11 +22,11 @@ img_info(img) = typeof(img), size(img)
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
 md"""
-## Color png
+### Color png
 """
 
 # ╔═╡ 0b7dff7d-26d2-4c00-8d39-dceabb7433b6
-img_color_png = load("data/fomalhaut-20230724-082145.png")
+img_color_png = load("data/NEPTUNE_ENHANCED_eVscope-20230724-075231.png")
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
 img_info(img_color_png)
@@ -38,7 +38,10 @@ img_png = Gray.(img_color_png)
 img_info(img_png)
 
 # ╔═╡ 89777a7c-877a-4593-bf3c-d7aed722ce7c
-slice_png = img_png[400:500, :]
+slice_png = img_png[780:850, :]
+
+# ╔═╡ 2b11b1dd-8629-47b9-be5c-85e9caf588e6
+img_info(slice_png)
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_png = sum(slice_png; dims=1) |> vec
@@ -46,12 +49,12 @@ prof_1D_png = sum(slice_png; dims=1) |> vec
 # ╔═╡ a3b0fffa-1d77-41e7-aeae-089b018e6a42
 img_info(prof_1D_png)
 
-# ╔═╡ a15d47c9-6393-4aba-a31c-c10b49e228ea
-plot(Float32.(prof_1D_png))
+# ╔═╡ 75f69621-07a6-4a85-87ea-4e6f015dba23
+plot(channelview(prof_1D_png))
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
-## FITS
+### FITS
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
@@ -62,7 +65,7 @@ img_fits = load("data/Betelgeuse.fit")
 img_info(img_fits)
 
 # ╔═╡ 1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
-slice_fits = img_fits[:, 200:400]
+slice_fits = img_fits[:, 220:350]
 
 # ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
 prof_1D_fits = sum(slice_fits; dims=2) |> vec
@@ -76,6 +79,11 @@ plot(prof_1D_fits)
 # ╔═╡ 6216fc67-55d1-48a3-9c7a-14b47a320c66
 md"""
 ## 🐍 Python
+"""
+
+# ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
+md"""
+## 📦 Package setup
 """
 
 # ╔═╡ 46deb312-8f07-4b4e-a5b4-b852fb1d016d
@@ -1487,13 +1495,14 @@ version = "17.4.0+0"
 # ╟─882cfe0c-c0e0-472a-b4e6-073046737bbf
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╠═0b7dff7d-26d2-4c00-8d39-dceabb7433b6
-# ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
+# ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
-# ╠═c80c9efa-8f4b-4b02-8d92-96846e258fd2
+# ╟─c80c9efa-8f4b-4b02-8d92-96846e258fd2
 # ╠═89777a7c-877a-4593-bf3c-d7aed722ce7c
+# ╟─2b11b1dd-8629-47b9-be5c-85e9caf588e6
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-# ╠═a3b0fffa-1d77-41e7-aeae-089b018e6a42
-# ╠═a15d47c9-6393-4aba-a31c-c10b49e228ea
+# ╟─a3b0fffa-1d77-41e7-aeae-089b018e6a42
+# ╠═75f69621-07a6-4a85-87ea-4e6f015dba23
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
@@ -1502,6 +1511,7 @@ version = "17.4.0+0"
 # ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
 # ╠═f9868858-6982-4906-8b52-38e058e98279
 # ╟─6216fc67-55d1-48a3-9c7a-14b47a320c66
+# ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
 # ╟─00000000-0000-0000-0000-000000000001
