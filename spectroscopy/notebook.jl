@@ -30,7 +30,7 @@ img_info(img_color_png)
 md"""
 !!! warning
 
-	Beware [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow).
+	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) if performing intermediate operations on your data.
 """
 
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
