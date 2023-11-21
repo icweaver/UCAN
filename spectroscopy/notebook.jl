@@ -26,11 +26,24 @@ img_color_png = load("data/NEPTUNE_ENHANCED_eVscope-20230724-075231.png")
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
 img_info(img_color_png)
 
-# ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
-px_color_png = rand(img_color_png, 10)
+# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
+md"""
+!!! warning
 
-# ╔═╡ df65d192-5421-40d5-b6db-be302225e48f
-channelview(px_color_png[3])
+	Beware [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow).
+"""
+
+# ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
+sample_px_color_png = rand(img_color_png, 10)
+
+# ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
+px_color_png = first(sample_px_color_png)
+
+# ╔═╡ ef1fbee8-1f0c-4bef-9ef4-c7659f2644eb
+typeof(px_color_png)
+
+# ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
+RGB.(red(px_color_png), blue(px_color_png), green(px_color_png))
 
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 md"""
@@ -1442,8 +1455,11 @@ version = "17.4.0+0"
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
 # ╠═0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
+# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╠═0d260f11-abcd-404d-885a-ba02f2692e36
-# ╠═df65d192-5421-40d5-b6db-be302225e48f
+# ╠═9193e583-fe34-4a62-8142-5981e2335276
+# ╠═ef1fbee8-1f0c-4bef-9ef4-c7659f2644eb
+# ╠═5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─c80c9efa-8f4b-4b02-8d92-96846e258fd2
