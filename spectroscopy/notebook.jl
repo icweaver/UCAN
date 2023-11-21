@@ -4,6 +4,19 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
+# ╔═╡ a7fb0d93-bc57-49eb-bba9-84b0cc2a0d56
+using HTTP, JSON
+
 # ╔═╡ e46b678e-0448-4e31-a465-0a82c7380ab8
 using PlutoUI, CSV, AstroImages, DataFramesMeta, PlutoPlotly, Images
 
@@ -20,35 +33,43 @@ md"""
 # ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
 img_info(img) = typeof(img), size(img), length(img)
 
+# ╔═╡ 0f3ae63c-cc02-43a8-9560-3770439640a0
+@bind run_again Button("Random!")
+
 # ╔═╡ 0b7dff7d-26d2-4c00-8d39-dceabb7433b6
-img_color_png = load("data/NEPTUNE_ENHANCED_eVscope-20230724-075231.png")
+begin
+run_again
+img_color_png = let
+	r = HTTP.get("https://dog.ceo/api/breeds/image/random")
+	dog_url = JSON.parse(String(r.body))["message"]
+	load(dog_url)
+end
+end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
 img_info(img_color_png)
+
+# ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
+sample_px_color_png = rand(img_color_png, 10)
+
+# ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
+@bind px_color_png Slider(sample_px_color_png; show_value=true)
+
+# ╔═╡ 79a4e7db-80dd-48be-9b36-79edf40514a7
+px_color_png
+
+# ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
+md"""
+R: $(RGB(red(px_color_png), 0, 0))
+B: $(RGB(0, blue(px_color_png), 0))
+G: $(RGB(0, 0, green(px_color_png)))
+"""
 
 # ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
 md"""
 !!! warning
 
 	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) if performing intermediate operations on your data.
-"""
-
-# ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
-sample_px_color_png = rand(img_color_png, 10)
-
-# ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
-px_color_png = first(sample_px_color_png)
-
-# ╔═╡ ef1fbee8-1f0c-4bef-9ef4-c7659f2644eb
-typeof(px_color_png)
-
-# ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
-RGB.(red(px_color_png), blue(px_color_png), green(px_color_png))
-
-# ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
-md"""
-!!! note
-	For more on image analysis, see this fantastic resource from [Computational Thinking](https://computationalthinking.mit.edu/Fall23/images_abstractions/images/).
 """
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
@@ -62,6 +83,12 @@ slice_png = img_png[780:850, :]
 
 # ╔═╡ 2b11b1dd-8629-47b9-be5c-85e9caf588e6
 img_info(slice_png)
+
+# ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
+md"""
+!!! note
+	For more on image analysis, see this fantastic resource from [Computational Thinking](https://computationalthinking.mit.edu/Fall23/images_abstractions/images/).
+"""
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_png = sum(slice_png; dims=1) |> vec
@@ -110,7 +137,9 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
@@ -118,7 +147,9 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 AstroImages = "~0.4.1"
 CSV = "~0.10.11"
 DataFramesMeta = "~0.14.1"
+HTTP = "~1.10.0"
 Images = "~0.26.0"
+JSON = "~0.21.4"
 PlutoPlotly = "~0.4.2"
 PlutoUI = "~0.7.53"
 """
@@ -129,7 +160,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "9ba6ab15619c8e2b52aee72cf571787c4b346d59"
+project_hash = "1f28e729ef5c520af39c8ee42d9c3692372f3a7b"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -223,6 +254,11 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 git-tree-sha1 = "1c9b6f39f40dba0ef22244a175e2d4e42c8f6ee7"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.2.0"
+
+[[deps.BitFlags]]
+git-tree-sha1 = "2dc09997850d68179b69dafb58ae806167a32b1b"
+uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
+version = "0.1.8"
 
 [[deps.BitTwiddlingConvenienceFunctions]]
 deps = ["Static"]
@@ -348,6 +384,12 @@ git-tree-sha1 = "52cb3ec90e8a8bea0e62e275ba577ad0f74821f7"
 uuid = "ed09eef8-17a6-5b46-8889-db040fac31e3"
 version = "0.3.2"
 
+[[deps.ConcurrentUtilities]]
+deps = ["Serialization", "Sockets"]
+git-tree-sha1 = "8cfa272e8bdedfa88b6aefbbca7c19f1befac519"
+uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
+version = "2.3.0"
+
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "c53fc348ca4d40d7b371e71fd52251839080cbc9"
@@ -451,6 +493,12 @@ deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
 
+[[deps.ExceptionUnwrapping]]
+deps = ["Test"]
+git-tree-sha1 = "e90caa41f5a86296e014e148ee061bd6c3edec96"
+uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
+version = "0.1.9"
+
 [[deps.Extents]]
 git-tree-sha1 = "2140cd04483da90b2da7f99b2add0750504fc39c"
 uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
@@ -516,6 +564,12 @@ deps = ["ArnoldiMethod", "Compat", "DataStructures", "Distributed", "Inflate", "
 git-tree-sha1 = "899050ace26649433ef1af25bc17a815b3db52b7"
 uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
 version = "1.9.0"
+
+[[deps.HTTP]]
+deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
+git-tree-sha1 = "5eab648309e2e060198b45820af1a37182de3cce"
+uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+version = "1.10.0"
 
 [[deps.HistogramThresholding]]
 deps = ["ImageBase", "LinearAlgebra", "MappedArrays"]
@@ -841,6 +895,12 @@ version = "0.3.26"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
+[[deps.LoggingExtras]]
+deps = ["Dates", "Logging"]
+git-tree-sha1 = "c1dd6d7978c12545b4179fb6153b9250c96b0075"
+uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
+version = "1.0.3"
+
 [[deps.LoopVectorization]]
 deps = ["ArrayInterface", "CPUSummary", "CloseOpenIntervals", "DocStringExtensions", "HostCPUFeatures", "IfElse", "LayoutPointers", "LinearAlgebra", "OffsetArrays", "PolyesterWeave", "PrecompileTools", "SIMDTypes", "SLEEFPirates", "Static", "StaticArrayInterface", "ThreadingUtilities", "UnPack", "VectorizationBase"]
 git-tree-sha1 = "0f5648fbae0d015e3abe5867bca2b362f67a5894"
@@ -886,6 +946,12 @@ version = "0.4.2"
 [[deps.Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
+
+[[deps.MbedTLS]]
+deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
+git-tree-sha1 = "f512dc13e64e96f703fd92ce617755ee6b5adf0f"
+uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
+version = "1.1.8"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -966,6 +1032,18 @@ version = "3.1.4+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+0"
+
+[[deps.OpenSSL]]
+deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
+git-tree-sha1 = "51901a49222b09e3743c65b8847687ae5fc78eb2"
+uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
+version = "1.4.1"
+
+[[deps.OpenSSL_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "cc6e1927ac521b659af340e0ca45828a3ffc748f"
+uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
+version = "3.0.12+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "2e73fe17cac3c62ad1aebe70d44c963c3cfdc3e3"
@@ -1192,6 +1270,11 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 [[deps.SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
+
+[[deps.SimpleBufferStream]]
+git-tree-sha1 = "874e8867b33a00e784c8a7e4b60afe9e037b74e1"
+uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
+version = "1.1.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -1453,18 +1536,20 @@ version = "17.4.0+0"
 # ╟─205f4b56-8343-11ee-0ebd-5713fac733ae
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
-# ╠═0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+# ╠═a7fb0d93-bc57-49eb-bba9-84b0cc2a0d56
+# ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+# ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
-# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╠═0d260f11-abcd-404d-885a-ba02f2692e36
-# ╠═9193e583-fe34-4a62-8142-5981e2335276
-# ╠═ef1fbee8-1f0c-4bef-9ef4-c7659f2644eb
-# ╠═5dc94909-7181-42be-a252-4fcfb6a84ff0
-# ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
+# ╟─79a4e7db-80dd-48be-9b36-79edf40514a7
+# ╟─9193e583-fe34-4a62-8142-5981e2335276
+# ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
+# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─c80c9efa-8f4b-4b02-8d92-96846e258fd2
 # ╠═89777a7c-877a-4593-bf3c-d7aed722ce7c
 # ╟─2b11b1dd-8629-47b9-be5c-85e9caf588e6
+# ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─a3b0fffa-1d77-41e7-aeae-089b018e6a42
 # ╠═75f69621-07a6-4a85-87ea-4e6f015dba23
