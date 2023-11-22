@@ -55,7 +55,7 @@ end
 img_info(img_color_png)
 
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
-sample_px_color_png = rand(img_color_png, 10)
+sample_px_color_png = rand(img_color_png, 5)
 
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
 @bind px_color_png Slider(sample_px_color_png; show_value=true)
@@ -68,15 +68,8 @@ md"""
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
 md"""
 R: $(RGB(red(px_color_png), 0, 0))
-B: $(RGB(0, blue(px_color_png), 0))
-G: $(RGB(0, 0, green(px_color_png)))
-"""
-
-# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
-md"""
-!!! warning
-
-	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) if performing intermediate operations on your data.
+G: $(RGB(0, green(px_color_png), 0))
+B: $(RGB(0, 0, blue(px_color_png)))
 """
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
@@ -85,11 +78,22 @@ img_png = Gray.(img_color_png)
 # ╔═╡ 6f3aff5e-5614-49df-923f-652ae08f9184
 nrows_png, ncols_png = size(img_png)
 
-# ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
-@bind x_range_png RangeSlider(1:nrows_png; default=1:1, show_value=true)
+# ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
+md"""
+!!! note
+	For more on image analysis, see this fantastic resource from [Computational Thinking](https://computationalthinking.mit.edu/Fall23/images_abstractions/images/).
+"""
 
-# ╔═╡ 30e72a00-4692-458d-9635-4a693bcf6d47
-@bind y_range_png RangeSlider(1:ncols_png; default=1:1, show_value=true)
+# ╔═╡ 2f18fb1a-2178-4e12-b411-13fa49f3084f
+md"""
+### Array operations
+"""
+
+# ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
+md"""
+``x``: $(@bind x_range_png RangeSlider(1:nrows_png; default=1:1, show_value=true))
+``y``: $(@bind y_range_png RangeSlider(1:ncols_png; default=1:1, show_value=true))
+"""
 
 # ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
 let
@@ -104,14 +108,15 @@ slice_png = img_png[x_range_png, y_range_png]
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 slice_png |> img_info
 
-# ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
-md"""
-!!! note
-	For more on image analysis, see this fantastic resource from [Computational Thinking](https://computationalthinking.mit.edu/Fall23/images_abstractions/images/).
-"""
-
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_png = sum(slice_png; dims=1) |> vec;
+
+# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
+md"""
+!!! warning
+
+	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) if performing intermediate operations on your data.
+"""
 
 # ╔═╡ a3b0fffa-1d77-41e7-aeae-089b018e6a42
 img_info(prof_1D_png)
@@ -1562,19 +1567,19 @@ version = "17.4.0+0"
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╠═0d260f11-abcd-404d-885a-ba02f2692e36
+# ╠═9193e583-fe34-4a62-8142-5981e2335276
 # ╟─79a4e7db-80dd-48be-9b36-79edf40514a7
-# ╟─9193e583-fe34-4a62-8142-5981e2335276
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
-# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╠═6f3aff5e-5614-49df-923f-652ae08f9184
+# ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
+# ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
+# ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
-# ╠═f5dfab17-a789-46dd-ae4f-d3707d0a4573
-# ╠═30e72a00-4692-458d-9635-4a693bcf6d47
 # ╠═096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-# ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
+# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─a3b0fffa-1d77-41e7-aeae-089b018e6a42
 # ╠═75f69621-07a6-4a85-87ea-4e6f015dba23
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
