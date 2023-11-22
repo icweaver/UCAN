@@ -108,25 +108,20 @@ slice_png = img_png[x_range_png, y_range_png]
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 slice_png |> img_info
 
-# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-prof_1D_png = sum(slice_png; dims=1) |> vec |> channelview;
+# ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
+slice_png_vals = channelview(slice_png)
 
-# ╔═╡ 75f69621-07a6-4a85-87ea-4e6f015dba23
-plot(prof_1D_png)
+# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
+prof_1D_png_vals = sum(slice_png_vals; dims=1) |> vec;
 
 # ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
 let
-	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.2)
-	add_trace!(p, scatter(y=prof_1D_png); row=1)
-	add_trace!(p, heatmap(z=rand(100, 100)), row=2)
+	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
+	add_trace!(p, scatter(y=prof_1D_png_vals); row=1)
+	add_trace!(p, heatmap(z=slice_png_vals); row=2)
+	update!(p; showscale=false)
 	p
 end
-
-# ╔═╡ f32175f1-2417-4794-b164-5cabc9154875
-plot(image(z=rand(1:255, 3, 100, 100)))
-
-# ╔═╡ c8aa0f22-c3a5-4a0b-a04a-8bc8fd1d767c
-plot(heatmap(z=rand(1:255, 100, 100)))
 
 # ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
 md"""
@@ -136,7 +131,7 @@ md"""
 """
 
 # ╔═╡ a3b0fffa-1d77-41e7-aeae-089b018e6a42
-img_info(prof_1D_png)
+img_info(prof_1D_png_vals)
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -1590,13 +1585,11 @@ version = "17.4.0+0"
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
+# ╠═d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-# ╠═75f69621-07a6-4a85-87ea-4e6f015dba23
+# ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-# ╠═d3b6afc1-c29b-476a-90ed-721796af130f
-# ╠═f32175f1-2417-4794-b164-5cabc9154875
-# ╠═c8aa0f22-c3a5-4a0b-a04a-8bc8fd1d767c
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─a3b0fffa-1d77-41e7-aeae-089b018e6a42
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
