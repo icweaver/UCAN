@@ -29,20 +29,25 @@ md"""
 # Spectroscopy Lab 🌈
 """
 
+# ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
+md"""
+### Brief background
+"""
+
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
 md"""
 ### Color png
-"""
-
-# ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
-md"""
-#### Brief background
 """
 
 # ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
 function img_info(img)
 	@debug "Image info" eltype(img) size(img) length(img)
 end
+
+# ╔═╡ 9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
+md"""
+*Images courtesy of* <https://dog.ceo/dog-api/>
+"""
 
 # ╔═╡ 0f3ae63c-cc02-43a8-9560-3770439640a0
 @bind run_again Button("Random!")
@@ -66,16 +71,12 @@ sample_px_color_png = rand(img_color_png, 5)
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
 @bind px_color_png Slider(sample_px_color_png; show_value=true)
 
-# ╔═╡ 79a4e7db-80dd-48be-9b36-79edf40514a7
-md"""
-**Selected pixel:** $(px_color_png)
-"""
-
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
 md"""
-R: $(RGB(red(px_color_png), 0, 0))
-G: $(RGB(0, green(px_color_png), 0))
-B: $(RGB(0, 0, blue(px_color_png)))
+**Selected pixel** $(px_color_png)=
+R $(RGB(red(px_color_png), 0, 0)) +
+G $(RGB(0, green(px_color_png), 0)) +
+B $(RGB(0, 0, blue(px_color_png)))
 """
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
@@ -1536,15 +1537,15 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╟─205f4b56-8343-11ee-0ebd-5713fac733ae
+# ╠═127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
-# ╟─127ca8df-46c7-4d02-8f9b-e27983978441
-# ╠═4c6a8538-2124-44f0-9891-4a3e1472ea4e
+# ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+# ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╠═0d260f11-abcd-404d-885a-ba02f2692e36
-# ╠═9193e583-fe34-4a62-8142-5981e2335276
-# ╟─79a4e7db-80dd-48be-9b36-79edf40514a7
+# ╟─9193e583-fe34-4a62-8142-5981e2335276
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
