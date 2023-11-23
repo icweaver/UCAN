@@ -32,6 +32,8 @@ md"""
 # ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
 md"""
 ### Brief background
+
+Rundown on working with images + some nice features from Julia
 """
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
@@ -54,12 +56,15 @@ md"""
 
 # ╔═╡ 0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 begin
+	
 run_again
+
 img_color_png = let
 	r = HTTP.get("https://dog.ceo/api/breeds/image/random")
 	dog_url = JSON.parse(String(r.body))["message"]
 	load(dog_url)
 end
+	
 end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
@@ -78,6 +83,14 @@ R $(RGB(red(px_color_png), 0, 0)) +
 G $(RGB(0, green(px_color_png), 0)) +
 B $(RGB(0, 0, blue(px_color_png)))
 """
+
+# ╔═╡ 5d27e2fc-56e6-4f4d-a396-a7afbce7e449
+# Tuple unpacking, dotting, and piping
+r, g, b = px_color_png .|> (red, green, blue)
+
+# ╔═╡ 56ed9188-db7c-4ba4-a390-3b573a1a6262
+# Hooray multiple dispatch
+RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 img_png = Gray.(img_color_png)
@@ -1537,7 +1550,7 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╟─205f4b56-8343-11ee-0ebd-5713fac733ae
-# ╠═127ca8df-46c7-4d02-8f9b-e27983978441
+# ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
@@ -1545,8 +1558,10 @@ version = "17.4.0+0"
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╠═0d260f11-abcd-404d-885a-ba02f2692e36
-# ╟─9193e583-fe34-4a62-8142-5981e2335276
+# ╠═9193e583-fe34-4a62-8142-5981e2335276
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
+# ╠═5d27e2fc-56e6-4f4d-a396-a7afbce7e449
+# ╠═56ed9188-db7c-4ba4-a390-3b573a1a6262
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
