@@ -59,7 +59,7 @@ begin
 	
 run_again
 
-img_color_png = let
+dog_png = let
 	r = HTTP.get("https://dog.ceo/api/breeds/image/random")
 	dog_url = JSON.parse(String(r.body))["message"]
 	load(dog_url)
@@ -68,35 +68,35 @@ end
 end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
-img_info(img_color_png)
+img_info(dog_png)
 
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
-sample_px_color_png = rand(img_color_png, 5)
+sample_px_dog_png = rand(dog_png, 5)
 
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
-@bind px_color_png Slider(sample_px_color_png; show_value=true)
+@bind px_dog_png Slider(sample_px_dog_png; show_value=true)
 
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
 md"""
-**Selected pixel** $(px_color_png)=
-R $(RGB(red(px_color_png), 0, 0)) +
-G $(RGB(0, green(px_color_png), 0)) +
-B $(RGB(0, 0, blue(px_color_png)))
+**Selected pixel** $(px_dog_png)=
+R $(RGB(red(px_dog_png), 0, 0)) +
+G $(RGB(0, green(px_dog_png), 0)) +
+B $(RGB(0, 0, blue(px_dog_png)))
 """
 
 # ╔═╡ 5d27e2fc-56e6-4f4d-a396-a7afbce7e449
 # Tuple unpacking, dotting, and piping
-r, g, b = px_color_png .|> (red, green, blue)
+r, g, b = px_dog_png .|> (red, green, blue)
 
 # ╔═╡ 56ed9188-db7c-4ba4-a390-3b573a1a6262
 # Hooray multiple dispatch
 RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
-img_png = Gray.(img_color_png)
+dog_gray = Gray.(dog_png)
 
 # ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
-img_info(img_png)
+img_info(dog_gray)
 
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 md"""
@@ -111,22 +111,28 @@ md"""
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
 md"""
-``x``: $(@bind x_range_png RangeSlider(1:size(img_png, 1); default=1:1, show_value=true))
-``y``: $(@bind y_range_png RangeSlider(1:size(img_png, 2); default=1:1, show_value=true))
+``x``: $(@bind x_range_png RangeSlider(1:size(dog_gray, 1); default=1:1, show_value=true))
+``y``: $(@bind y_range_png RangeSlider(1:size(dog_gray, 2); default=1:1, show_value=true))
 """
 
 # ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
 let
-	tmp = copy(img_png)
+	tmp = copy(dog_gray)
 	tmp[x_range_png, y_range_png] .= RGB(0, 0, 0)
 	tmp
 end
 
 # ╔═╡ 3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-slice_png = img_png[x_range_png, y_range_png];
+slice_png = dog_gray[x_range_png, y_range_png];
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 slice_png |> img_info
+
+# ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
+md"""
+!!! note
+	Try moving the aperture over different parts of the image to see if any particular features can be picked out.
+"""
 
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content)
@@ -183,6 +189,14 @@ end
 
  	--> **$(eltype(prof_1D_png_vals))**
 """
+
+# ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
+md"""
+## eVscope live view image
+"""
+
+# ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
+img_ev_color_
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -1572,10 +1586,13 @@ version = "17.4.0+0"
 # ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
+# ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
+# ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
+# ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
