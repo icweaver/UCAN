@@ -58,31 +58,30 @@ md"""
 begin
 	
 run_again
-
-dog_png = let
+img_dog = let
 	r = HTTP.get("https://dog.ceo/api/breeds/image/random")
-	dog_url = JSON.parse(String(r.body))["message"]
-	load(dog_url)
+	url_dog = JSON.parse(String(r.body))["message"]
+	load(url_dog)
 end
 	
 end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
-img_info(dog_png)
+img_info(img_dog)
 
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
-sample_px_dog_png = rand(dog_png, 5)
+sample_px_dog = rand(img_dog, 5)
 
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
-@bind px_dog_png Slider(sample_px_dog_png; show_value=true)
+@bind px_dog Slider(sample_px_dog; show_value=true)
 
 # ╔═╡ 5d27e2fc-56e6-4f4d-a396-a7afbce7e449
 # Tuple unpacking, dotting, and piping
-r, g, b = px_dog_png .|> (red, green, blue)
+r, g, b = px_dog .|> (red, green, blue)
 
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
 md"""
-**Selected pixel** $(px_dog_png)=
+**Selected pixel** $(px_dog)=
 R $(RGB(r, 0, 0)) +
 G $(RGB(0, g, 0)) +
 B $(RGB(0, 0, b))
@@ -93,7 +92,7 @@ B $(RGB(0, 0, b))
 RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
-dog_gray = Gray.(dog_png)
+gray_dog = Gray.(img_dog)
 
 # ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
 img_info(dog_gray)
