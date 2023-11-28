@@ -77,7 +77,7 @@ sample_px_dog = rand(img_dog, 5)
 
 # ╔═╡ 5d27e2fc-56e6-4f4d-a396-a7afbce7e449
 # Tuple unpacking, dotting, and piping
-r, g, b = px_dog .|> (red, green, blue)
+ r, g, b = px_dog .|> (red, green, blue)
 
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
 md"""
@@ -89,13 +89,13 @@ B $(RGB(0, 0, b))
 
 # ╔═╡ 56ed9188-db7c-4ba4-a390-3b573a1a6262
 # Hooray multiple dispatch
-RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
+RGB(r, 0, 0)  + RGB(0, g, 0) + RGB(0, 0, b)
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
 
 # ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
-img_info(dog_gray)
+img_info(gray_dog)
 
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 md"""
@@ -110,22 +110,22 @@ md"""
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
 md"""
-``x``: $(@bind x_range_png RangeSlider(1:size(dog_gray, 1); default=1:1, show_value=true))
-``y``: $(@bind y_range_png RangeSlider(1:size(dog_gray, 2); default=1:1, show_value=true))
+``x``: $(@bind x_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1, show_value=true))
+``y``: $(@bind y_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1, show_value=true))
 """
 
 # ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
 let
-	tmp = copy(dog_gray)
-	tmp[x_range_png, y_range_png] .= RGB(0, 0, 0)
+	tmp = copy(gray_dog)
+	tmp[x_range_dog, y_range_dog] .= RGB(0, 0, 0)
 	tmp
 end
 
 # ╔═╡ 3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-slice_png = dog_gray[x_range_png, y_range_png];
+window_dog = gray_dog[x_range_dog, y_range_dog];
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
-slice_png |> img_info
+window_dog |> img_info
 
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content)
@@ -158,16 +158,16 @@ md"""
 """
 
 # ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
-slice_png_vals = channelview(slice_png)
+window_dog_vals = channelview(window_dog)
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-prof_1D_png_vals = sum(slice_png_vals; dims=1) |> vec
+prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
 
 # ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
 let
 	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
-	add_trace!(p, scatter(; y=prof_1D_png_vals); row=1)
-	add_trace!(p, heatmap(; z=slice_png_vals, colorscale=:Greys); row=2)
+	add_trace!(p, scatter(; y=prof_1D_dog_vals); row=1)
+	add_trace!(p, heatmap(; z=window_dog_vals, colorscale=:Greys); row=2)
 	update!(p;
 		showscale = false,
 		layout = Layout(
@@ -186,7 +186,7 @@ end
 	eltype(prof_1D_png_vals)
 	```
 
- 	--> **$(eltype(prof_1D_png_vals))**
+ 	--> **$(eltype(prof_1D_dog_vals))**
 """
 
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
@@ -217,7 +217,7 @@ end
 limits_ev_live_png_gray
 
 # ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-slice_ev_live_png_gray = let
+window_ev_live_gray = let
 	xlims = limits_ev_live_png_gray["xaxis"]
 	xlo, xhi = xlims .|> (x -> floor(Int, x)) .|> (first, last)
 	ylims = limits_ev_live_png_gray["yaxis"]
@@ -228,8 +228,8 @@ end
 # ╔═╡ 95df03d3-2bfb-480c-9452-9240696e80ff
 let
 	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
-	add_trace!(p, scatter(; y=prof_1D_png_vals); row=1)
-	add_trace!(p, heatmap(; z=slice_png_vals, colorscale=:Greys); row=2)
+	add_trace!(p, scatter(; y=prof_1D_dog_vals); row=1)
+	add_trace!(p, heatmap(; z=window_dog_vals, colorscale=:Greys); row=2)
 	update!(p;
 		showscale = false,
 		layout = Layout(
@@ -237,9 +237,6 @@ let
 		)
 	)
 end
-
-# ╔═╡ 29928e8d-87cf-44af-ae61-6f9a58c07d7b
-limits
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -1623,7 +1620,7 @@ version = "17.4.0+0"
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
-# ╟─bb008a9b-8538-418d-9e70-50d9983c2074
+# ╠═bb008a9b-8538-418d-9e70-50d9983c2074
 # ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
 # ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
@@ -1637,11 +1634,10 @@ version = "17.4.0+0"
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
-# ╠═4406e5d7-9a75-480b-8a97-b92e6a064338
+# ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
 # ╠═ed74db60-e9ac-4343-ba93-582aa0a88f04
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-# ╠═95df03d3-2bfb-480c-9452-9240696e80ff
-# ╠═29928e8d-87cf-44af-ae61-6f9a58c07d7b
+# ╟─95df03d3-2bfb-480c-9452-9240696e80ff
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
