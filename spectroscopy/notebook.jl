@@ -127,6 +127,9 @@ window_dog = gray_dog[x_range_dog, y_range_dog];
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 window_dog |> img_info
 
+# ╔═╡ 4886fa22-b640-49b7-aa68-ad56cc3506fa
+channelview(window_dog)
+
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content)
 	@mdx """
@@ -171,7 +174,7 @@ let
 	update!(p;
 		showscale = false,
 		layout = Layout(
-			yaxis2 = attr(autorange="reversed", scaleanchor="x")
+			yaxis2 = attr(autorange="reversed", scaleanchor="y")
 		)
 	)
 end
@@ -217,7 +220,7 @@ end
 limits_ev_live_png_gray
 
 # ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-window_ev_live_gray = let
+window_ev_live_gray_vals = let
 	xlims = limits_ev_live_png_gray["xaxis"]
 	xlo, xhi = xlims .|> (x -> floor(Int, x)) .|> (first, last)
 	ylims = limits_ev_live_png_gray["yaxis"]
@@ -225,22 +228,25 @@ window_ev_live_gray = let
 	@view arr_ev_live_png_gray[ylo:yhi, xlo:xhi]
 end
 
+# ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
+prof_1D_ev_live_vals = sum(window_ev_live_gray_vals; dims=1) |> vec
+
 # ╔═╡ 95df03d3-2bfb-480c-9452-9240696e80ff
 let
 	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
-	add_trace!(p, scatter(; y=prof_1D_dog_vals); row=1)
-	add_trace!(p, heatmap(; z=window_dog_vals, colorscale=:Greys); row=2)
+	add_trace!(p, scatter(; y=prof_1D_ev_live_vals); row=1)
+	add_trace!(p, heatmap(; z=window_ev_live_gray_vals, colorscale=:Greys); row=2)
 	update!(p;
 		showscale = false,
 		layout = Layout(
-			yaxis2 = attr(autorange="reversed", scaleanchor="x")
+			yaxis2 = attr(autorange="reversed", scaleanchor="y")
 		)
 	)
 end
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
-### FITS
+## FITS
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
@@ -1623,8 +1629,9 @@ version = "17.4.0+0"
 # ╠═bb008a9b-8538-418d-9e70-50d9983c2074
 # ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
-# ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-# ╟─d3b6afc1-c29b-476a-90ed-721796af130f
+# ╟─3b50dc1a-288f-4fe1-969d-f7eed149ecfb
+# ╠═4886fa22-b640-49b7-aa68-ad56cc3506fa
+# ╠═d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
 # ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
@@ -1635,9 +1642,10 @@ version = "17.4.0+0"
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
-# ╠═ed74db60-e9ac-4343-ba93-582aa0a88f04
-# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╟─95df03d3-2bfb-480c-9452-9240696e80ff
+# ╠═ed74db60-e9ac-4343-ba93-582aa0a88f04
+# ╟─6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+# ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
