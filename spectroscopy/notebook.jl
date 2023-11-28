@@ -31,14 +31,14 @@ md"""
 
 # ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
 md"""
-### Brief background
+## Brief background
 
 Rundown on working with images + some nice features from Julia
 """
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
 md"""
-### Color png
+### Color images
 """
 
 # ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
@@ -76,17 +76,17 @@ sample_px_dog_png = rand(dog_png, 5)
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
 @bind px_dog_png Slider(sample_px_dog_png; show_value=true)
 
-# ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
-md"""
-**Selected pixel** $(px_dog_png)=
-R $(RGB(red(px_dog_png), 0, 0)) +
-G $(RGB(0, green(px_dog_png), 0)) +
-B $(RGB(0, 0, blue(px_dog_png)))
-"""
-
 # ╔═╡ 5d27e2fc-56e6-4f4d-a396-a7afbce7e449
 # Tuple unpacking, dotting, and piping
 r, g, b = px_dog_png .|> (red, green, blue)
+
+# ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
+md"""
+**Selected pixel** $(px_dog_png)=
+R $(RGB(r, 0, 0)) +
+G $(RGB(0, g, 0)) +
+B $(RGB(0, 0, b))
+"""
 
 # ╔═╡ 56ed9188-db7c-4ba4-a390-3b573a1a6262
 # Hooray multiple dispatch
@@ -128,12 +128,6 @@ slice_png = dog_gray[x_range_png, y_range_png];
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 slice_png |> img_info
 
-# ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
-md"""
-!!! note
-	Try moving the aperture over different parts of the image to see if any particular features can be picked out.
-"""
-
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content)
 	@mdx """
@@ -157,6 +151,12 @@ details(
 	```
 	"""
 )
+
+# ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
+md"""
+!!! note
+	Try moving the aperture over different parts of the image to see if any particular features can be picked out.
+"""
 
 # ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
 slice_png_vals = channelview(slice_png)
@@ -198,20 +198,49 @@ md"""
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
 ev_live_png = load("data/castor.png")
 
+# ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
+arr_ev_live_png_gray = ev_live_png .|> Gray |> channelview
+
 # ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
-ev_live_gray = Gray.(ev_live_png)
+@bind limits_ev_live_png_gray let
+	p = plot(heatmap(; z=arr_ev_live_png_gray), Layout(xaxis_range=[1, 1600], yaxis_range=[1, 1200]))
+	add_plotly_listener!(p, "plotly_relayout", "
+		e => {
+		let layout = PLOT.layout
+		PLOT.value = {xaxis: layout.xaxis.range, yaxis:layout.yaxis.range}
+		PLOT.dispatchEvent(new CustomEvent('input'))
+		}
+		"
+	)
+end
 
-# ╔═╡ deb87c66-6f24-43ba-ae4a-79b32fe53441
-arr = channelview(ev_live_gray)
+# ╔═╡ ed74db60-e9ac-4343-ba93-582aa0a88f04
+limits_ev_live_png_gray
 
-# ╔═╡ 2afba91a-4b76-48f9-b0c7-bd8adbb31141
-p = plot(rand(10, 4))
+# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+slice_ev_live_png_gray = let
+	xlims = limits_ev_live_png_gray["xaxis"]
+	xlo, xhi = xlims .|> (x -> floor(Int, x)) .|> (first, last)
+	ylims = limits_ev_live_png_gray["yaxis"]
+	ylo, yhi = ylims .|> (x -> floor(Int, x)) .|> (first, last)
+	@view arr_ev_live_png_gray[ylo:yhi, xlo:xhi]
+end
 
-# ╔═╡ f9cfb563-d3c5-4964-8609-5c7daaa48b68
-p["hover"]
+# ╔═╡ 95df03d3-2bfb-480c-9452-9240696e80ff
+let
+	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
+	add_trace!(p, scatter(; y=prof_1D_png_vals); row=1)
+	add_trace!(p, heatmap(; z=slice_png_vals, colorscale=:Greys); row=2)
+	update!(p;
+		showscale = false,
+		layout = Layout(
+			yaxis2 = attr(autorange="reversed", scaleanchor="x")
+		)
+	)
+end
 
-# ╔═╡ 012e83c7-88e7-43d1-9aea-f7b99f85e421
-x = vec(sum(arr[540:660, 600:1600]; dims=1))
+# ╔═╡ 29928e8d-87cf-44af-ae61-6f9a58c07d7b
+limits
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -1601,18 +1630,19 @@ version = "17.4.0+0"
 # ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
-# ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
+# ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
+# ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╠═4406e5d7-9a75-480b-8a97-b92e6a064338
-# ╠═deb87c66-6f24-43ba-ae4a-79b32fe53441
-# ╠═2afba91a-4b76-48f9-b0c7-bd8adbb31141
-# ╠═f9cfb563-d3c5-4964-8609-5c7daaa48b68
-# ╠═012e83c7-88e7-43d1-9aea-f7b99f85e421
+# ╠═ed74db60-e9ac-4343-ba93-582aa0a88f04
+# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+# ╠═95df03d3-2bfb-480c-9452-9240696e80ff
+# ╠═29928e8d-87cf-44af-ae61-6f9a58c07d7b
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
