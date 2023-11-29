@@ -129,19 +129,19 @@ md"""
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
 md"""
-``x``: $(@bind x_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
-``y``: $(@bind y_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
+``\text{rows}``: $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
+``\text{columns}``: $(@bind col_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
 """
 
 # ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
 let
 	tmp = copy(gray_dog)
-	tmp[x_range_dog, y_range_dog] .= RGB(0, 0, 0)
+	tmp[row_range_dog, col_range_dog] .= RGB(0, 0, 0)
 	tmp
 end
 
 # ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
-window_dog = gray_dog[x_range_dog, y_range_dog];
+window_dog = gray_dog[row_range_dog, col_range_dog];
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 window_dog |> img_info
@@ -167,18 +167,19 @@ prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
 
 # ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
 let
-	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
-	add_trace!(p, scatter(; y=prof_1D_dog_vals); row=1)
+	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02, x_title="pixel column")
+	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
 	add_trace!(p, heatmap(
-		x = x_range_dog,
-		y = y_range_dog,
+		x = col_range_dog,
+		y = row_range_dog,
 		z = window_dog_vals,
 		colorscale = :Greys,
 		showscale = false,
 	) ; row=2)
 	update!(p;
 		layout = Layout(
-			yaxis2 = attr(autorange="reversed", scaleanchor=:x)
+			yaxis = attr(title="intensity"),
+			yaxis2 = attr(autorange="reversed", scaleanchor=:x, title="pixel row")
 		)
 	)
 end
@@ -1663,7 +1664,7 @@ version = "17.4.0+0"
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
-# ╠═d3b6afc1-c29b-476a-90ed-721796af130f
+# ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
 # ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
