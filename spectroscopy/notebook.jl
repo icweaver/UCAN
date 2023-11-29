@@ -86,21 +86,29 @@ end
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
 @bind px_dog Slider(sample_px_dog; show_value=true)
 
-# ╔═╡ 5d27e2fc-56e6-4f4d-a396-a7afbce7e449
-# Tuple unpacking, dotting, and piping
- r, g, b = px_dog .|> (red, green, blue)
-
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
+let
+	 r, g, b = px_dog .|> (red, green, blue)
 md"""
-**Selected pixel** $(px_dog)=
-R $(RGB(r, 0, 0)) +
-G $(RGB(0, g, 0)) +
-B $(RGB(0, 0, b))
+**Selected pixel** $(px_dog) ``=``
+R $(RGB(r, 0, 0)) + G $(RGB(0, g, 0)) + B $(RGB(0, 0, b))
 """
+end
 
-# ╔═╡ 56ed9188-db7c-4ba4-a390-3b573a1a6262
-# Hooray multiple dispatch
-RGB(r, 0, 0)  + RGB(0, g, 0) + RGB(0, 0, b)
+# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
+@mdx """
+!!! tip "Julia aside"
+
+	Tuple unpacking, dotting, and piping
+	```julia
+	 r, g, b = px_dog .|> (red, green, blue)
+	```
+
+	Hooray for multiple dispatch
+	```julia
+	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
+	```
+"""
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
@@ -1643,8 +1651,7 @@ version = "17.4.0+0"
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─9193e583-fe34-4a62-8142-5981e2335276
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
-# ╠═5d27e2fc-56e6-4f4d-a396-a7afbce7e449
-# ╠═56ed9188-db7c-4ba4-a390-3b573a1a6262
+# ╟─64669de1-d2e8-47b5-8522-7e561e5ca098
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
