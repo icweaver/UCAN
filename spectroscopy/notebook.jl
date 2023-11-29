@@ -141,7 +141,7 @@ let
 end
 
 # ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
-window_dog = gray_dog[row_range_dog, col_range_dog];
+window_dog = @view gray_dog[row_range_dog, col_range_dog];
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 window_dog |> img_info
@@ -197,7 +197,7 @@ details(
 	```julia
 	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
 	add_trace!(p, scatter(; y=prof_1D_png_vals); row=1)
-	add_trace!(p, heatmap(; z=slice_png_vals, colorscale=:Greys); row=2)
+	add_trace!(p, heatmap(; z=window_png_vals, colorscale=:Greys); row=2)
 	update!(p;
 		showscale = false,
 		layout = Layout(
@@ -277,20 +277,23 @@ img_fits = load("data/Betelgeuse.fit")
 # ╔═╡ 0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
 img_info(img_fits)
 
-# ╔═╡ 8011d139-42d1-4743-99bb-4f31b02e7fd6
-img_fits
-
-# ╔═╡ 9919535b-e10e-44fd-91b0-5a322247f601
-plotly()
-
-# ╔═╡ eae32578-366d-43d8-9c7a-b4dc17e3dcb3
-PlutoPlotly.plot(PlutoPlotly.heatmap(; z=rand(10, 10)))
-
 # ╔═╡ 1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
-slice_fits = img_fits[:, 220:350]
+window_fits = img_fits[:, 220:350]
+
+# ╔═╡ ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
+img_fits.header
+
+# ╔═╡ 48fe74a0-c885-4c02-968f-21a6e8639ae7
+img_fits.wcs
+
+# ╔═╡ 059e8026-d718-4d40-9d6d-ef3abbb36723
+img_fits.data
+
+# ╔═╡ 779ef739-fd4e-4a4f-ab7d-45c562609fc7
+heatmap(; z = permutedims(img_fits.data)) |> plot
 
 # ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-prof_1D_fits = sum(slice_fits; dims=2) |> vec
+prof_1D_fits = sum(window_fits; dims=2) |> vec
 
 # ╔═╡ f3c25775-1d34-4870-8847-a3a5d9c01f7e
 img_info(prof_1D_fits)
@@ -1678,10 +1681,11 @@ version = "17.4.0+0"
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
-# ╠═8011d139-42d1-4743-99bb-4f31b02e7fd6
-# ╠═9919535b-e10e-44fd-91b0-5a322247f601
-# ╠═eae32578-366d-43d8-9c7a-b4dc17e3dcb3
-# ╠═1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
+# ╟─1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
+# ╠═ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
+# ╠═48fe74a0-c885-4c02-968f-21a6e8639ae7
+# ╠═059e8026-d718-4d40-9d6d-ef3abbb36723
+# ╠═779ef739-fd4e-4a4f-ab7d-45c562609fc7
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
 # ╠═f9868858-6982-4906-8b52-38e058e98279
