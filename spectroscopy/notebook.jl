@@ -304,6 +304,49 @@ prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
 plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
 
+# ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
+md"""
+## Wavelength calibration
+"""
+
+# ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
+const ref_wavs = [
+	:h_alpha => 6562.8,
+	:h_beta => 4861.4,
+	:h_gamma => 4340.5,
+	:h_delta => 4102.7,
+	:h_epsilon => 3970.1,
+]
+
+# ╔═╡ c028c979-51c8-44f5-a60e-5f3f456a3b0c
+px_zero, px_sample = [639.0, 1196.0]
+
+# ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
+m = (4861 - 0.0) / (px_sample - px_zero)
+
+# ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
+y_wav(x_px) = m * (x_px - px_zero)
+
+# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
+xrange_ev_live_wav = y_wav.(xrange_ev_live)
+
+# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
+let
+	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
+	for (name, wav) ∈ ref_wavs
+		add_vline!(p, wav)
+	end
+	p
+end
+
+# ╔═╡ 5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
+md"""
+!!! note "TODO: Extension problem ideas"
+
+	* Implementing pixel binning
+	* Non-linear wavelength calibration
+"""
+
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
 ## FITS
@@ -1735,11 +1778,19 @@ version = "17.4.0+0"
 # ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
-# ╟─352ddf83-7ef4-487e-912e-c3e2b8ad055c
+# ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
 # ╟─ac74a5c7-c89c-41c0-bf09-c19e026364ab
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╟─75108863-4a62-4751-aeee-246250fbf8b8
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
+# ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
+# ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
+# ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
+# ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
+# ╠═447de825-9442-48ba-b373-2adc158799e3
+# ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
+# ╠═272654a7-665f-48ee-beb5-13944c803e7e
+# ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
