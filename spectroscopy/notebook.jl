@@ -69,6 +69,11 @@ end
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
 img_info(img_dog)
 
+# ╔═╡ 7ee76656-700d-4e78-9223-64b39d345997
+md"""
+More on [`N0f8`](https://juliaimages.org/latest/tutorials/quickstart/#The-0-to-1-intensity-scale)
+"""
+
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
 sample_px_dog = rand(img_dog, 5)
 
@@ -110,8 +115,8 @@ md"""
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
 md"""
-``x``: $(@bind x_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1, show_value=true))
-``y``: $(@bind y_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1, show_value=true))
+``x``: $(@bind x_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
+``y``: $(@bind y_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
 """
 
 # ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
@@ -121,8 +126,8 @@ let
 	tmp
 end
 
-# ╔═╡ 3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-window_dog = @view gray_dog[x_range_dog, y_range_dog];
+# ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
+window_dog = gray_dog[x_range_dog, y_range_dog];
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 window_dog |> img_info
@@ -151,11 +156,12 @@ let
 	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
 	add_trace!(p, scatter(; y=prof_1D_dog_vals); row=1)
 	add_trace!(p, heatmap(
+		x = x_range_dog,
+		y = y_range_dog,
 		z = window_dog_vals,
 		colorscale = :Greys,
 		showscale = false,
-	) ;row=2
-	)
+	) ; row=2)
 	update!(p;
 		layout = Layout(
 			yaxis2 = attr(autorange="reversed", scaleanchor=:x)
@@ -256,6 +262,15 @@ img_fits = load("data/Betelgeuse.fit")
 # ╔═╡ 0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
 img_info(img_fits)
 
+# ╔═╡ 8011d139-42d1-4743-99bb-4f31b02e7fd6
+img_fits
+
+# ╔═╡ 9919535b-e10e-44fd-91b0-5a322247f601
+plotly()
+
+# ╔═╡ eae32578-366d-43d8-9c7a-b4dc17e3dcb3
+PlutoPlotly.plot(PlutoPlotly.heatmap(; z=rand(10, 10)))
+
 # ╔═╡ 1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
 slice_fits = img_fits[:, 220:350]
 
@@ -318,9 +333,9 @@ weakdeps = ["ChainRulesCore", "Test"]
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "91bd53c39b9cbfb5ef4b015e8b582d344532bd0a"
+git-tree-sha1 = "793501dcd3fa7ce8d375a2c878dca2296232686e"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.2.0"
+version = "1.2.2"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -344,9 +359,9 @@ version = "0.2.0"
 
 [[deps.ArrayInterface]]
 deps = ["Adapt", "LinearAlgebra", "Requires", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "16267cf279190ca7c1b30d020758ced95db89cd0"
+git-tree-sha1 = "247efbccf92448be332d154d6ca56b9fcdd93c31"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "7.5.1"
+version = "7.6.1"
 
     [deps.ArrayInterface.extensions]
     ArrayInterfaceBandedMatricesExt = "BandedMatrices"
@@ -1060,9 +1075,9 @@ version = "0.1.1"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
-git-tree-sha1 = "f512dc13e64e96f703fd92ce617755ee6b5adf0f"
+git-tree-sha1 = "c067a280ddc25f196b5e7df3877c6b226d390aaf"
 uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.8"
+version = "1.1.9"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1152,14 +1167,14 @@ version = "1.4.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "cc6e1927ac521b659af340e0ca45828a3ffc748f"
+git-tree-sha1 = "a12e56c72edee3ce6b96667745e6cbbe5498f200"
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.0.12+0"
+version = "1.1.23+0"
 
 [[deps.OrderedCollections]]
-git-tree-sha1 = "2e73fe17cac3c62ad1aebe70d44c963c3cfdc3e3"
+git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "1.6.2"
+version = "1.6.3"
 
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
@@ -1613,10 +1628,11 @@ version = "17.4.0+0"
 # ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
-# ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+# ╠═0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
+# ╟─7ee76656-700d-4e78-9223-64b39d345997
 # ╠═0d260f11-abcd-404d-885a-ba02f2692e36
 # ╠═9193e583-fe34-4a62-8142-5981e2335276
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
@@ -1627,9 +1643,9 @@ version = "17.4.0+0"
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
-# ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
-# ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
+# ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
+# ╠═fcc96529-3b20-4a59-9d2d-48612f4c16f3
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
@@ -1647,6 +1663,9 @@ version = "17.4.0+0"
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
+# ╠═8011d139-42d1-4743-99bb-4f31b02e7fd6
+# ╠═9919535b-e10e-44fd-91b0-5a322247f601
+# ╠═eae32578-366d-43d8-9c7a-b4dc17e3dcb3
 # ╠═1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
