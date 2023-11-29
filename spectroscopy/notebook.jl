@@ -157,7 +157,12 @@ prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
 
 # ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
 let
-	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02, x_title="pixel column")
+	p = make_subplots(;
+		rows = 2,
+		shared_xaxes = true,
+		vertical_spacing = 0.02,
+		x_title = "pixel column",
+	)
 	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
 	add_trace!(p, heatmap(
 		x = col_range_dog,
@@ -199,18 +204,29 @@ md"""
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
 details(
 	@mdx """
-	```julia
-	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
-	add_trace!(p, scatter(; y=prof_1D_png_vals); row=1)
-	add_trace!(p, heatmap(; z=window_png_vals, colorscale=:Greys); row=2)
-	update!(p;
-		showscale = false,
-		layout = Layout(
-			yaxis2 = attr(autorange="reversed", scaleanchor="x")
-		)
+```julia
+p = make_subplots(;
+	rows = 2,
+	shared_xaxes = true,
+	vertical_spacing = 0.02,
+	x_title = "pixel column",
+)
+add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
+add_trace!(p, heatmap(
+	x = col_range_dog,
+	y = reverse(row_range_dog),
+	z = window_dog_vals,
+	colorscale = :Greys,
+	showscale = false,
+) ; row=2)
+update!(p;
+	layout = Layout(
+		yaxis = attr(title="intensity"),
+		yaxis2 = attr(scaleanchor=:x, title="pixel row")
 	)
-	```
-	"""
+)
+```
+"""
 )
 
 # ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
