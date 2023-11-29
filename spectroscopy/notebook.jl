@@ -80,7 +80,7 @@ More on [`N0f8`](https://juliaimages.org/latest/tutorials/quickstart/#The-0-to-1
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
 begin
 resample
-	sample_px_dog = rand(img_dog, 5)
+sample_px_dog = rand(img_dog, 5)
 end
 
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
@@ -88,33 +88,23 @@ end
 
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
 let
-	 r, g, b = px_dog .|> (red, green, blue)
-md"""
-**Selected pixel** $(px_dog) ``=``
-R $(RGB(r, 0, 0)) + G $(RGB(0, g, 0)) + B $(RGB(0, 0, b))
-"""
+	r, g, b = px_dog .|> (red, green, blue)
+	
+	md"""
+	**Selected pixel:** $(px_dog)
+	
+	= R $(RGB(r, 0, 0)) + G $(RGB(0, g, 0)) + B $(RGB(0, 0, b))
+	"""
 end
-
-# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
-@mdx """
-!!! tip "Julia aside"
-
-	Tuple unpacking, dotting, and piping
-	```julia
-	 r, g, b = px_dog .|> (red, green, blue)
-	```
-
-	Hooray for multiple dispatch
-	```julia
-	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
-	```
-"""
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
 
 # ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
 img_info(gray_dog)
+
+# ╔═╡ c77bb96f-357e-4676-a504-ff93a5cd1711
+gray.(gray_dog)
 
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 md"""
@@ -129,8 +119,8 @@ md"""
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
 md"""
-``\text{rows}``: $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
-``\text{columns}``: $(@bind col_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
+`rows:` $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
+`columns`: $(@bind col_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
 """
 
 # ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
@@ -147,7 +137,7 @@ window_dog = @view gray_dog[row_range_dog, col_range_dog];
 window_dog |> img_info
 
 # ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
-window_dog_vals = channelview(window_dog)
+window_dog_vals = gray.(window_dog)
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
@@ -190,6 +180,21 @@ function details(content)
 	<details><summary><strong>Details</strong></summary>$(content)</details>
 	"""
 end
+
+# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
+md"""
+!!! tip "Julia aside"
+
+	Tuple unpacking, dotting, and piping
+	```julia
+	 r, g, b = px_dog .|> (red, green, blue)
+	```
+
+	Hooray for multiple dispatch
+	```julia
+	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
+	```
+""" |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
 details(
@@ -1674,18 +1679,19 @@ version = "17.4.0+0"
 # ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
-# ╠═0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+# ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╟─7ee76656-700d-4e78-9223-64b39d345997
-# ╟─0d260f11-abcd-404d-885a-ba02f2692e36
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
+# ╟─0d260f11-abcd-404d-885a-ba02f2692e36
 # ╟─9193e583-fe34-4a62-8142-5981e2335276
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╟─64669de1-d2e8-47b5-8522-7e561e5ca098
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
+# ╠═c77bb96f-357e-4676-a504-ff93a5cd1711
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
