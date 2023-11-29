@@ -130,6 +130,39 @@ window_dog |> img_info
 # ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
 window_dog_vals = channelview(window_dog)
 
+# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
+prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
+
+# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
+@mdx """
+!!! warning "Heads up"
+
+	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
+
+	```julia
+	eltype(prof_1D_png_vals)
+	```
+
+ 	--> **$(eltype(prof_1D_dog_vals))**
+"""
+
+# ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
+let
+	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
+	add_trace!(p, scatter(; y=prof_1D_dog_vals); row=1)
+	add_trace!(p, heatmap(
+		z = window_dog_vals,
+		colorscale = :Greys,
+		showscale = false,
+	) ;row=2
+	)
+	update!(p;
+		layout = Layout(
+			yaxis2 = attr(autorange="reversed", scaleanchor=:x)
+		)
+	)
+end
+
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content)
 	@mdx """
@@ -160,39 +193,6 @@ md"""
 	Try moving the aperture over different parts of the image to see if any particular features can be picked out.
 """
 
-# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
-
-# ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
-let
-	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02)
-	add_trace!(p, scatter(; y=prof_1D_dog_vals); row=1)
-	add_trace!(p, heatmap(
-		z = window_dog_vals,
-		colorscale = :Greys,
-		showscale = false,
-	) ;row=2
-	)
-	update!(p;
-		layout = Layout(
-			yaxis2 = attr(autorange="reversed")
-		)
-	)
-end
-
-# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
-@mdx """
-!!! warning "Heads up"
-
-	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
-
-	```julia
-	eltype(prof_1D_png_vals)
-	```
-
- 	--> **$(eltype(prof_1D_dog_vals))**
-"""
-
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 md"""
 ## eVscope live view image
@@ -202,7 +202,7 @@ md"""
 ev_live = load("data/castor.png")
 
 # ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
-arr_ev_live_gray_vals = ev_live .|> Gray |> channelview
+arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 
 # ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
 @bind limits_ev_live_gray let
@@ -225,10 +225,10 @@ window_ev_live_gray_vals = let
 	ylims = limits_ev_live_gray["yaxis"] .|> (x -> round(Int, x))
 	ylo, yhi = ylims .|> (first, last)
 	@view arr_ev_live_gray_vals[max(1, ylo):yhi, max(1, xlo):xhi]
-end
+end;
 
 # ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
-prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec
+prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
 plot(scatter(; y=prof_1D_ev_live_gray_vals))
@@ -1622,7 +1622,7 @@ version = "17.4.0+0"
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
-# ╟─d3b6afc1-c29b-476a-90ed-721796af130f
+# ╠═d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
 # ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
