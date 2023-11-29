@@ -171,7 +171,7 @@ let
 	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
 	add_trace!(p, heatmap(
 		x = col_range_dog,
-		y = row_range_dog,
+		y = reverse(row_range_dog),
 		z = window_dog_vals,
 		colorscale = :Greys,
 		showscale = false,
@@ -179,7 +179,7 @@ let
 	update!(p;
 		layout = Layout(
 			yaxis = attr(title="intensity"),
-			yaxis2 = attr(autorange="reversed", scaleanchor=:x, title="pixel row")
+			yaxis2 = attr(scaleanchor=:x, title="pixel row")
 		)
 	)
 end
@@ -222,6 +222,9 @@ md"""
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
 ev_live = load("data/castor.png")
 
+# ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
+img_info(ev_live)
+
 # ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 
@@ -241,29 +244,35 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 	)
 end
 
-# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-window_ev_live_gray_vals = let
-	ymax, xmax = size(arr_ev_live_gray_vals)
-	xlims = limits_ev_live_gray["xaxis"]
-	xlo, xhi = xlims .|> (first, last) .|> (x -> round(Int, x))
+# ╔═╡ 75108863-4a62-4751-aeee-246250fbf8b8
+function get_lims(arr, limits)
+	ymax, xmax = size(arr)
+	xlims = limits["xaxis"] .|> (x -> round(Int, x))
+	xlo, xhi = xlims
 	xlo = max(1, xlo)
 	xhi = min(xhi, xmax)
 	
-	ylims = limits_ev_live_gray["yaxis"] .|> (x -> round(Int, x))
-	ylo, yhi = ylims .|> (first, last)
-	yhi = max(1, yhi)
-	ylo = min(ylo, ymax)
+	ylims = limits["yaxis"] .|> (x -> round(Int, x))
+	yhi, ylo = ylims # Assuming heatmap y-axis reversed
+	ylo = max(1, ylo)
+	yhi = min(yhi, ymax)
 
 	# @debug :vals xlo xhi ylo yhi
-	
-	@view arr_ev_live_gray_vals[yhi:ylo, xlo:xhi]
-end;
+
+	return xlo:xhi, ylo:yhi
+end
+
+# ╔═╡ ac74a5c7-c89c-41c0-bf09-c19e026364ab
+xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray)
+
+# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live]
 
 # ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
 prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
-plot(scatter(; y=prof_1D_ev_live_gray_vals))
+plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -277,8 +286,30 @@ img_fits = load("data/Betelgeuse.fit")
 # ╔═╡ 0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
 img_info(img_fits)
 
-# ╔═╡ 1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
-window_fits = img_fits[:, 220:350]
+# ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
+arr_fits = permutedims(img_fits.data)
+
+# ╔═╡ 60367274-b695-43f1-b16a-7c63fc9ef21a
+@bind limits_ev_fits let
+	p = plot(heatmap(; z=arr_fits, showscale=false), Layout(
+			yaxis = attr(autorange="reversed")
+		))
+
+	add_plotly_listener!(p, "plotly_relayout", "
+		e => {
+		let layout = PLOT.layout
+		PLOT.value = {xaxis: layout.xaxis.range, yaxis:layout.yaxis.range}
+		PLOT.dispatchEvent(new CustomEvent('input'))
+		}
+		"
+	)
+end
+
+# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
+xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits)
+
+# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
+window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits]
 
 # ╔═╡ ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
 img_fits.header
@@ -289,17 +320,14 @@ img_fits.wcs
 # ╔═╡ 059e8026-d718-4d40-9d6d-ef3abbb36723
 img_fits.data
 
-# ╔═╡ 779ef739-fd4e-4a4f-ab7d-45c562609fc7
-heatmap(; z = permutedims(img_fits.data)) |> plot
-
 # ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-prof_1D_fits = sum(window_fits; dims=2) |> vec
+prof_1D_fits = sum(window_fits; dims=1) |> vec
+
+# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
+plot(xrange_ev_fits, prof_1D_fits)
 
 # ╔═╡ f3c25775-1d34-4870-8847-a3a5d9c01f7e
 img_info(prof_1D_fits)
-
-# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
-plot(prof_1D_fits)
 
 # ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 md"""
@@ -1673,22 +1701,27 @@ version = "17.4.0+0"
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
+# ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
-# ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
+# ╠═4406e5d7-9a75-480b-8a97-b92e6a064338
 # ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
+# ╟─ac74a5c7-c89c-41c0-bf09-c19e026364ab
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+# ╟─75108863-4a62-4751-aeee-246250fbf8b8
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
-# ╟─1eb9182a-20ce-4308-b2c5-1b2e17c11ba5
+# ╠═3357c912-78e4-4c90-a784-55e489bbaf02
+# ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
+# ╠═f9868858-6982-4906-8b52-38e058e98279
+# ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
+# ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
 # ╠═ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
 # ╠═48fe74a0-c885-4c02-968f-21a6e8639ae7
 # ╠═059e8026-d718-4d40-9d6d-ef3abbb36723
-# ╠═779ef739-fd4e-4a4f-ab7d-45c562609fc7
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
-# ╠═f9868858-6982-4906-8b52-38e058e98279
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
