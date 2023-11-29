@@ -122,10 +122,13 @@ let
 end
 
 # ╔═╡ 3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-window_dog = gray_dog[x_range_dog, y_range_dog];
+window_dog = @view gray_dog[x_range_dog, y_range_dog];
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 window_dog |> img_info
+
+# ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
+window_dog_vals = channelview(window_dog)
 
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content)
@@ -156,12 +159,6 @@ md"""
 !!! note
 	Try moving the aperture over different parts of the image to see if any particular features can be picked out.
 """
-
-# ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
-window_dog_vals = channelview(window_dog)
-
-# ╔═╡ 4886fa22-b640-49b7-aa68-ad56cc3506fa
-window_dog_vals
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
@@ -235,19 +232,6 @@ prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
 plot(scatter(; y=prof_1D_ev_live_gray_vals))
-
-# ╔═╡ 95df03d3-2bfb-480c-9452-9240696e80ff
-p = let
-	p = make_subplots(rows=2, shared_xaxes=true, vertical_spacing=0.02, row_heights=[1, 4])
-	add_trace!(p, scatter(; y=prof_1D_ev_live_gray_vals); row=1)
-	add_trace!(p, heatmap(; z=window_ev_live_gray_vals, colorscale=:Greys); row=2)
-	update!(p;
-		showscale = false,
-		layout = Layout(
-			yaxis2 = attr(autorange="reversed", scaleanchor="y")
-		)
-	)
-end
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -1634,21 +1618,19 @@ version = "17.4.0+0"
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
 # ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
-# ╟─3b50dc1a-288f-4fe1-969d-f7eed149ecfb
-# ╠═4886fa22-b640-49b7-aa68-ad56cc3506fa
+# ╠═3b50dc1a-288f-4fe1-969d-f7eed149ecfb
+# ╠═12c0a504-856d-40b0-aa01-bbb992167943
+# ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
+# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
 # ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
-# ╠═12c0a504-856d-40b0-aa01-bbb992167943
-# ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
 # ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
-# ╠═95df03d3-2bfb-480c-9452-9240696e80ff
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
