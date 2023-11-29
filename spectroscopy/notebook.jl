@@ -251,9 +251,18 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 
 # ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
 @bind limits_ev_live_gray let
-	p = plot(heatmap(; z=arr_ev_live_gray_vals, showscale=false), Layout(
-			yaxis = attr(autorange="reversed")
-		))
+	p = plot(
+		heatmap(;
+			z = arr_ev_live_gray_vals,
+			showscale = false
+		),
+		Layout(
+			yaxis = attr(
+				autorange = "reversed",
+				# scaleanchor = :x,
+			),
+		)
+	)
 
 	add_plotly_listener!(p, "plotly_relayout", "
 		e => {
@@ -1725,8 +1734,8 @@ version = "17.4.0+0"
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
-# ╠═4406e5d7-9a75-480b-8a97-b92e6a064338
-# ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
+# ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
+# ╟─352ddf83-7ef4-487e-912e-c3e2b8ad055c
 # ╟─ac74a5c7-c89c-41c0-bf09-c19e026364ab
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╟─75108863-4a62-4751-aeee-246250fbf8b8
