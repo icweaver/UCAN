@@ -206,7 +206,10 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 
 # ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
 @bind limits_ev_live_gray let
-	p = plot(heatmap(; z=arr_ev_live_gray_vals, showscale=false))
+	p = plot(heatmap(; z=arr_ev_live_gray_vals, showscale=false), Layout(
+			yaxis = attr(autorange="reversed")
+		))
+
 	add_plotly_listener!(p, "plotly_relayout", "
 		e => {
 		let layout = PLOT.layout
@@ -219,12 +222,20 @@ end
 
 # ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 window_ev_live_gray_vals = let
+	ymax, xmax = size(arr_ev_live_gray_vals)
 	xlims = limits_ev_live_gray["xaxis"]
 	xlo, xhi = xlims .|> (first, last) .|> (x -> round(Int, x))
+	xlo = max(1, xlo)
+	xhi = min(xhi, xmax)
 	
 	ylims = limits_ev_live_gray["yaxis"] .|> (x -> round(Int, x))
 	ylo, yhi = ylims .|> (first, last)
-	@view arr_ev_live_gray_vals[max(1, ylo):yhi, max(1, xlo):xhi]
+	yhi = max(1, yhi)
+	ylo = min(ylo, ymax)
+
+	# @debug :vals xlo xhi ylo yhi
+	
+	@view arr_ev_live_gray_vals[yhi:ylo, xlo:xhi]
 end;
 
 # ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
