@@ -74,8 +74,14 @@ md"""
 More on [`N0f8`](https://juliaimages.org/latest/tutorials/quickstart/#The-0-to-1-intensity-scale)
 """
 
+# ╔═╡ 9427d980-2420-4285-992e-099bc6d1aa55
+@bind resample Button("Resample")
+
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
-sample_px_dog = rand(img_dog, 5)
+begin
+resample
+	sample_px_dog = rand(img_dog, 5)
+end
 
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
 @bind px_dog Slider(sample_px_dog; show_value=true)
@@ -1633,8 +1639,9 @@ version = "17.4.0+0"
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╟─7ee76656-700d-4e78-9223-64b39d345997
-# ╠═0d260f11-abcd-404d-885a-ba02f2692e36
-# ╠═9193e583-fe34-4a62-8142-5981e2335276
+# ╟─0d260f11-abcd-404d-885a-ba02f2692e36
+# ╟─9427d980-2420-4285-992e-099bc6d1aa55
+# ╟─9193e583-fe34-4a62-8142-5981e2335276
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╠═5d27e2fc-56e6-4f4d-a396-a7afbce7e449
 # ╠═56ed9188-db7c-4ba4-a390-3b573a1a6262
