@@ -44,7 +44,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 # ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
 @mdx """
 !!! note "Using this notebook"
-	Some parts of the notebook are partially interactive, but for full interactive control, it is recommended to download and run this notebook locally. More information about Pluto notebooks and their relative benefits compared to, e.g., Jupyter notebookes, can be found [here](https://plutojl.org/).
+	Some parts of the notebook are partially interactive, but for full interactive control, it is recommended to download and run this notebook locally. More information about Pluto notebooks and their relative benefits compared to, e.g., Jupyter notebookes, is available [here](https://plutojl.org/).
 
 	
 	While we will primarily be using the programming language, Julia, we will also provide a final Python implementation at the end of this notebook for comparison. The main takeaways are the same regardless of the language used, so please feel free to use whatever tool works best for you.
@@ -53,7 +53,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 
 	<details>
 	
-	#### Adding colors in Julia 🖌️
+	#### Adding colors in Julia 🎨
 	This makes magenta!
 
 	```julia
@@ -62,19 +62,24 @@ Having some familiarity in high-level programming languages like Julia or Python
 	
 	</details>
 
-	Finally, the "eye" icon at the top left of each cell will also reveal the underlying code behind it.
+	Finally, clicking the "eye" icon at the top left of each cell will also reveal the underlying code behind it.
+"""
+
+# ╔═╡ 1e2dc809-1614-487e-b0fe-f058188555ee
+md"""
+With this requisite information out of the way, let's get our hands on some real data!
 """
 
 # ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
 md"""
 ## Image processing
 
-Astronomical images can come in a variety of different formats, the most popular being the [Flexible Image Transport System](https://en.wikipedia.org/wiki/FITS) (FITS) format. We will explore this later in the notebook, but let's start with another common format that you probably use everyday, [Portable Network Graphics](https://en.wikipedia.org/wiki/PNG) (PNG), to see how it connects with the FITS format.
+Astronomical spectra start their lives as a picture. These images can come in a variety of different formats, the most popular being the [Flexible Image Transport System](https://en.wikipedia.org/wiki/FITS) (FITS) format. We will explore this later in the notebook, but let's start with another common format that you probably use everyday, [Portable Network Graphics](https://en.wikipedia.org/wiki/PNG) (PNG), to get an idea of how image data is represented.
 """
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
 md"""
-### Color images
+### PNGs
 """
 
 # ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
@@ -1782,7 +1787,8 @@ version = "17.4.0+0"
 # ╟─205f4b56-8343-11ee-0ebd-5713fac733ae
 # ╟─bdf98bfb-ad09-4c02-9ef5-c02552b70ad5
 # ╟─0968d0d2-7a53-47c5-be13-9c941c0fba0b
-# ╠═127ca8df-46c7-4d02-8f9b-e27983978441
+# ╟─1e2dc809-1614-487e-b0fe-f058188555ee
+# ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
