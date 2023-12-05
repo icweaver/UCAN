@@ -222,6 +222,9 @@ md"""
 ### Array operations
 """
 
+# ╔═╡ 77836abd-a282-471b-a994-395781fc1f0b
+
+
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
 md"""
 `rows:` $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
@@ -514,6 +517,12 @@ md"""
 # ╔═╡ cf371199-c283-46e8-8174-31796e2224cb
 md"""
 Julia has a delightful way of applying a function element-wise to its inputs, know as [dot syntax](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized).
+""" |> details
+
+# ╔═╡ f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
+md"""
+!!! danger "TODO"
+	Compare copies vs. views of arrays in memory
 """ |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
@@ -1920,10 +1929,12 @@ version = "17.4.0+0"
 # ╟─a2842f26-520e-42c0-bc4e-b04feccf22b2
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
+# ╠═77836abd-a282-471b-a994-395781fc1f0b
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
 # ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╠═fcc96529-3b20-4a59-9d2d-48612f4c16f3
+# ╟─f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
