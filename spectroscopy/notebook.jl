@@ -129,7 +129,7 @@ Let's break down what this means.
 
 # ╔═╡ 685c8647-3de7-4775-ba71-fdfd23c557de
 md"""
-To summarize, our image is just a matrix of pixels, where each pixel value is represented by a triple of RGB values stored in a memory efficient format. Let's explore next how these numbers connect to how we perceive colors by looking at a few random pixels selected from our image.
+To summarize, our image is just a matrix of pixels, where each pixel value is represented by a triple of RGB values stored in a memory efficient format. Let's explore next how these numbers connect to how we perceive colors.
 """
 
 # ╔═╡ 9427d980-2420-4285-992e-099bc6d1aa55
@@ -146,8 +146,8 @@ end
 @bind px_dog Slider(sample_px_dog; show_value=true)
 
 # ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
-md"""
-We have $(N_sampled_pixels) pixels above sampled from our image. Based on how colorful and varied the image was, these pixels can have a range of different colors. Click the `Resample` button to select 5 new pixels at random, and pull the slider to look at each of these pixels one by one.
+@mdx """
+We have ``$(N_sampled_pixels)`` pixels above sampled from our image. Based on how colorful and varied the image was, these pixels can have a range of different colors. Click the `Resample` button to select ``$(N_sampled_pixels)`` new pixels at random, and pull the slider to look at each of these pixels one by one.
 """
 
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
@@ -461,6 +461,10 @@ md"""
 	```julia
 	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
 	```
+
+!!! danger "TODO"
+
+	Flesh this out some more
 """ |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
