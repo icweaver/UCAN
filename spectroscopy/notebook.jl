@@ -76,7 +76,7 @@ Astronomical spectra start their lives as a picture. These images can come in a 
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
 md"""
-### Working with color images
+### Color images
 """
 
 # ╔═╡ 249dd9ce-239e-45a9-9f59-c8991ecd299f
@@ -161,6 +161,16 @@ end
 # ╔═╡ 6880b7a1-0a74-4879-bd85-90c8f8e947d2
 @mdx """
 Below our selected pixel, we map these ``(R, G, B)`` values to their corresponding sub-pixel, where ``0`` represents black (or no brightness), and ``1`` represents the peak brightness for the given color channel. The resulting color is then the [additive combination](https://en.wikipedia.org/wiki/RGB_color_model#Additive_colors) of these individual subpixels.
+"""
+
+# ╔═╡ 736e7f03-7eb9-4805-afe4-74170c046c4c
+md"""
+We are now one step closer to building a spectrum of our image. Astronomers typically work with [black and white](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color) (or [grayscale](https://en.wikipedia.org/wiki/Grayscale)) images, so we will next see how we can convert our image to this form using the information we have above. Later during the FITS file section, we will see why this is a beneficial form to have our image in.
+"""
+
+# ╔═╡ 9932a3b1-6d52-4ed1-8884-2f90f765ac68
+md"""
+### Grayscale images
 """
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
@@ -1860,6 +1870,8 @@ version = "17.4.0+0"
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╟─6880b7a1-0a74-4879-bd85-90c8f8e947d2
 # ╟─64669de1-d2e8-47b5-8522-7e561e5ca098
+# ╟─736e7f03-7eb9-4805-afe4-74170c046c4c
+# ╟─9932a3b1-6d52-4ed1-8884-2f90f765ac68
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
 # ╠═c77bb96f-357e-4676-a504-ff93a5cd1711
