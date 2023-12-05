@@ -46,10 +46,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 !!! note "Using this notebook"
 	Some parts of the notebook are partially interactive, but for full interactive control, it is recommended to download and run this notebook locally. More information about Pluto notebooks and their relative benefits compared to, e.g., Jupyter notebookes, is available [here](https://plutojl.org/).
 
-	
-	While we will primarily be using the programming language, Julia, we will also provide a final Python implementation at the end of this notebook for comparison. The main takeaways are the same regardless of the language used, so please feel free to use whatever tool works best for you.
-
-	Periodically throughout the notebook, we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest.
+	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest.
 
 	<details>
 	
@@ -129,7 +126,7 @@ Let's break down what this means.
 
 # ╔═╡ 685c8647-3de7-4775-ba71-fdfd23c557de
 md"""
-To summarize, our image is just a matrix of pixels, where each pixel value is represented by a triple of RGB values stored in a memory efficient format. Let's explore next how these numbers connect to how we perceive colors.
+To summarize, our image is just a matrix of pixels, where each pixel value is represented by a triple of RGB values stored in a memory efficient format. Let's explore next how these numbers connect to how we perceive color.
 """
 
 # ╔═╡ 9427d980-2420-4285-992e-099bc6d1aa55
@@ -147,7 +144,7 @@ end
 
 # ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
 @mdx """
-We have ``$(N_sampled_pixels)`` pixels above sampled from our image. Based on how colorful and varied the image was, these pixels can have a range of different colors. Click the `Resample` button to select ``$(N_sampled_pixels)`` new pixels at random, and pull the slider to look at each of these pixels one by one.
+We have ``$(N_sampled_pixels)`` pixels above sampled from our image. Based on how colorful and varied the image is, these pixels can have a range of different colors between them. Pull the slider to look at each of these pixels one by one and/or click the `Resample` button to select ``$(N_sampled_pixels)`` new pixels at random. For convenience, we also display the individual ``(R, G, B)`` values next to our slider.
 """
 
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
@@ -157,9 +154,14 @@ let
 	md"""
 	**Selected pixel:** $(px_dog)
 	
-	= R $(RGB(r, 0, 0)) + G $(RGB(0, g, 0)) + B $(RGB(0, 0, b))
+	``\Longrightarrow`` R $(RGB(r, 0, 0)), G $(RGB(0, g, 0)), B $(RGB(0, 0, b))
 	"""
 end
+
+# ╔═╡ 6880b7a1-0a74-4879-bd85-90c8f8e947d2
+@mdx """
+Below our selected pixel, we map these ``(R, G, B)`` values to their corresponding sub-pixel, where ``0`` represents black (or no brightness), and ``1`` represents the peak brightness for the given color channel. The resulting color is then the [additive combination](https://en.wikipedia.org/wiki/RGB_color_model#Additive_colors) of these individual subpixels.
+"""
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
@@ -1856,6 +1858,7 @@ version = "17.4.0+0"
 # ╟─9193e583-fe34-4a62-8142-5981e2335276
 # ╟─cd2e384e-6f30-40b9-86f9-9a285a956b94
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
+# ╟─6880b7a1-0a74-4879-bd85-90c8f8e947d2
 # ╟─64669de1-d2e8-47b5-8522-7e561e5ca098
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
