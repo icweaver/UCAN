@@ -82,6 +82,11 @@ md"""
 ### PNGs
 """
 
+# ╔═╡ 249dd9ce-239e-45a9-9f59-c8991ecd299f
+md"""
+We can use any image of anything, really, so why not start with a dog? Click the button below to pull a new dog image from the internet.
+"""
+
 # ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
 function img_info(img)
 	@debug "Image info" eltype(img) size(img) length(img)
@@ -1790,11 +1795,12 @@ version = "17.4.0+0"
 # ╟─1e2dc809-1614-487e-b0fe-f058188555ee
 # ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
-# ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
+# ╟─249dd9ce-239e-45a9-9f59-c8991ecd299f
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
+# ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
 # ╟─7ee76656-700d-4e78-9223-64b39d345997
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─0d260f11-abcd-404d-885a-ba02f2692e36
