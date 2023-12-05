@@ -113,23 +113,23 @@ We now have an image that we can analyze. For starters, let's display some key c
 
 # ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
 md"""
-We see here that our image is ``333`` rows by `500` columns wide, and each cell (or pixel) of this image is represented by a
+We see here that our image is ``333`` rows by ``500`` columns wide, and each cell (or pixel) of this image is represented by:
 
 ```julia
 ColorTypes.RGB{FixedPointNumbers.N0f8}
 ```
 
-Let's break down what this means:
+Let's break down what this means.
 
 * [`ColorTypes`](https://github.com/JuliaGraphics/ColorTypes.jl): The name of the package where a type called `RGB` is defined.
 * [`RGB`](https://github.com/JuliaGraphics/ColorTypes.jl#rgb-plus-bgr-xrgb-rgbx-and-rgb24-the-abstractrgb-group): A type that stores the red, green, and blue intensity values of a pixel. These can be thought of as [sub-pixels](https://en.wikipedia.org/wiki/Pixel#Subpixels)
 * [`FixedPointNumbers`](https://github.com/JuliaMath/FixedPointNumbers.jl): The name of the package where a type called `N0f8` is defined.
-* 
+* [`N0f8`](https://github.com/JuliaMath/FixedPointNumbers.jl#type-hierarchy-and-interpretation): A type that represents a number in memory. This essentially defines the specific number type used for each red, green, and blue value in each pixel. More on [`N0f8` and other number formats](https://juliaimages.org/latest/tutorials/quickstart/#The-0-to-1-intensity-scale).
 """
 
-# ╔═╡ 7ee76656-700d-4e78-9223-64b39d345997
+# ╔═╡ 685c8647-3de7-4775-ba71-fdfd23c557de
 md"""
-More on [`N0f8`](https://juliaimages.org/latest/tutorials/quickstart/#The-0-to-1-intensity-scale)
+To summarize, our image is just an array of pixels, where each pixel value is represented by a triple of RGB values stored in a memory efficient format.
 """
 
 # ╔═╡ 9427d980-2420-4285-992e-099bc6d1aa55
@@ -1839,8 +1839,8 @@ version = "17.4.0+0"
 # ╟─bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 # ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
 # ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
-# ╠═64a3d702-d229-4fd1-bd75-f351a4ee1172
-# ╟─7ee76656-700d-4e78-9223-64b39d345997
+# ╟─64a3d702-d229-4fd1-bd75-f351a4ee1172
+# ╠═685c8647-3de7-4775-ba71-fdfd23c557de
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─0d260f11-abcd-404d-885a-ba02f2692e36
 # ╟─9193e583-fe34-4a62-8142-5981e2335276
