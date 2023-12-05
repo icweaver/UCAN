@@ -214,7 +214,7 @@ We are now ready to build of spectrum by working directly with this matrix.
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 md"""
 !!! tip
-	For more on image analysis, see this fantastic resource from [Computational Thinking](https://computationalthinking.mit.edu/Fall23/images_abstractions/images/).
+	For more on image analysis and other modern math/science computation tools, see this fantastic resource from [Computational Thinking](https://computationalthinking.mit.edu/Fall23/images_abstractions/images/).
 """
 
 # ╔═╡ 2f18fb1a-2178-4e12-b411-13fa49f3084f
