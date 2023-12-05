@@ -173,11 +173,40 @@ md"""
 ### Grayscale images
 """
 
+# ╔═╡ 4ea2b324-39dc-4a36-a36b-96eca525e00c
+md"""
+The converversion process from ``RGB`` to Grayscale for a given pixel is achieved by taking a weighted average of its channel values according to an [international standard](https://juliaimages.org/latest/examples/color_channels/rgb_grayscale/):
+
+```math
+0.299 R + 0.587 G + 0.114 B \quad.
+```
+
+This is conveniently implemented for us, which we apply below to each pixel of our image.
+"""
+
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
 
+# ╔═╡ 703050cd-57fc-4b8b-b631-d5b8124ef872
+md"""
+Taking a look at the properties of our new image below, we see that now instead of being a matrix composed of `RGB{N0f8}` types, it is now composed of `Gray{N0f8}`s.
+
+!!! note
+	We leave the package names off for clarity.
+"""
+
+# ╔═╡ 8c79235d-5b03-4e97-acaf-b3eea88e91b9
+md"""
+In other words, instead of three numbers representing each pixel, we now have single number for each, which we can view directly:
+"""
+
 # ╔═╡ c77bb96f-357e-4676-a504-ff93a5cd1711
 gray.(gray_dog)
+
+# ╔═╡ a2842f26-520e-42c0-bc4e-b04feccf22b2
+md"""
+We are now ready to build of spectrum by working directly with this matrix.
+"""
 
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 md"""
@@ -477,6 +506,11 @@ md"""
 !!! danger "TODO"
 
 	Flesh this out some more
+""" |> details
+
+# ╔═╡ cf371199-c283-46e8-8174-31796e2224cb
+md"""
+Julia has a delightful way of applying a function element-wise to its inputs, know as [dot syntax](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized).
 """ |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
@@ -1872,9 +1906,14 @@ version = "17.4.0+0"
 # ╟─64669de1-d2e8-47b5-8522-7e561e5ca098
 # ╟─736e7f03-7eb9-4805-afe4-74170c046c4c
 # ╟─9932a3b1-6d52-4ed1-8884-2f90f765ac68
+# ╟─4ea2b324-39dc-4a36-a36b-96eca525e00c
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
+# ╟─cf371199-c283-46e8-8174-31796e2224cb
+# ╟─703050cd-57fc-4b8b-b631-d5b8124ef872
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
+# ╟─8c79235d-5b03-4e97-acaf-b3eea88e91b9
 # ╠═c77bb96f-357e-4676-a504-ff93a5cd1711
+# ╟─a2842f26-520e-42c0-bc4e-b04feccf22b2
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
