@@ -84,17 +84,7 @@ md"""
 
 # ╔═╡ 249dd9ce-239e-45a9-9f59-c8991ecd299f
 md"""
-We can use any image of anything, really, so why not start with a dog? Click the button below to pull a new dog image from the internet.
-"""
-
-# ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
-function img_info(img)
-	@debug "Image info" eltype(img) size(img) length(img)
-end
-
-# ╔═╡ 9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
-md"""
-*Images courtesy of* <https://dog.ceo/dog-api/>
+We can use an image of anything, really, so why not start with dogs? Clicking the button below will pull a new dog image from the internet.
 """
 
 # ╔═╡ 0f3ae63c-cc02-43a8-9560-3770439640a0
@@ -102,18 +92,53 @@ md"""
 
 # ╔═╡ 0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 begin
+	run_again
 	
-run_again
-img_dog = let
-	r = HTTP.get("https://dog.ceo/api/breeds/image/random")
-	url_dog = JSON.parse(String(r.body))["message"]
-	load(url_dog)
+	img_dog = let
+		r = HTTP.get("https://dog.ceo/api/breeds/image/random")
+		url_dog = JSON.parse(String(r.body))["message"]
+		load(url_dog)
+	end
 end
-	
+
+# ╔═╡ 9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
+md"""
+*Images courtesy of* <https://dog.ceo/dog-api/>
+"""
+
+# ╔═╡ c402e19e-05f6-4b4f-a9dc-f2036e415b17
+md"""
+Alright, we have an image that we can analyze, with a few bits of information printed above about its characteristics:
+
+
+"""
+
+# ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
+function img_info(img)
+	@debug "Image info" eltype(img) size(img) length(img)
 end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
 img_info(img_dog)
+
+# ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
+function details(content; state="close")
+	@mdx """
+	<details $(state)><summary><strong>Details</strong></summary>$(content)</details>
+	"""
+end
+
+# ╔═╡ bed3c1a0-aa13-4c61-a074-9b38f9a4d306
+@mdx("""
+!!! note "Web aside"
+	The website we are pulling images from provides an [API](https://en.wikipedia.org/wiki/API) to interact with its data. We use the [`HTTP.jl`](https://github.com/JuliaWeb/HTTP.jl) package to call this API, [`JSON.jl`](https://github.com/JuliaIO/JSON.jl) to parse the data that we downloaded, and [`Images.jl`](https://github.com/JuliaImages/Images.jl) to load it into Julia. This is essentially the same as doing the following on a local PNG file:
+	```julia
+	using Images
+	img = load(PATH TO MY FILE)
+	```
+
+	In this case, the path is just the url of the hosted image online provided by the API.
+""")|> x -> details(x, ;state="open")
 
 # ╔═╡ 7ee76656-700d-4e78-9223-64b39d345997
 md"""
@@ -142,6 +167,21 @@ let
 	= R $(RGB(r, 0, 0)) + G $(RGB(0, g, 0)) + B $(RGB(0, 0, b))
 	"""
 end
+
+# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
+md"""
+!!! tip "Julia aside"
+
+	Tuple unpacking, dotting, and piping
+	```julia
+	 r, g, b = px_dog .|> (red, green, blue)
+	```
+
+	Hooray for multiple dispatch
+	```julia
+	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
+	```
+""" |> details
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
@@ -224,28 +264,6 @@ let
 		)
 	)
 end
-
-# ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
-function details(content)
-	@mdx """
-	<details><summary><strong>Details</strong></summary>$(content)</details>
-	"""
-end
-
-# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
-md"""
-!!! tip "Julia aside"
-
-	Tuple unpacking, dotting, and piping
-	```julia
-	 r, g, b = px_dog .|> (red, green, blue)
-	```
-
-	Hooray for multiple dispatch
-	```julia
-	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
-	```
-""" |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
 details(
@@ -473,7 +491,7 @@ HTTP = "~1.10.0"
 Images = "~0.26.0"
 JSON = "~0.21.4"
 MarkdownLiteral = "~0.1.1"
-PlutoPlotly = "~0.4.2"
+PlutoPlotly = "~0.4.3"
 PlutoUI = "~0.7.53"
 """
 
@@ -483,7 +501,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "423406217d16db3e9f8cb0d5ee611bdaf4166803"
+project_hash = "8828dd9f326e2483fbb6e71a9b94e5523bb1ead1"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -574,9 +592,9 @@ version = "0.4.7"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[deps.BaseDirs]]
-git-tree-sha1 = "1c9b6f39f40dba0ef22244a175e2d4e42c8f6ee7"
+git-tree-sha1 = "4b41ad09c2307d5f24e36cd6f92eb41b218af22c"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
-version = "1.2.0"
+version = "1.2.1"
 
 [[deps.BitFlags]]
 git-tree-sha1 = "2dc09997850d68179b69dafb58ae806167a32b1b"
@@ -684,9 +702,9 @@ version = "0.8.12"
 
 [[deps.Compat]]
 deps = ["UUIDs"]
-git-tree-sha1 = "8a62af3e248a8c4bad6b32cbbe663ae02275e32c"
+git-tree-sha1 = "886826d76ea9e72b35fcd000e535588f7b60f21d"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.10.0"
+version = "4.10.1"
 weakdeps = ["Dates", "LinearAlgebra"]
 
     [deps.Compat.extensions]
@@ -775,9 +793,9 @@ version = "0.24.13"
 
 [[deps.Distances]]
 deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
-git-tree-sha1 = "5225c965635d8c21168e32a12954675e7bea1151"
+git-tree-sha1 = "66c4c81f259586e8f002eacebc177e1fb06363b0"
 uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
-version = "0.10.10"
+version = "0.10.11"
 weakdeps = ["ChainRulesCore", "SparseArrays"]
 
     [deps.Distances.extensions]
@@ -1033,10 +1051,10 @@ uuid = "1d092043-8f09-5a30-832f-7509e371ab51"
 version = "0.1.5"
 
 [[deps.IntelOpenMP_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "ad37c091f7d7daf900963171600d7c1c5c3ede32"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "31d6adb719886d4e32e38197aae466e98881320b"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2023.2.0+0"
+version = "2024.0.0+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -1343,9 +1361,9 @@ version = "1.6.3"
 
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
-git-tree-sha1 = "5ded86ccaf0647349231ed6c0822c10886d4a1ee"
+git-tree-sha1 = "eed372b0fa15624273a9cdb188b1b88476e6a233"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
-version = "0.4.1"
+version = "0.4.2"
 
 [[deps.PaddedViews]]
 deps = ["OffsetArrays"]
@@ -1390,9 +1408,9 @@ version = "0.8.19"
 
 [[deps.PlutoPlotly]]
 deps = ["AbstractPlutoDingetjes", "BaseDirs", "Colors", "Dates", "Downloads", "HypertextLiteral", "InteractiveUtils", "LaTeXStrings", "Markdown", "Pkg", "PlotlyBase", "Reexport", "TOML"]
-git-tree-sha1 = "d169dae7b340a1b0ca50ef359ed100f07ad677a4"
+git-tree-sha1 = "0b8880a45f96d8404ae1cf6e4d715e3a79369441"
 uuid = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
-version = "0.4.2"
+version = "0.4.3"
 
     [deps.PlutoPlotly.extensions]
     PlotlyKaleidoExt = "PlotlyKaleido"
@@ -1727,9 +1745,9 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[deps.VectorizationBase]]
 deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static", "StaticArrayInterface"]
-git-tree-sha1 = "b182207d4af54ac64cbc71797765068fdeff475d"
+git-tree-sha1 = "7209df901e6ed7489fe9b7aa3e46fb788e15db85"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.21.64"
+version = "0.21.65"
 
 [[deps.WCS]]
 deps = ["ConstructionBase", "WCS_jll"]
@@ -1796,11 +1814,14 @@ version = "17.4.0+0"
 # ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─249dd9ce-239e-45a9-9f59-c8991ecd299f
+# ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
-# ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
+# ╠═bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
+# ╠═c402e19e-05f6-4b4f-a9dc-f2036e415b17
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
+# ╠═2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7ee76656-700d-4e78-9223-64b39d345997
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─0d260f11-abcd-404d-885a-ba02f2692e36
@@ -1821,7 +1842,6 @@ version = "17.4.0+0"
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
-# ╠═2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
