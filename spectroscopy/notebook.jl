@@ -190,14 +190,17 @@ gray_dog = Gray.(img_dog)
 # ╔═╡ 703050cd-57fc-4b8b-b631-d5b8124ef872
 md"""
 Taking a look at the properties of our new image below, we see that now instead of being a matrix composed of `RGB{N0f8}` types, it is now composed of `Gray{N0f8}`s.
+"""
 
+# ╔═╡ cf940fd1-4f37-477a-ab46-e75902273f5d
+md"""
 !!! note
 	We leave the package names off for clarity.
 """
 
 # ╔═╡ 8c79235d-5b03-4e97-acaf-b3eea88e91b9
 md"""
-In other words, instead of three numbers representing each pixel, we now have single number for each, which we can view directly:
+In other words, instead of three numbers representing each pixel, we now have a single number for each, which we can view directly:
 """
 
 # ╔═╡ c77bb96f-357e-4676-a504-ff93a5cd1711
@@ -1911,6 +1914,7 @@ version = "17.4.0+0"
 # ╟─cf371199-c283-46e8-8174-31796e2224cb
 # ╟─703050cd-57fc-4b8b-b631-d5b8124ef872
 # ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
+# ╟─cf940fd1-4f37-477a-ab46-e75902273f5d
 # ╟─8c79235d-5b03-4e97-acaf-b3eea88e91b9
 # ╠═c77bb96f-357e-4676-a504-ff93a5cd1711
 # ╟─a2842f26-520e-42c0-bc4e-b04feccf22b2
