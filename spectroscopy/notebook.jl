@@ -112,7 +112,20 @@ We now have an image that we can analyze. For starters, let's display some key c
 """
 
 # ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
+md"""
+We see here that our image is ``333`` rows by `500` columns wide, and each cell (or pixel) of this image is represented by a
 
+```julia
+ColorTypes.RGB{FixedPointNumbers.N0f8}
+```
+
+Let's break down what this means:
+
+* [`ColorTypes`](https://github.com/JuliaGraphics/ColorTypes.jl): The name of the package where a type called `RGB` is defined.
+* [`RGB`](https://github.com/JuliaGraphics/ColorTypes.jl#rgb-plus-bgr-xrgb-rgbx-and-rgb24-the-abstractrgb-group): A type that stores the red, green, and blue intensity values of a pixel. These can be thought of as [sub-pixels](https://en.wikipedia.org/wiki/Pixel#Subpixels)
+* [`FixedPointNumbers`](https://github.com/JuliaMath/FixedPointNumbers.jl): The name of the package where a type called `N0f8` is defined.
+* 
+"""
 
 # ╔═╡ 7ee76656-700d-4e78-9223-64b39d345997
 md"""
@@ -1825,7 +1838,7 @@ version = "17.4.0+0"
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 # ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
-# ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
+# ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╠═64a3d702-d229-4fd1-bd75-f351a4ee1172
 # ╟─7ee76656-700d-4e78-9223-64b39d345997
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
