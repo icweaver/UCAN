@@ -29,6 +29,42 @@ md"""
 # Spectroscopy Lab 🌈
 """
 
+# ╔═╡ bdf98bfb-ad09-4c02-9ef5-c02552b70ad5
+md"""
+This notebook provides a short methods introduction to the field of [spectroscopy](https://en.wikipedia.org/wiki/Astronomical_spectroscopy) in astronomy. As a companion to the *[RSpec Unistellar Manual](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf)*, we will walk through some of the techniques behind the core concepts used there to produce and analyze astronomical spectra. Over the course of the notebook, we will introduce and use interactive tools and hands-on live code examples to investigate the following concepts:
+
+* Image processing
+* Array/matrix operations
+* Wavelength calibration
+* Spectra characterization
+
+Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary for following along with the topics covered above. At the end of this notebook, you will hopefully have the tools you need to build your own analysis pipelines for collected astromomical spectra.
+"""
+
+# ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
+@mdx """
+!!! note "Using this notebook"
+	Some parts of the notebook are partially interactive, but for full interactive control, it is recommended to download and run this notebook locally. More information about Pluto notebooks and their relative benefits compared to, e.g., Jupyter notebookes, can be found [here](https://plutojl.org/).
+
+	
+	While we will primarily be using the programming language, Julia, we will also provide a final Python implementation at the end of this notebook for comparison. The main takeaways are the same regardless of the language used, so please feel free to use whatever tool works best for you.
+
+	Periodically throughout the notebook, we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest.
+
+	<details>
+	
+	#### Adding colors in Julia 🖌️
+	This makes magenta!
+
+	```julia
+	RGB(1, 0, 0) + RGB(0, 0, 1)
+	```
+	
+	</details>
+
+	Finally, the "eye" icon at the top left of each cell will also reveal the underlying code behind it.
+"""
+
 # ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
 md"""
 ## Brief background
@@ -108,7 +144,7 @@ gray.(gray_dog)
 
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 md"""
-!!! note
+!!! tip
 	For more on image analysis, see this fantastic resource from [Computational Thinking](https://computationalthinking.mit.edu/Fall23/images_abstractions/images/).
 """
 
@@ -1744,6 +1780,8 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╟─205f4b56-8343-11ee-0ebd-5713fac733ae
+# ╟─bdf98bfb-ad09-4c02-9ef5-c02552b70ad5
+# ╠═0968d0d2-7a53-47c5-be13-9c941c0fba0b
 # ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
@@ -1771,7 +1809,7 @@ version = "17.4.0+0"
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
-# ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
+# ╠═2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
