@@ -129,7 +129,7 @@ Let's break down what this means.
 
 # ╔═╡ 685c8647-3de7-4775-ba71-fdfd23c557de
 md"""
-To summarize, our image is just an array of pixels, where each pixel value is represented by a triple of RGB values stored in a memory efficient format.
+To summarize, our image is just a matrix of pixels, where each pixel value is represented by a triple of RGB values stored in a memory efficient format. Let's explore next how these numbers connect to how we perceive colors by looking at a few random pixels selected from our image.
 """
 
 # ╔═╡ 9427d980-2420-4285-992e-099bc6d1aa55
@@ -137,12 +137,18 @@ To summarize, our image is just an array of pixels, where each pixel value is re
 
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
 begin
-resample
-sample_px_dog = rand(img_dog, 5)
+	N_sampled_pixels = 5
+	resample
+	sample_px_dog = rand(img_dog, N_sampled_pixels)
 end
 
 # ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
 @bind px_dog Slider(sample_px_dog; show_value=true)
+
+# ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
+md"""
+We have $(N_sampled_pixels) pixels above sampled from our image. Based on how colorful and varied the image was, these pixels can have a range of different colors. Click the `Resample` button to select 5 new pixels at random, and pull the slider to look at each of these pixels one by one.
+"""
 
 # ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
 let
@@ -1840,10 +1846,11 @@ version = "17.4.0+0"
 # ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
 # ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╟─64a3d702-d229-4fd1-bd75-f351a4ee1172
-# ╠═685c8647-3de7-4775-ba71-fdfd23c557de
+# ╟─685c8647-3de7-4775-ba71-fdfd23c557de
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─0d260f11-abcd-404d-885a-ba02f2692e36
 # ╟─9193e583-fe34-4a62-8142-5981e2335276
+# ╟─cd2e384e-6f30-40b9-86f9-9a285a956b94
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╟─64669de1-d2e8-47b5-8522-7e561e5ca098
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
