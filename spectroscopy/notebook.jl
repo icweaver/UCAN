@@ -62,7 +62,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 	
 	</details>
 
-	Finally, clicking the "eye" icon at the top left of each cell will also reveal the underlying code behind it.
+	Finally, clicking the "eye" icon at the top left of each cell will also reveal the underlying code behind it, and ctrl-clicking on underlined function names will jump to where we defined them.
 """
 
 # ╔═╡ 1e2dc809-1614-487e-b0fe-f058188555ee
@@ -108,10 +108,11 @@ md"""
 
 # ╔═╡ c402e19e-05f6-4b4f-a9dc-f2036e415b17
 md"""
-Alright, we have an image that we can analyze, with a few bits of information that we printed above about its characteristics. Let's break down what each piece means:
-
-* 
+We now have an image that we can analyze. For starters, let's display some key characteristics about this image:
 """
+
+# ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
+
 
 # ╔═╡ 7ee76656-700d-4e78-9223-64b39d345997
 md"""
@@ -1823,8 +1824,9 @@ version = "17.4.0+0"
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─bed3c1a0-aa13-4c61-a074-9b38f9a4d306
+# ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
-# ╠═c402e19e-05f6-4b4f-a9dc-f2036e415b17
+# ╠═64a3d702-d229-4fd1-bd75-f351a4ee1172
 # ╟─7ee76656-700d-4e78-9223-64b39d345997
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─0d260f11-abcd-404d-885a-ba02f2692e36
