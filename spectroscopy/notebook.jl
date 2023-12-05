@@ -44,7 +44,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 # ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
 @mdx """
 !!! note "Using this notebook"
-	Some parts of the notebook are partially interactive, but for full interactive control, it is recommended to download and run this notebook locally. More information about Pluto notebooks and their relative benefits compared to, e.g., Jupyter notebookes, is available [here](https://plutojl.org/).
+	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive, but for full interactive control, it is recommended to download and run this notebook locally.
 
 	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest.
 
@@ -562,7 +562,7 @@ update!(p;
 
 # ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 md"""
-## 📦 Package setup
+## 📦 Notebook setup
 """
 
 # ╔═╡ 46deb312-8f07-4b4e-a5b4-b852fb1d016d
