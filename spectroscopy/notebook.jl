@@ -76,7 +76,7 @@ Astronomical spectra start their lives as a picture. These images can come in a 
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
 md"""
-### PNGs
+### Working with color images
 """
 
 # ╔═╡ 249dd9ce-239e-45a9-9f59-c8991ecd299f
