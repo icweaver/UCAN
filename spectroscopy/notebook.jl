@@ -38,7 +38,7 @@ This notebook provides a short methods introduction to the field of [spectroscop
 * Wavelength calibration
 * Spectra characterization
 
-Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary for following along with the topics covered above. At the end of this notebook, you will hopefully have the tools you need to build your own analysis pipelines for collected astromomical spectra.
+Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary for following along with the topics covered above. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical spectra, as well as understand the principles behind other astronomical software at a broad level.
 """
 
 # ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
@@ -67,9 +67,9 @@ Having some familiarity in high-level programming languages like Julia or Python
 
 # ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
 md"""
-## Brief background
+## Image processing
 
-Rundown on working with images + some nice features from Julia
+Astronomical images can come in a variety of different formats, the most popular being the [Flexible Image Transport System](https://en.wikipedia.org/wiki/FITS) (FITS) format. We will explore this later in the notebook, but let's start with another common format that you probably use everyday, [Portable Network Graphics](https://en.wikipedia.org/wiki/PNG) (PNG), to see how it connects with the FITS format.
 """
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
@@ -1781,8 +1781,8 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╟─205f4b56-8343-11ee-0ebd-5713fac733ae
 # ╟─bdf98bfb-ad09-4c02-9ef5-c02552b70ad5
-# ╠═0968d0d2-7a53-47c5-be13-9c941c0fba0b
-# ╟─127ca8df-46c7-4d02-8f9b-e27983978441
+# ╟─0968d0d2-7a53-47c5-be13-9c941c0fba0b
+# ╠═127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
