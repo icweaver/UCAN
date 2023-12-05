@@ -223,7 +223,13 @@ md"""
 """
 
 # ╔═╡ 77836abd-a282-471b-a994-395781fc1f0b
+md"""
+Now that we are able to access the underlying structure of our data, let's
 
+!!! danger "TODO"
+
+	Stopped here
+"""
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
 md"""
@@ -395,7 +401,8 @@ end
 md"""
 !!! note "TODO: Extension problem ideas"
 
-	* Implementing pixel binning
+	* Pixel binning
+	* Background subtraction
 	* Non-linear wavelength calibration
 """
 
@@ -1929,7 +1936,7 @@ version = "17.4.0+0"
 # ╟─a2842f26-520e-42c0-bc4e-b04feccf22b2
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
-# ╠═77836abd-a282-471b-a994-395781fc1f0b
+# ╟─77836abd-a282-471b-a994-395781fc1f0b
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
 # ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
