@@ -108,37 +108,10 @@ md"""
 
 # ╔═╡ c402e19e-05f6-4b4f-a9dc-f2036e415b17
 md"""
-Alright, we have an image that we can analyze, with a few bits of information printed above about its characteristics:
+Alright, we have an image that we can analyze, with a few bits of information that we printed above about its characteristics. Let's break down what each piece means:
 
-
+* 
 """
-
-# ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
-function img_info(img)
-	@debug "Image info" eltype(img) size(img) length(img)
-end
-
-# ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
-img_info(img_dog)
-
-# ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
-function details(content; state="close")
-	@mdx """
-	<details $(state)><summary><strong>Details</strong></summary>$(content)</details>
-	"""
-end
-
-# ╔═╡ bed3c1a0-aa13-4c61-a074-9b38f9a4d306
-@mdx("""
-!!! note "Web aside"
-	The website we are pulling images from provides an [API](https://en.wikipedia.org/wiki/API) to interact with its data. We use the [`HTTP.jl`](https://github.com/JuliaWeb/HTTP.jl) package to call this API, [`JSON.jl`](https://github.com/JuliaIO/JSON.jl) to parse the data that we downloaded, and [`Images.jl`](https://github.com/JuliaImages/Images.jl) to load it into Julia. This is essentially the same as doing the following on a local PNG file:
-	```julia
-	using Images
-	img = load(PATH TO MY FILE)
-	```
-
-	In this case, the path is just the url of the hosted image online provided by the API.
-""")|> x -> details(x, ;state="open")
 
 # ╔═╡ 7ee76656-700d-4e78-9223-64b39d345997
 md"""
@@ -168,26 +141,8 @@ let
 	"""
 end
 
-# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
-md"""
-!!! tip "Julia aside"
-
-	Tuple unpacking, dotting, and piping
-	```julia
-	 r, g, b = px_dog .|> (red, green, blue)
-	```
-
-	Hooray for multiple dispatch
-	```julia
-	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
-	```
-""" |> details
-
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
-
-# ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
-img_info(gray_dog)
 
 # ╔═╡ c77bb96f-357e-4676-a504-ff93a5cd1711
 gray.(gray_dog)
@@ -218,9 +173,6 @@ end
 
 # ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
 window_dog = @view gray_dog[row_range_dog, col_range_dog];
-
-# ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
-window_dog |> img_info
 
 # ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
 window_dog_vals = gray.(window_dog)
@@ -265,34 +217,6 @@ let
 	)
 end
 
-# ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
-details(
-	@mdx """
-```julia
-p = make_subplots(;
-	rows = 2,
-	shared_xaxes = true,
-	vertical_spacing = 0.02,
-	x_title = "pixel column",
-)
-add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
-add_trace!(p, heatmap(
-	x = col_range_dog,
-	y = reverse(row_range_dog),
-	z = window_dog_vals,
-	colorscale = :Greys,
-	showscale = false,
-) ; row=2)
-update!(p;
-	layout = Layout(
-		yaxis = attr(title="intensity"),
-		yaxis2 = attr(scaleanchor=:x, title="pixel row")
-	)
-)
-```
-"""
-)
-
 # ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 md"""
 !!! note
@@ -306,9 +230,6 @@ md"""
 
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
 ev_live = load("data/castor.png")
-
-# ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
-img_info(ev_live)
 
 # ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
@@ -420,9 +341,6 @@ md"""
 img_fits = load("data/Betelgeuse.fit")
 #download("https://www.dropbox.com/scl/fi/atrdagikfcsvx6k9zf57l/ring_nebula.png?rlkey=kh9qvsywpxrtbrjh6z7g1kdr7&dl=1") |> load
 
-# ╔═╡ 0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
-img_info(img_fits)
-
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
 arr_fits = permutedims(img_fits.data)
 
@@ -463,8 +381,95 @@ prof_1D_fits = sum(window_fits; dims=1) |> vec
 # ╔═╡ f9868858-6982-4906-8b52-38e058e98279
 plot(xrange_ev_fits, prof_1D_fits)
 
+# ╔═╡ 5b638405-5f75-473c-9de9-6acac9856608
+md"""
+## Convenience functions
+"""
+
+# ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
+function img_info(img)
+	@debug "Image info" size(img) eltype(img)
+end
+
+# ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
+img_info(img_dog)
+
+# ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
+img_info(gray_dog)
+
+# ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
+window_dog |> img_info
+
+# ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
+img_info(ev_live)
+
+# ╔═╡ 0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
+img_info(img_fits)
+
 # ╔═╡ f3c25775-1d34-4870-8847-a3a5d9c01f7e
 img_info(prof_1D_fits)
+
+# ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
+function details(content; state="close")
+	@mdx """
+	<details $(state)><summary><strong>Details</strong></summary>$(content)</details>
+	"""
+end
+
+# ╔═╡ bed3c1a0-aa13-4c61-a074-9b38f9a4d306
+@mdx("""
+!!! note "Web aside"
+	The website we are pulling images from provides an [API](https://en.wikipedia.org/wiki/API) to interact with its data. We use the [`HTTP.jl`](https://github.com/JuliaWeb/HTTP.jl) package to call this API, [`JSON.jl`](https://github.com/JuliaIO/JSON.jl) to parse the data that we downloaded, and [`Images.jl`](https://github.com/JuliaImages/Images.jl) to load it into Julia. This is essentially the same as doing the following on a local PNG file:
+	```julia
+	using Images
+	img = load(LOCAL PATH TO MY FILE)
+	```
+
+	In this case, the path is just the url of the hosted image online provided by the API.
+""") |> details
+
+# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
+md"""
+!!! tip "Julia aside"
+
+	Tuple unpacking, dotting, and piping
+	```julia
+	 r, g, b = px_dog .|> (red, green, blue)
+	```
+
+	Hooray for multiple dispatch
+	```julia
+	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
+	```
+""" |> details
+
+# ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
+details(
+	@mdx """
+```julia
+p = make_subplots(;
+	rows = 2,
+	shared_xaxes = true,
+	vertical_spacing = 0.02,
+	x_title = "pixel column",
+)
+add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
+add_trace!(p, heatmap(
+	x = col_range_dog,
+	y = reverse(row_range_dog),
+	z = window_dog_vals,
+	colorscale = :Greys,
+	showscale = false,
+) ; row=2)
+update!(p;
+	layout = Layout(
+		yaxis = attr(title="intensity"),
+		yaxis2 = attr(scaleanchor=:x, title="pixel row")
+	)
+)
+```
+"""
+)
 
 # ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 md"""
@@ -1817,11 +1822,9 @@ version = "17.4.0+0"
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
-# ╠═bed3c1a0-aa13-4c61-a074-9b38f9a4d306
+# ╟─bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 # ╟─f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╠═c402e19e-05f6-4b4f-a9dc-f2036e415b17
-# ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
-# ╠═2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─7ee76656-700d-4e78-9223-64b39d345997
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─0d260f11-abcd-404d-885a-ba02f2692e36
@@ -1874,6 +1877,9 @@ version = "17.4.0+0"
 # ╠═059e8026-d718-4d40-9d6d-ef3abbb36723
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
+# ╟─5b638405-5f75-473c-9de9-6acac9856608
+# ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
+# ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
