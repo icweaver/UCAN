@@ -171,13 +171,13 @@ md"""
 
 # ╔═╡ 4ea2b324-39dc-4a36-a36b-96eca525e00c
 md"""
-The converversion process from ``RGB`` to Grayscale for a given pixel is achieved by taking a weighted average of its channel values according to an [international standard](https://juliaimages.org/latest/examples/color_channels/rgb_grayscale/):
+The converversion process from ``RGB`` to Grayscale for a given pixel is achieved by taking a weighted average of its channel values according to an [international standard](https://en.wikipedia.org/wiki/Luma_%28video%29#Rec._601_luma_versus_Rec._709_luma_coefficients) established to emulate how the [human eye perceives relative brightnesses](https://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale):
 
 ```math
 0.299 R + 0.587 G + 0.114 B \quad.
 ```
 
-This is conveniently implemented for us, which we apply below to each pixel of our image.
+This is [already implemented for us](https://juliaimages.org/latest/examples/color_channels/rgb_grayscale/) in the `ColorTypes` package, which we apply below to each pixel of our image to produce the following grayscale version:
 """
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
@@ -519,7 +519,8 @@ end
 
 # ╔═╡ cf371199-c283-46e8-8174-31796e2224cb
 md"""
-Julia has a delightful way of applying a function element-wise to its inputs, know as [dot syntax](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized).
+!!! note
+	Julia has a delightful way of applying a function element-wise to its inputs, known as [dot syntax](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized).
 """ |> details
 
 # ╔═╡ f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
