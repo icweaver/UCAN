@@ -481,9 +481,7 @@ We see here that our image is ``$(nrows_dog)`` rows by ``$(ncols_dog)`` columns 
 """
 
 # ╔═╡ 256f479b-7c90-4ad4-a893-e3e5c2266516
-md"""
-$(eltype_dog)
-"""
+@debug eltype_dog
 
 # ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
 img_info(gray_dog)
