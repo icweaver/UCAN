@@ -36,7 +36,6 @@ This notebook provides a short methods introduction to the field of [spectroscop
 * Image processing
 * Array/matrix operations
 * Wavelength calibration
-* Spectra characterization
 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered above. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical spectra, as well as understand the principles behind other astronomical software at a broad level.
 """
@@ -108,15 +107,9 @@ md"""
 We now have an image that we can analyze. For starters, let's display some key characteristics about this image:
 """
 
-# ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
-@mdx """
-We see here that our image is ``333`` rows by ``500`` columns wide, and each cell (or pixel) of this image is represented by:
-
-```julia
-ColorTypes.RGB{FixedPointNumbers.N0f8}
-```
-
-Let's break down what this means.
+# ╔═╡ 9014873e-5b1b-4605-9dd6-efb9840e5732
+md"""
+Even though this part is Julia specific, the underlying information is general enough to apply to most image processing libraries. Let's break down what each piece means: 
 
 * [`ColorTypes`](https://github.com/JuliaGraphics/ColorTypes.jl): The name of the package where a type called `RGB` is defined.
 
@@ -222,7 +215,7 @@ md"""
 
 # ╔═╡ 2f18fb1a-2178-4e12-b411-13fa49f3084f
 md"""
-### Array operations
+## Array/matrix operations
 """
 
 # ╔═╡ 77836abd-a282-471b-a994-395781fc1f0b
@@ -301,7 +294,7 @@ md"""
 
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 md"""
-## eVscope live view image
+### eVscope live view image
 """
 
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
@@ -365,53 +358,9 @@ prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
 plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
 
-# ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
-md"""
-## Wavelength calibration
-"""
-
-# ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
-const ref_wavs = [
-	:h_alpha => 6562.8,
-	:h_beta => 4861.4,
-	:h_gamma => 4340.5,
-	:h_delta => 4102.7,
-	:h_epsilon => 3970.1,
-]
-
-# ╔═╡ c028c979-51c8-44f5-a60e-5f3f456a3b0c
-px_zero, px_sample = [639.0, 1196.0]
-
-# ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-m = (4861 - 0.0) / (px_sample - px_zero)
-
-# ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
-y_wav(x_px) = m * (x_px - px_zero)
-
-# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-xrange_ev_live_wav = y_wav.(xrange_ev_live)
-
-# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
-let
-	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
-	for (name, wav) ∈ ref_wavs
-		add_vline!(p, wav)
-	end
-	p
-end
-
-# ╔═╡ 5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
-md"""
-!!! note "TODO: Extension problem ideas"
-
-	* Pixel binning
-	* Background subtraction
-	* Non-linear wavelength calibration
-"""
-
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
-## FITS
+### FITS
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
@@ -458,6 +407,58 @@ prof_1D_fits = sum(window_fits; dims=1) |> vec
 # ╔═╡ f9868858-6982-4906-8b52-38e058e98279
 plot(xrange_ev_fits, prof_1D_fits)
 
+# ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
+md"""
+## Wavelength calibration
+"""
+
+# ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
+const ref_wavs = [
+	:h_alpha => 6562.8,
+	:h_beta => 4861.4,
+	:h_gamma => 4340.5,
+	:h_delta => 4102.7,
+	:h_epsilon => 3970.1,
+]
+
+# ╔═╡ c028c979-51c8-44f5-a60e-5f3f456a3b0c
+px_zero, px_sample = [639.0, 1196.0]
+
+# ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
+m = (4861 - 0.0) / (px_sample - px_zero)
+
+# ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
+y_wav(x_px) = m * (x_px - px_zero)
+
+# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
+xrange_ev_live_wav = y_wav.(xrange_ev_live)
+
+# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
+let
+	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
+	for (name, wav) ∈ ref_wavs
+		add_vline!(p, wav)
+	end
+	p
+end
+
+# ╔═╡ 5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
+md"""
+!!! note "TODO: Extension problem ideas"
+
+	* Pixel binning
+	* Background subtraction
+	* Non-linear wavelength calibration
+"""
+
+# ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
+md"""
+# Notebook setup 🔧
+"""
+
+# ╔═╡ 46deb312-8f07-4b4e-a5b4-b852fb1d016d
+TableOfContents()
+
 # ╔═╡ 5b638405-5f75-473c-9de9-6acac9856608
 md"""
 ## Convenience functions
@@ -465,11 +466,24 @@ md"""
 
 # ╔═╡ 4c6a8538-2124-44f0-9891-4a3e1472ea4e
 function img_info(img)
-	@debug "Image info" size(img) eltype(img)
+	nrows, ncols = size(img)
+	eltype_img = eltype(img)
+	@debug "Image info" nrows ncols eltype_img
+	return nrows, ncols, eltype_img
 end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
-img_info(img_dog)
+nrows_dog, ncols_dog, eltype_dog = img_info(img_dog);
+
+# ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
+@mdx """
+We see here that our image is ``$(nrows_dog)`` rows by ``$(ncols_dog)`` columns wide, and each cell (or pixel) of this image is represented by:
+"""
+
+# ╔═╡ 256f479b-7c90-4ad4-a893-e3e5c2266516
+md"""
+$(eltype_dog)
+"""
 
 # ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
 img_info(gray_dog)
@@ -563,13 +577,10 @@ update!(p;
 """
 )
 
-# ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
+# ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
-## 📦 Notebook setup
+## Packages
 """
-
-# ╔═╡ 46deb312-8f07-4b4e-a5b4-b852fb1d016d
-TableOfContents()
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1918,6 +1929,8 @@ version = "17.4.0+0"
 # ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
 # ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
 # ╟─64a3d702-d229-4fd1-bd75-f351a4ee1172
+# ╟─256f479b-7c90-4ad4-a893-e3e5c2266516
+# ╟─9014873e-5b1b-4605-9dd6-efb9840e5732
 # ╟─685c8647-3de7-4775-ba71-fdfd23c557de
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
 # ╟─0d260f11-abcd-404d-885a-ba02f2692e36
@@ -1961,15 +1974,7 @@ version = "17.4.0+0"
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═75108863-4a62-4751-aeee-246250fbf8b8
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
-# ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
-# ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
-# ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
-# ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-# ╠═447de825-9442-48ba-b373-2adc158799e3
-# ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
-# ╠═272654a7-665f-48ee-beb5-13944c803e7e
-# ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
-# ╟─f7dd6681-2792-4753-b016-2c7358a343a9
+# ╠═f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
@@ -1982,11 +1987,20 @@ version = "17.4.0+0"
 # ╠═059e8026-d718-4d40-9d6d-ef3abbb36723
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
-# ╟─5b638405-5f75-473c-9de9-6acac9856608
-# ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
-# ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
+# ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
+# ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
+# ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
+# ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
+# ╠═447de825-9442-48ba-b373-2adc158799e3
+# ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
+# ╠═272654a7-665f-48ee-beb5-13944c803e7e
+# ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
+# ╟─5b638405-5f75-473c-9de9-6acac9856608
+# ╠═4c6a8538-2124-44f0-9891-4a3e1472ea4e
+# ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
+# ╟─fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
