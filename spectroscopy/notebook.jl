@@ -161,7 +161,7 @@ Below our selected pixel, we map these ``(R, G, B)`` values to their correspondi
 
 # ╔═╡ 736e7f03-7eb9-4805-afe4-74170c046c4c
 md"""
-We are now one step closer to building a spectrum of our image. Astronomers typically work with [black and white](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color) (or [grayscale](https://en.wikipedia.org/wiki/Grayscale)) images, so we will next see how we can convert our image to this form using the information we have above. Later during the FITS file section, we will see why this is a beneficial form to have our image in.
+We are now one step closer to building a spectrum of our image. Astronomers typically work with [black and white](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color) (or [grayscale](https://en.wikipedia.org/wiki/Grayscale)) images, so we will next see how we can convert our image to this form using the information we have above. Later, we will see why this is a beneficial form to have our image in when we explore the FITS file format.
 """
 
 # ╔═╡ 9932a3b1-6d52-4ed1-8884-2f90f765ac68
@@ -516,25 +516,6 @@ end
 
 	In this case, the path is just the url of the hosted image online provided by the API.
 """) |> details
-
-# ╔═╡ 64669de1-d2e8-47b5-8522-7e561e5ca098
-md"""
-!!! tip "Julia aside"
-
-	Tuple unpacking, dotting, and piping
-	```julia
-	 r, g, b = px_dog .|> (red, green, blue)
-	```
-
-	Hooray for multiple dispatch
-	```julia
-	RGB(r, 0, 0) + RGB(0, g, 0) + RGB(0, 0, b)
-	```
-
-!!! danger "TODO"
-
-	Flesh this out some more
-""" |> details
 
 # ╔═╡ cf371199-c283-46e8-8174-31796e2224cb
 md"""
@@ -1936,7 +1917,6 @@ version = "17.4.0+0"
 # ╟─cd2e384e-6f30-40b9-86f9-9a285a956b94
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╟─6880b7a1-0a74-4879-bd85-90c8f8e947d2
-# ╟─64669de1-d2e8-47b5-8522-7e561e5ca098
 # ╟─736e7f03-7eb9-4805-afe4-74170c046c4c
 # ╟─9932a3b1-6d52-4ed1-8884-2f90f765ac68
 # ╟─4ea2b324-39dc-4a36-a36b-96eca525e00c
