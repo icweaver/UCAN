@@ -184,14 +184,14 @@ This is [already implemented for us](https://juliaimages.org/latest/examples/col
 gray_dog = Gray.(img_dog)
 
 # ╔═╡ 703050cd-57fc-4b8b-b631-d5b8124ef872
-md"""
-Taking a look at the properties of our new image below, we see that now instead of being a matrix composed of `RGB{N0f8}` types, it is now composed of `Gray{N0f8}`s.
+@mdx """
+Taking a look at the properties of our new image, we see that now instead of being a matrix composed of `RGB{N0f8}` types, it is composed of `Gray{N0f8}`s.
 """
 
 # ╔═╡ cf940fd1-4f37-477a-ab46-e75902273f5d
 md"""
 !!! note
-	We leave the package names off for clarity.
+	We omit the package names for brevity.
 """
 
 # ╔═╡ 8c79235d-5b03-4e97-acaf-b3eea88e91b9
@@ -204,7 +204,7 @@ gray.(gray_dog)
 
 # ╔═╡ a2842f26-520e-42c0-bc4e-b04feccf22b2
 md"""
-We are now ready to build of spectrum by working directly with this matrix.
+We are now ready to build our spectrum by working directly with this matrix.
 """
 
 # ╔═╡ 50e3b47b-4072-4be6-b740-efdf3dd9a3a2
@@ -484,7 +484,7 @@ We see here that our image is ``$(nrows_dog)`` rows by ``$(ncols_dog)`` columns 
 @debug eltype_dog
 
 # ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
-img_info(gray_dog)
+img_info(gray_dog);
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
 window_dog |> img_info
@@ -1922,9 +1922,9 @@ version = "17.4.0+0"
 # ╟─9932a3b1-6d52-4ed1-8884-2f90f765ac68
 # ╟─4ea2b324-39dc-4a36-a36b-96eca525e00c
 # ╠═9edd83bf-bcae-4f39-940d-4265bdcd2c34
+# ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
 # ╟─cf371199-c283-46e8-8174-31796e2224cb
 # ╟─703050cd-57fc-4b8b-b631-d5b8124ef872
-# ╟─d39b4688-a25e-4e47-9037-eeb7e3a6918c
 # ╟─cf940fd1-4f37-477a-ab46-e75902273f5d
 # ╟─8c79235d-5b03-4e97-acaf-b3eea88e91b9
 # ╠═c77bb96f-357e-4676-a504-ff93a5cd1711
