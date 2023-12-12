@@ -109,7 +109,7 @@ We now have an image that we can analyze. For starters, let's display some key c
 """
 
 # ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
-md"""
+@mdx """
 We see here that our image is ``333`` rows by ``500`` columns wide, and each cell (or pixel) of this image is represented by:
 
 ```julia
@@ -119,8 +119,11 @@ ColorTypes.RGB{FixedPointNumbers.N0f8}
 Let's break down what this means.
 
 * [`ColorTypes`](https://github.com/JuliaGraphics/ColorTypes.jl): The name of the package where a type called `RGB` is defined.
+
 * [`RGB`](https://github.com/JuliaGraphics/ColorTypes.jl#rgb-plus-bgr-xrgb-rgbx-and-rgb24-the-abstractrgb-group): A type that stores the red, green, and blue intensity values of a pixel. These can be thought of as [sub-pixels](https://en.wikipedia.org/wiki/Pixel#Subpixels)
+
 * [`FixedPointNumbers`](https://github.com/JuliaMath/FixedPointNumbers.jl): The name of the package where a type called `N0f8` is defined.
+
 * [`N0f8`](https://github.com/JuliaMath/FixedPointNumbers.jl#type-hierarchy-and-interpretation): A type that represents a number in memory. This essentially defines the specific number type used for each red, green, and blue value in each pixel. More on [`N0f8` and other number formats](https://juliaimages.org/latest/tutorials/quickstart/#The-0-to-1-intensity-scale).
 """
 
