@@ -38,7 +38,7 @@ This notebook provides a short methods introduction to the field of [spectroscop
 * Wavelength calibration
 * Spectra characterization
 
-Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary for following along with the topics covered above. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical spectra, as well as understand the principles behind other astronomical software at a broad level.
+Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered above. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical spectra, as well as understand the principles behind other astronomical software at a broad level.
 """
 
 # ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
@@ -1956,7 +1956,7 @@ version = "17.4.0+0"
 # ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
 # ╟─ac74a5c7-c89c-41c0-bf09-c19e026364ab
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-# ╟─75108863-4a62-4751-aeee-246250fbf8b8
+# ╠═75108863-4a62-4751-aeee-246250fbf8b8
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
