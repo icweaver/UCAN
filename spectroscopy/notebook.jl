@@ -220,9 +220,9 @@ md"""
 
 # ╔═╡ 77836abd-a282-471b-a994-395781fc1f0b
 md"""
-Now that we are able to access the underlying structure of our data, let's explore next how we can extract subsets of it that we might be interested in. One common approach, known as [array slicing](https://en.wikipedia.org/wiki/Array_slicing), accomplishes this by selecting the subset of pixels that fall within a specified rectangle. Try using the sliders below to specify the rows and columns of the main array to include in our array slice.
+Now that we are able to access the underlying structure of our data, let's explore next how we can extract subsets of it that we might be interested in. One common approach, known as [array slicing](https://en.wikipedia.org/wiki/Array_slicing), accomplishes this by selecting the subset of pixels that fall within a specified rectangle.
 
-*Note that this will only work in the locally downladed version of this notebook.*
+Try using the sliders below to specify a region of interest where we would like to build a spectrum from. *Note that this will only work in the locally downladed version of this notebook.*
 """
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
@@ -241,23 +241,27 @@ end
 # ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
 window_dog = @view gray_dog[row_range_dog, col_range_dog];
 
+# ╔═╡ 9e16a591-4d89-4d90-a96f-eed8f2078dad
+md"""
+Calling the `gray` function again, we have the following array of pixel values to work with:
+"""
+
 # ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
 window_dog_vals = gray.(window_dog)
+
+# ╔═╡ 14f83f54-f51c-4af4-b388-b76f188e7649
+md"""
+To build a spectrum of this selection across a given direction, we next perform a summation in the perpendicular direction. Synonymous terms for this are "dimension" and "axis". For example, if we wanted a spectrum in the "horizontal direction", we would sum up all the pixels in a given column.
+
+Many libraries have this operation built in, typically with a `dim` or `axis` keyword to specify the direction to sum in, as shown below:
+"""
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
 
-# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
-@mdx """
-!!! warning "Heads up"
-
-	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
-
-	```julia
-	eltype(prof_1D_png_vals)
-	```
-
- 	--> **$(eltype(prof_1D_dog_vals))**
+# ╔═╡ 2f5da861-2a83-4ed1-9b6b-f9081768ca05
+md"""
+This returns a vector that should be as long as the number of columns in our original image. Plotting these value as a function of the column location then gives us our "one-dimensional", or 1D, spectrum!
 """
 
 # ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
@@ -283,6 +287,19 @@ let
 		)
 	)
 end
+
+# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
+@mdx """
+!!! warning "Heads up"
+
+	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
+
+	```julia
+	eltype(prof_1D_png_vals)
+	```
+
+ 	--> **$(eltype(prof_1D_dog_vals))**
+"""
 
 # ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 md"""
@@ -486,7 +503,7 @@ nrows_window_dog, ncols_window_dog, _ = img_info(window_dog);
 
 # ╔═╡ fedb57fe-574c-4567-933a-052e9b8d50bd
 @mdx """
-Based on our selections, the black rectangle extends from row ``$(first(row_range_dog))`` to ``$(last(row_range_dog))``, and from column ``$(first(col_range_dog))`` to ``$(last(col_range_dog))``, resulting in a slice that is ``$(nrows_window_dog)`` rows by ``$(ncols_window_dog)`` columns. We selected this range by using the following array syntax:
+Based on our selections, the black rectangular region of interest extends from row ``$(first(row_range_dog))`` to ``$(last(row_range_dog)),`` and from column ``$(first(col_range_dog))`` to ``$(last(col_range_dog))`` of our original image, resulting in a slice that is ``$(nrows_window_dog)`` rows by ``$(ncols_window_dog)`` columns. We selected this range by using the following array syntax:
 
 ```julia
 array_slice = original_array[row_range, column_range]
@@ -1936,10 +1953,13 @@ version = "17.4.0+0"
 # ╟─fedb57fe-574c-4567-933a-052e9b8d50bd
 # ╠═fcc96529-3b20-4a59-9d2d-48612f4c16f3
 # ╟─f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
+# ╟─9e16a591-4d89-4d90-a96f-eed8f2078dad
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
+# ╟─14f83f54-f51c-4af4-b388-b76f188e7649
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
+# ╟─2f5da861-2a83-4ed1-9b6b-f9081768ca05
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
+# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
@@ -1947,9 +1967,9 @@ version = "17.4.0+0"
 # ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
+# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
 # ╟─ac74a5c7-c89c-41c0-bf09-c19e026364ab
-# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═75108863-4a62-4751-aeee-246250fbf8b8
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
