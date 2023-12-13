@@ -220,11 +220,9 @@ md"""
 
 # ╔═╡ 77836abd-a282-471b-a994-395781fc1f0b
 md"""
-Now that we are able to access the underlying structure of our data, let's
+Now that we are able to access the underlying structure of our data, let's explore next how we can extract subsets of it that we might be interested in. One common approach, known as [array slicing](https://en.wikipedia.org/wiki/Array_slicing), accomplishes this by selecting the subset of pixels that fall within a specified rectangle. Try using the sliders below to specify the rows and columns of the main array to include in our array slice.
 
-!!! danger "TODO"
-
-	Stopped here
+*Note that this will only work in the locally downladed version of this notebook.*
 """
 
 # ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
@@ -364,8 +362,7 @@ md"""
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img_fits = load("/home/mango/Desktop/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit")
-#download("https://www.dropbox.com/scl/fi/atrdagikfcsvx6k9zf57l/ring_nebula.png?rlkey=kh9qvsywpxrtbrjh6z7g1kdr7&dl=1") |> load
+img_fits = load("data/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit")
 
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
 arr_fits = permutedims(img_fits.data)
@@ -394,9 +391,6 @@ window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits]
 
 # ╔═╡ ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
 img_fits.header
-
-# ╔═╡ 48fe74a0-c885-4c02-968f-21a6e8639ae7
-img_fits.wcs
 
 # ╔═╡ 059e8026-d718-4d40-9d6d-ef3abbb36723
 img_fits.data
@@ -447,6 +441,7 @@ md"""
 !!! note "TODO: Extension problem ideas"
 
 	* Pixel binning
+	* Image stacking
 	* Background subtraction
 	* Non-linear wavelength calibration
 """
@@ -487,13 +482,19 @@ We see here that our image is ``$(nrows_dog)`` rows by ``$(ncols_dog)`` columns 
 img_info(gray_dog);
 
 # ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
-window_dog |> img_info
+nrows_window_dog, ncols_window_dog, _ = img_info(window_dog);
+
+# ╔═╡ fedb57fe-574c-4567-933a-052e9b8d50bd
+@mdx """
+Based on our selections, the black rectangle extends from row ``$(first(row_range_dog))`` to ``$(last(row_range_dog))``, and from column ``$(first(col_range_dog))`` to ``$(last(col_range_dog))``, resulting in a slice that is ``$(nrows_window_dog)`` rows by ``$(ncols_window_dog)`` columns. We selected this range by using the following array syntax:
+
+```julia
+array_slice = original_array[row_range, column_range]
+```
+"""
 
 # ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
 img_info(ev_live)
-
-# ╔═╡ f3c25775-1d34-4870-8847-a3a5d9c01f7e
-img_info(prof_1D_fits)
 
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content; state="close")
@@ -522,8 +523,8 @@ md"""
 
 # ╔═╡ f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
 md"""
-!!! danger "TODO"
-	Compare copies vs. views of arrays in memory
+!!! note
+	We also used the [`@view`](https://docs.julialang.org/en/v1/base/arrays/#Base.@view) macro here to access the data directly instead of making a copy. For more on views vs. copies [see here](https://docs.julialang.org/en/v1/base/arrays/#Views-(SubArrays-and-other-view-types)), and for more on macros [see here](https://docs.julialang.org/en/v1/manual/metaprogramming/#man-macros).
 """ |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
@@ -1929,9 +1930,10 @@ version = "17.4.0+0"
 # ╟─50e3b47b-4072-4be6-b740-efdf3dd9a3a2
 # ╟─2f18fb1a-2178-4e12-b411-13fa49f3084f
 # ╟─77836abd-a282-471b-a994-395781fc1f0b
-# ╟─bb008a9b-8538-418d-9e70-50d9983c2074
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
-# ╟─096b8d1e-9092-4110-95a7-7cff9210ba43
+# ╟─bb008a9b-8538-418d-9e70-50d9983c2074
+# ╠═096b8d1e-9092-4110-95a7-7cff9210ba43
+# ╟─fedb57fe-574c-4567-933a-052e9b8d50bd
 # ╠═fcc96529-3b20-4a59-9d2d-48612f4c16f3
 # ╟─f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
@@ -1958,10 +1960,8 @@ version = "17.4.0+0"
 # ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
 # ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
 # ╠═ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
-# ╠═48fe74a0-c885-4c02-968f-21a6e8639ae7
 # ╠═059e8026-d718-4d40-9d6d-ef3abbb36723
-# ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
-# ╠═f3c25775-1d34-4870-8847-a3a5d9c01f7e
+# ╟─aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
