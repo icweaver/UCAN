@@ -261,7 +261,7 @@ prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
 
 # ╔═╡ 2f5da861-2a83-4ed1-9b6b-f9081768ca05
 md"""
-This returns a vector that should be as long as the number of columns in our original image. Plotting these value as a function of the column location then gives us our "one-dimensional", or 1D, spectrum!
+This returns a vector that should be as long as the number of columns in our original image. Plotting these value as a function of the column location then gives us our 1D spectrum!
 """
 
 # ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
@@ -1957,7 +1957,7 @@ version = "17.4.0+0"
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╟─14f83f54-f51c-4af4-b388-b76f188e7649
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-# ╟─2f5da861-2a83-4ed1-9b6b-f9081768ca05
+# ╠═2f5da861-2a83-4ed1-9b6b-f9081768ca05
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
