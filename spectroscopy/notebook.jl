@@ -259,20 +259,24 @@ window_dog_vals = gray.(window_dog)
 md"""
 To build a spectrum of this selection across a given direction, we next perform a summation in the perpendicular direction. Synonymous terms for this are "dimension" and "axis". For example, if we wanted a spectrum in the "horizontal direction", we would sum up all the pixels in a given column.
 
-Many libraries have this operation built in, typically with a `dim` or `axis` keyword to specify the direction to sum in, as shown below:
+Many libraries have this operation built in, typically with a `dims` or `axis` keyword to specify the direction to sum in, as shown below:
 """
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
 
-# ╔═╡ 7ca45bd4-c756-4030-830f-dc271e46cd9b
-sum([
-	1 2
-	3 4
-]; dims=1)
+# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
+@mdx """
+!!! warning "Heads up"
 
-# ╔═╡ 1f13439b-f402-49b9-b1bf-6744cec32b54
-[4, 6]
+	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
+
+	```julia
+	eltype(prof_1D_png_vals)
+	```
+
+ 	--> **$(eltype(prof_1D_dog_vals))**
+"""
 
 # ╔═╡ 2f5da861-2a83-4ed1-9b6b-f9081768ca05
 md"""
@@ -302,19 +306,6 @@ let
 		)
 	)
 end
-
-# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
-@mdx """
-!!! warning "Heads up"
-
-	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
-
-	```julia
-	eltype(prof_1D_png_vals)
-	```
-
- 	--> **$(eltype(prof_1D_dog_vals))**
-"""
 
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 md"""
@@ -555,7 +546,7 @@ md"""
 
 # ╔═╡ c37fc603-8943-4be6-9c73-1f327e8b7885
 md"""
-!!! note
+!!! note "Why vec?"
 	Array operations in Julia [preserve dimensionality](https://stackoverflow.com/a/42353230/16402912) to make things more consistent and composable. For example,
 
 	```julia
@@ -584,28 +575,29 @@ md"""
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
 details(
 	@mdx """
-```julia
-p = make_subplots(;
-	rows = 2,
-	shared_xaxes = true,
-	vertical_spacing = 0.02,
-	x_title = "pixel column",
-)
-add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
-add_trace!(p, heatmap(
-	x = col_range_dog,
-	y = reverse(row_range_dog),
-	z = window_dog_vals,
-	colorscale = :Greys,
-	showscale = false,
-) ; row=2)
-update!(p;
-	layout = Layout(
-		yaxis = attr(title="intensity"),
-		yaxis2 = attr(scaleanchor=:x, title="pixel row")
+!!! note "Plotly commands"
+	```julia
+	p = make_subplots(;
+		rows = 2,
+		shared_xaxes = true,
+		vertical_spacing = 0.02,
+		x_title = "pixel column",
 	)
-)
-```
+	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
+	add_trace!(p, heatmap(
+		x = col_range_dog,
+		y = reverse(row_range_dog),
+		z = window_dog_vals,
+		colorscale = :Greys,
+		showscale = false,
+	) ; row=2)
+	update!(p;
+		layout = Layout(
+			yaxis = attr(title="intensity"),
+			yaxis2 = attr(scaleanchor=:x, title="pixel row")
+		)
+	)
+	```
 """
 )
 
@@ -1996,11 +1988,9 @@ version = "17.4.0+0"
 # ╟─14f83f54-f51c-4af4-b388-b76f188e7649
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 # ╟─c37fc603-8943-4be6-9c73-1f327e8b7885
-# ╠═7ca45bd4-c756-4030-830f-dc271e46cd9b
-# ╠═1f13439b-f402-49b9-b1bf-6744cec32b54
+# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─2f5da861-2a83-4ed1-9b6b-f9081768ca05
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
-# ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
