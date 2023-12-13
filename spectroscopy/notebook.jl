@@ -238,6 +238,12 @@ let
 	tmp
 end
 
+# ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
+md"""
+!!! note
+	Try moving the aperture over different parts of the image to see if any particular features can be picked out in the final spectrum.
+"""
+
 # ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
 window_dog = @view gray_dog[row_range_dog, col_range_dog];
 
@@ -258,6 +264,15 @@ Many libraries have this operation built in, typically with a `dim` or `axis` ke
 
 # ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
 prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
+
+# ╔═╡ 7ca45bd4-c756-4030-830f-dc271e46cd9b
+sum([
+	1 2
+	3 4
+]; dims=1)
+
+# ╔═╡ 1f13439b-f402-49b9-b1bf-6744cec32b54
+[4, 6]
 
 # ╔═╡ 2f5da861-2a83-4ed1-9b6b-f9081768ca05
 md"""
@@ -299,12 +314,6 @@ end
 	```
 
  	--> **$(eltype(prof_1D_dog_vals))**
-"""
-
-# ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
-md"""
-!!! note
-	Try moving the aperture over different parts of the image to see if any particular features can be picked out.
 """
 
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
@@ -542,6 +551,34 @@ md"""
 md"""
 !!! note
 	We also used the [`@view`](https://docs.julialang.org/en/v1/base/arrays/#Base.@view) macro here to access the data directly instead of making a copy. For more on views vs. copies [see here](https://docs.julialang.org/en/v1/base/arrays/#Views-(SubArrays-and-other-view-types)), and for more on macros [see here](https://docs.julialang.org/en/v1/manual/metaprogramming/#man-macros).
+""" |> details
+
+# ╔═╡ c37fc603-8943-4be6-9c73-1f327e8b7885
+md"""
+!!! note
+	Array operations in Julia [preserve dimensionality](https://stackoverflow.com/a/42353230/16402912) to make things more consistent and composable. For example,
+
+	```julia
+	sum([
+		1 2
+		3 4
+	]; dims=1)
+	```
+
+	returns another matrix
+
+	```julia
+	1×2 Matrix{Int64}:
+	 4  6
+	```
+
+	instead of silently changing the shape out from under us to a 1D vector
+
+	```julia
+	[4, 6]
+	```
+
+	The flipside is that the [plotting library we are using](https://plotly.com/) expects a simple vector, so we call [`vec`](https://docs.julialang.org/en/v1/base/arrays/#Base.vec) on the original sum to make this transformation for us before passing it to Plotly.
 """ |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
@@ -1949,6 +1986,7 @@ version = "17.4.0+0"
 # ╟─77836abd-a282-471b-a994-395781fc1f0b
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
+# ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╠═096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╟─fedb57fe-574c-4567-933a-052e9b8d50bd
 # ╠═fcc96529-3b20-4a59-9d2d-48612f4c16f3
@@ -1957,11 +1995,13 @@ version = "17.4.0+0"
 # ╠═12c0a504-856d-40b0-aa01-bbb992167943
 # ╟─14f83f54-f51c-4af4-b388-b76f188e7649
 # ╠═d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-# ╠═2f5da861-2a83-4ed1-9b6b-f9081768ca05
+# ╟─c37fc603-8943-4be6-9c73-1f327e8b7885
+# ╠═7ca45bd4-c756-4030-830f-dc271e46cd9b
+# ╠═1f13439b-f402-49b9-b1bf-6744cec32b54
+# ╟─2f5da861-2a83-4ed1-9b6b-f9081768ca05
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─d4ca722f-ebc8-411d-a2f1-48fb83373e54
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
-# ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
