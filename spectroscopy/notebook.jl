@@ -364,7 +364,7 @@ md"""
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img_fits = load("data/Betelgeuse.fit")
+img_fits = load("/home/mango/Desktop/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit")
 #download("https://www.dropbox.com/scl/fi/atrdagikfcsvx6k9zf57l/ring_nebula.png?rlkey=kh9qvsywpxrtbrjh6z7g1kdr7&dl=1") |> load
 
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
@@ -491,9 +491,6 @@ window_dog |> img_info
 
 # ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
 img_info(ev_live)
-
-# ╔═╡ 0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
-img_info(img_fits)
 
 # ╔═╡ f3c25775-1d34-4870-8847-a3a5d9c01f7e
 img_info(prof_1D_fits)
@@ -1953,9 +1950,8 @@ version = "17.4.0+0"
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═75108863-4a62-4751-aeee-246250fbf8b8
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
-# ╠═f7dd6681-2792-4753-b016-2c7358a343a9
+# ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-# ╠═0a7a6c9f-e4ee-41dc-9aa1-b5a6c40a8293
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
