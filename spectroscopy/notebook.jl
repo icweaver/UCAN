@@ -319,7 +319,7 @@ md"""
 
 # ╔═╡ 715d8d40-3ba1-4244-90e7-f4a5e1d76a1f
 md"""
-Below is a brief Live View image of [Castor](https://en.wikipedia.org/wiki/Castor_(star)) that I captured from my backyard with an eVscope following the procedures outlined in the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf).
+Following the procedures outlined in the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf), here is a brief Live View image of [Castor](https://en.wikipedia.org/wiki/Castor_(star)) that I captured from my backyard.
 """
 
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
