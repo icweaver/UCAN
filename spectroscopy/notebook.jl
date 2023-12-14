@@ -408,6 +408,43 @@ arr_fits = img_fits.data |> permutedims
 	)
 end
 
+# ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
+md"""
+!!! note "Stellar types"
+
+	For more on comparing stellar types from eVscope spectral data, see this lab.
+"""
+
+# ╔═╡ 1c3b1385-5f49-46d1-89fb-9223ec5a1226
+function get_lims2(arr, limits)
+	ymax, xmax = size(arr)
+	xlims = limits["xaxis"] .|> (x -> round(Int, x))
+	xlo, xhi = xlims
+	xlo = max(1, xlo)
+	xhi = min(xhi, xmax)
+	
+	ylims = limits["yaxis"] .|> (x -> round(Int, x))
+	ylo, yhi = ylims # Assuming heatmap y-axis reversed
+	ylo = max(1, ylo)
+	yhi = min(yhi, ymax)
+
+	# @debug :vals xlo xhi ylo yhi
+
+	return xlo:xhi, ylo:yhi
+end
+
+# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
+xrange_ev_fits, yrange_ev_fits = get_lims2(arr_fits, limits_ev_fits)
+
+# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
+window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits]
+
+# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
+prof_1D_fits = sum(window_fits; dims=1) |> vec
+
+# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
+plot(xrange_ev_fits, prof_1D_fits)
+
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
 md"""
 ## Wavelength calibration
@@ -646,18 +683,6 @@ let
 	end
 	p
 end
-
-# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits);
-
-# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
-window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
-
-# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-prof_1D_fits = sum(window_fits; dims=1) |> vec
-
-# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
-plot(xrange_ev_fits, prof_1D_fits)
 
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
@@ -2072,9 +2097,11 @@ version = "17.4.0+0"
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
+# ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
 # ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
 # ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
-# ╟─aaafd2e3-d831-4d88-96aa-4d0d075550e2
+# ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
+# ╠═1c3b1385-5f49-46d1-89fb-9223ec5a1226
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
