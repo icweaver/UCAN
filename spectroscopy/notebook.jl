@@ -303,7 +303,7 @@ end
 
 # ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 md"""
-!!! note
+!!! tip
 	Try moving the original region over different parts of the image to see if any particular features can be picked out in the final spectrum.
 """
 
@@ -388,9 +388,16 @@ md"""
 Unlike Live View images, FITS images are already in grayscale and come packed with additional metadata that inform us about the observing conditions (e.g., longitude, latitude, gain, exposure time) that our data were taken in. This can help us reduce systematics from the instrument and environment. Additionally, individual science images can be stacked together to increase the overall signal-to-noise ratio (SNR) of our observations. 
 """
 
+# ╔═╡ a412dd91-f4bd-4d55-933e-3a6d00db4ab0
+md"""
+!!! tip
+
+	For more on using science mode observations to analyze eVscope spectra, see this advanced section of the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf): "Using Method #3: Science menu’s Exoplanet transit mode with external stacking".
+"""
+
 # ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
 md"""
-!!! note "Stellar types"
+!!! tip
 
 	For more on comparing stellar types from eVscope spectral data, see this lab.
 """
@@ -2082,6 +2089,7 @@ version = "17.4.0+0"
 # ╟─7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 # ╟─178d3b56-4963-4bcc-b490-e5b6550acda3
 # ╟─8f29a386-a472-4e80-9fe1-7f45d8435a43
+# ╟─a412dd91-f4bd-4d55-933e-3a6d00db4ab0
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
 # ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
