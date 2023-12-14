@@ -434,13 +434,13 @@ function get_lims2(arr, limits)
 end
 
 # ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-xrange_ev_fits, yrange_ev_fits = get_lims2(arr_fits, limits_ev_fits)
+xrange_ev_fits, yrange_ev_fits = get_lims2(arr_fits, limits_ev_fits);
 
 # ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
-window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits]
+window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
 
 # ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-prof_1D_fits = sum(window_fits; dims=1) |> vec
+prof_1D_fits = sum(window_fits; dims=1) |> vec;
 
 # ╔═╡ f9868858-6982-4906-8b52-38e058e98279
 plot(xrange_ev_fits, prof_1D_fits)
@@ -2101,7 +2101,7 @@ version = "17.4.0+0"
 # ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
 # ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
-# ╠═1c3b1385-5f49-46d1-89fb-9223ec5a1226
+# ╟─1c3b1385-5f49-46d1-89fb-9223ec5a1226
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
