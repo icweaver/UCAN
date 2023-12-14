@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.32
+# v0.19.35
 
 using Markdown
 using InteractiveUtils
@@ -220,7 +220,7 @@ md"""
 
 # ╔═╡ 77836abd-a282-471b-a994-395781fc1f0b
 md"""
-Now that we are able to access the underlying structure of our data, let's explore next how we can extract subsets of it that we might be interested in. One common approach, known as [array slicing](https://en.wikipedia.org/wiki/Array_slicing), accomplishes this by selecting the subset of pixels that fall within a specified rectangle.
+Now that we are able to access the underlying structure of our data, let's explore next how we can extract subsets that we might be interested in. One common approach, known as [array slicing](https://en.wikipedia.org/wiki/Array_slicing), accomplishes this by selecting the subset of pixels that fall within a specified rectangle.
 
 Try using the sliders below to specify a region of interest where we would like to build a spectrum from. *Note that this will only work in the locally downladed version of this notebook.*
 """
@@ -237,12 +237,6 @@ let
 	tmp[row_range_dog, col_range_dog] .= RGB(0, 0, 0)
 	tmp
 end
-
-# ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
-md"""
-!!! note
-	Try moving the aperture over different parts of the image to see if any particular features can be picked out in the final spectrum.
-"""
 
 # ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
 window_dog = @view gray_dog[row_range_dog, col_range_dog];
@@ -307,6 +301,12 @@ let
 	)
 end
 
+# ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
+md"""
+!!! note
+	Try moving the original region over different parts of the image to see if any particular features can be picked out in the final spectrum.
+"""
+
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 md"""
 ### eVscope live view image
@@ -343,36 +343,6 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 	)
 end
 
-# ╔═╡ 75108863-4a62-4751-aeee-246250fbf8b8
-function get_lims(arr, limits)
-	ymax, xmax = size(arr)
-	xlims = limits["xaxis"] .|> (x -> round(Int, x))
-	xlo, xhi = xlims
-	xlo = max(1, xlo)
-	xhi = min(xhi, xmax)
-	
-	ylims = limits["yaxis"] .|> (x -> round(Int, x))
-	yhi, ylo = ylims # Assuming heatmap y-axis reversed
-	ylo = max(1, ylo)
-	yhi = min(yhi, ymax)
-
-	# @debug :vals xlo xhi ylo yhi
-
-	return xlo:xhi, ylo:yhi
-end
-
-# ╔═╡ ac74a5c7-c89c-41c0-bf09-c19e026364ab
-xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray)
-
-# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live]
-
-# ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
-prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
-
-# ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
-plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
-
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
 ### FITS
@@ -400,23 +370,11 @@ arr_fits = permutedims(img_fits.data)
 	)
 end
 
-# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits)
-
-# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
-window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits]
-
 # ╔═╡ ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
 img_fits.header
 
 # ╔═╡ 059e8026-d718-4d40-9d6d-ef3abbb36723
 img_fits.data
-
-# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-prof_1D_fits = sum(window_fits; dims=1) |> vec
-
-# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
-plot(xrange_ev_fits, prof_1D_fits)
 
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
 md"""
@@ -440,18 +398,6 @@ m = (4861 - 0.0) / (px_sample - px_zero)
 
 # ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
 y_wav(x_px) = m * (x_px - px_zero)
-
-# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-xrange_ev_live_wav = y_wav.(xrange_ev_live)
-
-# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
-let
-	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
-	for (name, wav) ∈ ref_wavs
-		add_vline!(p, wav)
-	end
-	p
-end
 
 # ╔═╡ 5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 md"""
@@ -601,6 +547,60 @@ details(
 """
 )
 
+# ╔═╡ 75108863-4a62-4751-aeee-246250fbf8b8
+function get_lims(arr, limits)
+	ymax, xmax = size(arr)
+	xlims = limits["xaxis"] .|> (x -> round(Int, x))
+	xlo, xhi = xlims
+	xlo = max(1, xlo)
+	xhi = min(xhi, xmax)
+	
+	ylims = limits["yaxis"] .|> (x -> round(Int, x))
+	yhi, ylo = ylims # Assuming heatmap y-axis reversed
+	ylo = max(1, ylo)
+	yhi = min(yhi, ymax)
+
+	# @debug :vals xlo xhi ylo yhi
+
+	return xlo:xhi, ylo:yhi
+end
+
+# ╔═╡ ac74a5c7-c89c-41c0-bf09-c19e026364ab
+xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray)
+
+# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live]
+
+# ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
+prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
+
+# ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
+plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
+
+# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
+xrange_ev_live_wav = y_wav.(xrange_ev_live)
+
+# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
+let
+	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
+	for (name, wav) ∈ ref_wavs
+		add_vline!(p, wav)
+	end
+	p
+end
+
+# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
+xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits)
+
+# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
+window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits]
+
+# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
+prof_1D_fits = sum(window_fits; dims=1) |> vec
+
+# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
+plot(xrange_ev_fits, prof_1D_fits)
+
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
 ## Packages
@@ -654,9 +654,9 @@ version = "1.2.2"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
-git-tree-sha1 = "02f731463748db57cc2ebfbd9fbc9ce8280d3433"
+git-tree-sha1 = "cde29ddf7e5726c9fb511f340244ea3481267608"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-version = "3.7.1"
+version = "3.7.2"
 weakdeps = ["StaticArrays"]
 
     [deps.Adapt.extensions]
@@ -740,9 +740,9 @@ uuid = "62783981-4cbd-42fc-bca8-16325de8dc4b"
 version = "0.1.5"
 
 [[deps.CEnum]]
-git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
+git-tree-sha1 = "389ad5c84de1ae7cf0e28e381131c98ea87d54fc"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
-version = "0.4.2"
+version = "0.5.0"
 
 [[deps.CFITSIO]]
 deps = ["CFITSIO_jll"]
@@ -968,9 +968,9 @@ version = "0.3.2"
 
 [[deps.FFTW]]
 deps = ["AbstractFFTs", "FFTW_jll", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
-git-tree-sha1 = "b4fbdd20c889804969571cc589900803edda16b7"
+git-tree-sha1 = "ec22cbbcd01cba8f41eecd7d44aac1f23ee985e3"
 uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-version = "1.7.1"
+version = "1.7.2"
 
 [[deps.FFTW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1013,9 +1013,9 @@ version = "1.9.0"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "5eab648309e2e060198b45820af1a37182de3cce"
+git-tree-sha1 = "abbbb9ec3afd783a7cbd82ef01dcd088ea051398"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.HistogramThresholding]]
 deps = ["ImageBase", "LinearAlgebra", "MappedArrays"]
@@ -1243,15 +1243,15 @@ version = "0.21.4"
 
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
-git-tree-sha1 = "d65930fa2bc96b07d7691c652d701dcbe7d9cf0b"
+git-tree-sha1 = "fa6d0bcff8583bac20f1ffa708c3913ca605c611"
 uuid = "b835a17e-a41a-41e7-81f0-2f016b05efe0"
-version = "0.1.4"
+version = "0.1.5"
 
 [[deps.JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "6f2675ef130a300a112286de91973805fcc5ffbc"
+git-tree-sha1 = "60b1194df0a3298f460063de985eae7b01bc011a"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
-version = "2.1.91+0"
+version = "3.0.1+0"
 
 [[deps.LERC_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1357,10 +1357,10 @@ uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
 version = "0.1.4"
 
 [[deps.MKL_jll]]
-deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg"]
-git-tree-sha1 = "eb006abbd7041c28e0d16260e50a24f8f9104913"
+deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl"]
+git-tree-sha1 = "72dc3cf284559eb8f53aa593fe62cb33f83ed0c0"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2023.2.0+0"
+version = "2024.0.0+0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1432,9 +1432,9 @@ version = "1.0.2"
 
 [[deps.NearestNeighbors]]
 deps = ["Distances", "StaticArrays"]
-git-tree-sha1 = "2c3726ceb3388917602169bed973dbc97f1b51a8"
+git-tree-sha1 = "3ef8ff4f011295fd938a521cb605099cecf084ca"
 uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-version = "0.4.13"
+version = "0.4.15"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1482,9 +1482,9 @@ version = "1.4.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "a12e56c72edee3ce6b96667745e6cbbe5498f200"
+git-tree-sha1 = "cc6e1927ac521b659af340e0ca45828a3ffc748f"
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "1.1.23+0"
+version = "3.0.12+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
@@ -1493,9 +1493,9 @@ version = "1.6.3"
 
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
-git-tree-sha1 = "eed372b0fa15624273a9cdb188b1b88476e6a233"
+git-tree-sha1 = "67186a2bc9a90f9f85ff3cc8277868961fb57cbd"
 uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
-version = "0.4.2"
+version = "0.4.3"
 
 [[deps.PaddedViews]]
 deps = ["OffsetArrays"]
@@ -1540,9 +1540,9 @@ version = "0.8.19"
 
 [[deps.PlutoPlotly]]
 deps = ["AbstractPlutoDingetjes", "BaseDirs", "Colors", "Dates", "Downloads", "HypertextLiteral", "InteractiveUtils", "LaTeXStrings", "Markdown", "Pkg", "PlotlyBase", "Reexport", "TOML"]
-git-tree-sha1 = "0b8880a45f96d8404ae1cf6e4d715e3a79369441"
+git-tree-sha1 = "58dcb661ba1e58a13c7adce77435c3c6ac530ef9"
 uuid = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
-version = "0.4.3"
+version = "0.4.4"
 
     [deps.PlutoPlotly.extensions]
     PlotlyKaleidoExt = "PlotlyKaleido"
@@ -1554,9 +1554,9 @@ version = "0.4.3"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "db8ec28846dbf846228a32de5a6912c63e2052e3"
+git-tree-sha1 = "bd7c69c7f7173097e7b5e1be07cee2b8b7447f51"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.53"
+version = "0.7.54"
 
 [[deps.PolyesterWeave]]
 deps = ["BitTwiddlingConvenienceFunctions", "CPUSummary", "IfElse", "Static", "ThreadingUtilities"]
@@ -1744,9 +1744,9 @@ version = "0.8.8"
 
 [[deps.StaticArrayInterface]]
 deps = ["ArrayInterface", "Compat", "IfElse", "LinearAlgebra", "PrecompileTools", "Requires", "SparseArrays", "Static", "SuiteSparse"]
-git-tree-sha1 = "03fec6800a986d191f64f5c0996b59ed526eda25"
+git-tree-sha1 = "5d66818a39bb04bf328e92bc933ec5b4ee88e436"
 uuid = "0d7ed370-da01-4f52-bd93-41d350b8b718"
-version = "1.4.1"
+version = "1.5.0"
 weakdeps = ["OffsetArrays", "StaticArrays"]
 
     [deps.StaticArrayInterface.extensions]
@@ -1916,10 +1916,10 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.8.0+0"
 
 [[deps.libpng_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "94d180a6d2b5e55e447e2d27a29ed04fe79eb30c"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "93284c28274d9e75218a416c65ec49d0e0fcdf3d"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
-version = "1.6.38+0"
+version = "1.6.40+0"
 
 [[deps.libsixel_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Pkg", "libpng_jll"]
@@ -1957,8 +1957,8 @@ version = "17.4.0+0"
 # ╟─9014873e-5b1b-4605-9dd6-efb9840e5732
 # ╟─685c8647-3de7-4775-ba71-fdfd23c557de
 # ╟─9427d980-2420-4285-992e-099bc6d1aa55
-# ╟─0d260f11-abcd-404d-885a-ba02f2692e36
 # ╟─9193e583-fe34-4a62-8142-5981e2335276
+# ╟─0d260f11-abcd-404d-885a-ba02f2692e36
 # ╟─cd2e384e-6f30-40b9-86f9-9a285a956b94
 # ╟─5dc94909-7181-42be-a252-4fcfb6a84ff0
 # ╟─6880b7a1-0a74-4879-bd85-90c8f8e947d2
@@ -1978,7 +1978,6 @@ version = "17.4.0+0"
 # ╟─77836abd-a282-471b-a994-395781fc1f0b
 # ╟─f5dfab17-a789-46dd-ae4f-d3707d0a4573
 # ╟─bb008a9b-8538-418d-9e70-50d9983c2074
-# ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╠═096b8d1e-9092-4110-95a7-7cff9210ba43
 # ╟─fedb57fe-574c-4567-933a-052e9b8d50bd
 # ╠═fcc96529-3b20-4a59-9d2d-48612f4c16f3
@@ -1992,6 +1991,7 @@ version = "17.4.0+0"
 # ╟─2f5da861-2a83-4ed1-9b6b-f9081768ca05
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
+# ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
