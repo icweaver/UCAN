@@ -251,7 +251,7 @@ window_dog_vals = gray.(window_dog)
 
 # ╔═╡ 14f83f54-f51c-4af4-b388-b76f188e7649
 md"""
-To build a spectrum of this selection across a given direction, we next perform a summation in the perpendicular direction. Synonymous terms for this are "dimension" and "axis". For example, if we wanted a spectrum in the "horizontal direction", we would sum up all the pixels in a given column.
+To build a spectrum of this selection across a given direction, we next perform a summation in the perpendicular direction. Synonymous terms for this are "dimension" and "axis". For example, if we wanted a spectrum in the "horizontal direction", we would sum up all the pixels in a given column. We call this final sum for a given column the intensity.
 
 Many libraries have this operation built in, typically with a `dims` or `axis` keyword to specify the direction to sum in, as shown below:
 """
@@ -516,6 +516,19 @@ md"""
 	```
 
 	The flipside is that the [plotting library we are using](https://plotly.com/) expects a simple vector, so we call [`vec`](https://docs.julialang.org/en/v1/base/arrays/#Base.vec) on the original sum to make this transformation for us before passing it to Plotly.
+
+!!! note "What does |> do?"
+	Known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a very convenient way to pass the output of one function as input to another. For example,
+
+	```julia
+	sqrt(sum([1, 4, 5, 6])) # 4.0
+	```
+
+	is equivalent to:
+
+	```julia
+	[1, 4, 5, 6] |> sum |> sqrt # 4.0
+	```
 """ |> details
 
 # ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
