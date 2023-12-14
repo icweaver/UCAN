@@ -43,7 +43,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 # ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
 @mdx """
 !!! note "Using this notebook"
-	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive, but for full interactive control, it is recommended to download and run this notebook locally.
+	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. This is a fully hackable notebook, so exploring the source code and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files.
 
 	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest.
 
@@ -266,7 +266,7 @@ prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
 	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
 
 	```julia
-	eltype(prof_1D_png_vals)
+	eltype(prof_1D_dog_vals)
 	```
 
  	--> **$(eltype(prof_1D_dog_vals))**
@@ -307,9 +307,19 @@ md"""
 	Try moving the original region over different parts of the image to see if any particular features can be picked out in the final spectrum.
 """
 
+# ╔═╡ 7616d2b0-9a2f-467e-91a6-da321717791f
+md"""
+Now that we are experts at constructing the spectra of dogs, let's turn next to constructing the spectra of astronomical objects.
+"""
+
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 md"""
 ### eVscope live view image
+"""
+
+# ╔═╡ 715d8d40-3ba1-4244-90e7-f4a5e1d76a1f
+md"""
+Below is a brief image of [Castor](https://en.wikipedia.org/wiki/Castor_(star)) that I captured from my backyard with an eVscope, following the procedures outlined in the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf).
 """
 
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
@@ -493,7 +503,7 @@ md"""
 # ╔═╡ c37fc603-8943-4be6-9c73-1f327e8b7885
 md"""
 !!! note "Why vec?"
-	Array operations in Julia [preserve dimensionality](https://stackoverflow.com/a/42353230/16402912) to make things more consistent and composable. For example,
+	Array operations in Julia preserve dimensionality to make things [more consistent and composable](https://stackoverflow.com/a/42353230/16402912). For example,
 
 	```julia
 	sum([
@@ -518,7 +528,7 @@ md"""
 	The flipside is that the [plotting library we are using](https://plotly.com/) expects a simple vector, so we call [`vec`](https://docs.julialang.org/en/v1/base/arrays/#Base.vec) on the original sum to make this transformation for us before passing it to Plotly.
 
 !!! note "What does |> do?"
-	Known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a very convenient way to pass the output of one function as input to another. For example,
+	Known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to another. For example,
 
 	```julia
 	sqrt(sum([1, 4, 5, 6])) # 4.0
@@ -2005,7 +2015,9 @@ version = "17.4.0+0"
 # ╟─d3b6afc1-c29b-476a-90ed-721796af130f
 # ╟─1cef03ec-1991-4491-a415-c711ea457e05
 # ╟─7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
+# ╟─7616d2b0-9a2f-467e-91a6-da321717791f
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
+# ╟─715d8d40-3ba1-4244-90e7-f4a5e1d76a1f
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
 # ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
