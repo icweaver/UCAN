@@ -383,20 +383,30 @@ md"""
 Below is a science image of [HD122657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD122657&submit=SIMBAD+search), taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more one taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format.
 """
 
-# ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img_fits = load("data/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit")
-
 # ╔═╡ 8f29a386-a472-4e80-9fe1-7f45d8435a43
 md"""
 Unlike Live View images, FITS images are already in grayscale and come packed with additional metadata that inform us about the observing conditions (e.g., longitude, latitude, gain, exposure time) that our data were taken in. This can help us reduce systematics from the instrument and environment. Additionally, individual science images can be stacked together to increase the overall signal-to-noise ratio (SNR) of our observations. 
 """
 
+# ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
+md"""
+!!! note "Stellar types"
+
+	For more on comparing stellar types from eVscope spectral data, see this lab.
+"""
+
+# ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
+img_fits = load("data/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit");
+
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
-arr_fits = img_fits.data |> permutedims
+arr_fits = img_fits.data |> permutedims;
 
 # ╔═╡ 60367274-b695-43f1-b16a-7c63fc9ef21a
 @bind limits_ev_fits let
-	p = plot(heatmap(; z=arr_fits, showscale=false))
+	p = plot(heatmap(; z=arr_fits, showscale=false), Layout(
+		xaxis = attr(title="column"),
+		yaxis = attr(title="row", autorange="reversed"),
+	))
 
 	add_plotly_listener!(p, "plotly_relayout", "
 		e => {
@@ -407,43 +417,6 @@ arr_fits = img_fits.data |> permutedims
 		"
 	)
 end
-
-# ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
-md"""
-!!! note "Stellar types"
-
-	For more on comparing stellar types from eVscope spectral data, see this lab.
-"""
-
-# ╔═╡ 1c3b1385-5f49-46d1-89fb-9223ec5a1226
-function get_lims2(arr, limits)
-	ymax, xmax = size(arr)
-	xlims = limits["xaxis"] .|> (x -> round(Int, x))
-	xlo, xhi = xlims
-	xlo = max(1, xlo)
-	xhi = min(xhi, xmax)
-	
-	ylims = limits["yaxis"] .|> (x -> round(Int, x))
-	ylo, yhi = ylims # Assuming heatmap y-axis reversed
-	ylo = max(1, ylo)
-	yhi = min(yhi, ymax)
-
-	# @debug :vals xlo xhi ylo yhi
-
-	return xlo:xhi, ylo:yhi
-end
-
-# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-xrange_ev_fits, yrange_ev_fits = get_lims2(arr_fits, limits_ev_fits);
-
-# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
-window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
-
-# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-prof_1D_fits = sum(window_fits; dims=1) |> vec;
-
-# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
-plot(xrange_ev_fits, prof_1D_fits)
 
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
 md"""
@@ -527,6 +500,9 @@ array_slice = original_array[row_range, column_range]
 
 # ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
 img_info(ev_live);
+
+# ╔═╡ 178d3b56-4963-4bcc-b490-e5b6550acda3
+img_info(img_fits);
 
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content; state="close")
@@ -683,6 +659,18 @@ let
 	end
 	p
 end
+
+# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
+xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits);
+
+# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
+window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
+
+# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
+prof_1D_fits = sum(window_fits; dims=1) |> vec;
+
+# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
+plot(xrange_ev_fits, prof_1D_fits)
 
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
@@ -2092,16 +2080,16 @@ version = "17.4.0+0"
 # ╟─7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╟─7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
-# ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
+# ╟─178d3b56-4963-4bcc-b490-e5b6550acda3
 # ╟─8f29a386-a472-4e80-9fe1-7f45d8435a43
-# ╠═3357c912-78e4-4c90-a784-55e489bbaf02
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
 # ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
+# ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
+# ╠═3357c912-78e4-4c90-a784-55e489bbaf02
 # ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
 # ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
-# ╟─1c3b1385-5f49-46d1-89fb-9223ec5a1226
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
