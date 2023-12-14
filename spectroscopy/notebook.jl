@@ -327,9 +327,9 @@ ev_live = load("data/castor.png")
 
 # ╔═╡ 01ee9b23-caa3-49d6-aff4-972ea7be2d79
 md"""
-Similarly to the dog images that we have been working with, this is also just a regular PNG file which we can analyze in exactly the same way to produce our spectra.
+Similarly to the dog images that we have been working with, this is also just a regular PNG file which we can analyze in exactly the same way as earlier to produce our spectra.
 
-For convenience, we have modified the region of interest selection process so that it can be directly selected by clicking and dragging over the plot below.
+For convenience, we have modified the region of interest selection process so that it can be directly selected by clicking and dragging over the plot below. Note that the colormap used just artificially applies different colors for viewing purposes, but does not change the underlying data.
 """
 
 # ╔═╡ 07d7dd41-8b49-4afc-9da2-b977473b24a3
@@ -349,7 +349,9 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 			showscale = false
 		),
 		Layout(
+			xaxis = attr(title="column"),
 			yaxis = attr(
+				title = "row",
 				autorange = "reversed",
 				# scaleanchor = :x,
 			),
@@ -366,22 +368,35 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 	)
 end
 
+# ╔═╡ 7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
+md"""
+To close out this section on performing array operations on image data, we will look at one of the most common image formats used in astronomy, FITS files.
+"""
+
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
 ### FITS
 """
 
+# ╔═╡ 7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
+md"""
+Below is a science image of [HD122657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD122657&submit=SIMBAD+search), taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more one taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format.
+"""
+
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 img_fits = load("data/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit")
 
+# ╔═╡ 8f29a386-a472-4e80-9fe1-7f45d8435a43
+md"""
+Unlike Live View images, FITS images are already in grayscale and come packed with additional metadata that inform us about the observing conditions (e.g., longitude, latitude, gain, exposure time) that our data were taken in. This can help us reduce systematics from the instrument and environment. Additionally, individual science images can be stacked together to increase the overall signal-to-noise ratio (SNR) of our observations. 
+"""
+
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
-arr_fits = permutedims(img_fits.data)
+arr_fits = img_fits.data |> permutedims
 
 # ╔═╡ 60367274-b695-43f1-b16a-7c63fc9ef21a
 @bind limits_ev_fits let
-	p = plot(heatmap(; z=arr_fits, showscale=false), Layout(
-			yaxis = attr(autorange="reversed")
-		))
+	p = plot(heatmap(; z=arr_fits, showscale=false))
 
 	add_plotly_listener!(p, "plotly_relayout", "
 		e => {
@@ -392,12 +407,6 @@ arr_fits = permutedims(img_fits.data)
 		"
 	)
 end
-
-# ╔═╡ ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
-img_fits.header
-
-# ╔═╡ 059e8026-d718-4d40-9d6d-ef3abbb36723
-img_fits.data
 
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
 md"""
@@ -621,7 +630,10 @@ window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev
 prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
-plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
+plot(xrange_ev_live, prof_1D_ev_live_gray_vals, Layout(
+	xaxis = attr(title="column"),
+	yaxis = attr(title="intensity"),
+))
 
 # ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
 xrange_ev_live_wav = y_wav.(xrange_ev_live)
@@ -2045,22 +2057,23 @@ version = "17.4.0+0"
 # ╟─81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╟─01ee9b23-caa3-49d6-aff4-972ea7be2d79
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
-# ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
+# ╟─352ddf83-7ef4-487e-912e-c3e2b8ad055c
 # ╟─07d7dd41-8b49-4afc-9da2-b977473b24a3
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╟─27ad53e4-40c6-4d2e-a87b-d766f048c4bd
 # ╠═ac74a5c7-c89c-41c0-bf09-c19e026364ab
 # ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
+# ╟─7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
+# ╟─7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
+# ╟─8f29a386-a472-4e80-9fe1-7f45d8435a43
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
 # ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
 # ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
-# ╠═ec37cb5e-add0-4a15-a8a4-c4424a0cc42a
-# ╠═059e8026-d718-4d40-9d6d-ef3abbb36723
 # ╟─aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
