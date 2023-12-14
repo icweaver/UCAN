@@ -314,12 +314,12 @@ Now that we are experts at constructing the spectra of dogs, let's turn next to 
 
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 md"""
-### eVscope live view image
+### eVscope Live View image
 """
 
 # ╔═╡ 715d8d40-3ba1-4244-90e7-f4a5e1d76a1f
 md"""
-Below is a brief image of [Castor](https://en.wikipedia.org/wiki/Castor_(star)) that I captured from my backyard with an eVscope, following the procedures outlined in the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf).
+Below is a brief Live View image of [Castor](https://en.wikipedia.org/wiki/Castor_(star)) that I captured from my backyard with an eVscope following the procedures outlined in the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf).
 """
 
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
@@ -327,12 +327,18 @@ ev_live = load("data/castor.png")
 
 # ╔═╡ 01ee9b23-caa3-49d6-aff4-972ea7be2d79
 md"""
-Similar to the dog images that we have been working with, this is also just a regular PNG file, which we can analyze in exactly the same way to produce our spectra.
+Similarly to the dog images that we have been working with, this is also just a regular PNG file which we can analyze in exactly the same way to produce our spectra.
 
-For convenience, we have modified the subarray selection process so that it can be directly selected by clicking and dragging over the plot below.
+For convenience, we have modified the region of interest selection process so that it can be directly selected by clicking and dragging over the plot below.
+"""
+
+# ╔═╡ 07d7dd41-8b49-4afc-9da2-b977473b24a3
+md"""
+Below are the steps used to produce the final spectrum.
 """
 
 # ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
+# Convert to grayscale
 arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 
 # ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
@@ -359,6 +365,12 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 		"
 	)
 end
+
+# ╔═╡ 75c95191-f9e4-4eee-b2d5-9f80068cffdc
+ev_live .|> Gray .|> gray;
+
+# ╔═╡ fabba1db-6cae-4f45-a3ce-4db804097207
+ev_live .|> Gray |> channelview;
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -577,6 +589,13 @@ details(
 """
 )
 
+# ╔═╡ 27ad53e4-40c6-4d2e-a87b-d766f048c4bd
+md"""
+!!! note "What is channelview?"
+
+	This is a more general version of `gray` that also works for color images and returns a view instead of a copy. Either function can be used. For more information, [see here](https://juliaimages.org/v0.20/conversions_views/#Color-separations:-views-for-converting-between-numbers-and-colors-1).
+""" |> details
+
 # ╔═╡ 75108863-4a62-4751-aeee-246250fbf8b8
 function get_lims(arr, limits)
 	ymax, xmax = size(arr)
@@ -599,10 +618,10 @@ end
 xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray);
 
 # ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live]
+window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live];
 
 # ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
-prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
+prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
 plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
@@ -620,10 +639,10 @@ let
 end
 
 # ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits)
+xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits);
 
 # ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
-window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits]
+window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
 
 # ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
 prof_1D_fits = sum(window_fits; dims=1) |> vec
@@ -2026,12 +2045,16 @@ version = "17.4.0+0"
 # ╟─ee3ee62d-1548-4b13-afac-ea50cdec1ba5
 # ╟─715d8d40-3ba1-4244-90e7-f4a5e1d76a1f
 # ╠═95e3fec3-e03c-47c6-bdc4-7c93e0801718
-# ╠═81307d16-74d2-462a-8bb9-936dafb27dd7
+# ╟─81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╟─01ee9b23-caa3-49d6-aff4-972ea7be2d79
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
-# ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
-# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+# ╟─352ddf83-7ef4-487e-912e-c3e2b8ad055c
+# ╟─07d7dd41-8b49-4afc-9da2-b977473b24a3
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
+# ╟─27ad53e4-40c6-4d2e-a87b-d766f048c4bd
+# ╠═75c95191-f9e4-4eee-b2d5-9f80068cffdc
+# ╠═fabba1db-6cae-4f45-a3ce-4db804097207
+# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═ac74a5c7-c89c-41c0-bf09-c19e026364ab
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
