@@ -334,7 +334,7 @@ For convenience, we have modified the region of interest selection process so th
 
 # ╔═╡ 07d7dd41-8b49-4afc-9da2-b977473b24a3
 md"""
-Below are the steps used to produce the final spectrum.
+Below are the steps used to produce the final spectrum. We use semicolons at the end of each line to suppress the output being displayed to the screen.
 """
 
 # ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
@@ -365,12 +365,6 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 		"
 	)
 end
-
-# ╔═╡ 75c95191-f9e4-4eee-b2d5-9f80068cffdc
-ev_live .|> Gray .|> gray;
-
-# ╔═╡ fabba1db-6cae-4f45-a3ce-4db804097207
-ev_live .|> Gray |> channelview;
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
 md"""
@@ -615,13 +609,16 @@ function get_lims(arr, limits)
 end
 
 # ╔═╡ ac74a5c7-c89c-41c0-bf09-c19e026364ab
+# Get x and y limits from dragged region in plot
 xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray);
 
 # ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+# Use these bounds to select the region of interest from our grayscale image
 window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live];
 
 # ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
-prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec
+# Sum across rows for each column
+prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
 plot(xrange_ev_live, prof_1D_ev_live_gray_vals)
@@ -2048,14 +2045,12 @@ version = "17.4.0+0"
 # ╟─81307d16-74d2-462a-8bb9-936dafb27dd7
 # ╟─01ee9b23-caa3-49d6-aff4-972ea7be2d79
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
-# ╟─352ddf83-7ef4-487e-912e-c3e2b8ad055c
+# ╠═352ddf83-7ef4-487e-912e-c3e2b8ad055c
 # ╟─07d7dd41-8b49-4afc-9da2-b977473b24a3
 # ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╟─27ad53e4-40c6-4d2e-a87b-d766f048c4bd
-# ╠═75c95191-f9e4-4eee-b2d5-9f80068cffdc
-# ╠═fabba1db-6cae-4f45-a3ce-4db804097207
-# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═ac74a5c7-c89c-41c0-bf09-c19e026364ab
+# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
