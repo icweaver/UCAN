@@ -237,7 +237,26 @@ For convenience, we have modified the region of interest selection process so th
 
 # ╔═╡ 07d7dd41-8b49-4afc-9da2-b977473b24a3
 md"""
-Below are the steps used to produce the final spectrum. We use semicolons at the end of each line to suppress the output being displayed to the screen.
+Below are the general steps used to produce the final spectrum:
+
+```julia
+# Convert to grayscale
+arr_ev_live = ev_live .|> Gray |> channelview
+
+# Get x and y limits from dragged region in plot
+xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live, limits_ev_live)
+
+# Use these bounds to select the region of interest from our grayscale image
+window_ev_live = @view arr_ev_live[yrange_ev_live, xrange_ev_live]
+
+# Sum across rows for each column
+prof_1D_ev_live = sum(window_ev_live; dims=1) |> vec
+```
+"""
+
+# ╔═╡ d25e3ef6-c9a8-4219-81cd-04202187e347
+md"""
+These steps to produce a 1D spectrum are common enough to wrap into a general function so that they can be re-used for other targets.
 """
 
 # ╔═╡ 7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
@@ -486,6 +505,18 @@ function get_lims(arr, limits)
 	return xlo:xhi, ylo:yhi
 end
 
+# ╔═╡ b4f43581-09e8-45f8-bdc1-766dd88bdfc3
+"""
+	compute_spec1D(arr, region_lims)
+
+Given a rectangular region specified by `region_lims` inside a 2D image array `arr`, return its 1D spectrum computed along the horizontal axis. Also return the horizontal range of the region for convenience when plotting the 1D spectrum with its corresponding image array.
+"""
+function compute_spec1D(arr, region_lims)
+	xrange, yrange = get_lims(arr, region_lims)
+	region = @view arr[yrange, xrange]
+	return vec(sum(region; dims=1)), xrange
+end
+
 # ╔═╡ 7d1caf58-d1db-4fcb-a62b-5c2a16b56732
 stake! = String ∘ take!
 
@@ -636,13 +667,13 @@ img_info(ev_live);
 
 # ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # Convert to grayscale
-arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
+arr_ev_live = ev_live .|> Gray |> channelview;
 
 # ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
-@bind limits_ev_live_gray let
+@bind limits_ev_live let
 	p = plot(
 		heatmap(;
-			z = arr_ev_live_gray_vals,
+			z = arr_ev_live,
 			showscale = false
 		),
 		Layout(
@@ -665,30 +696,21 @@ arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
 	)
 end
 
-# ╔═╡ ac74a5c7-c89c-41c0-bf09-c19e026364ab
-# Get x and y limits from dragged region in plot
-xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray);
-
-# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-xrange_ev_live_wav = y_wav.(xrange_ev_live)
-
-# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-# Use these bounds to select the region of interest from our grayscale image
-window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live];
-
-# ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
-# Sum across rows for each column
-prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
+# ╔═╡ 1898e267-84e5-4d76-adc3-086b1bfef3cd
+prof_1D_ev_live, xrange_ev_live = compute_spec1D(arr_ev_live, limits_ev_live);
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
-plot(xrange_ev_live, prof_1D_ev_live_gray_vals, Layout(
+plot(xrange_ev_live, prof_1D_ev_live, Layout(
 	xaxis = attr(title="column"),
 	yaxis = attr(title="intensity"),
 ))
 
+# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
+xrange_ev_live_wav = y_wav.(xrange_ev_live)
+
 # ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
 let
-	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
+	p = plot(xrange_ev_live_wav, prof_1D_ev_live)
 	for (name, wav) ∈ ref_wavs
 		add_vline!(p, wav)
 	end
@@ -723,17 +745,8 @@ arr_fits = img_fits.data |> permutedims;
 	)
 end
 
-# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-# Pull region of interest bounds from interactive plot
-xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits);
-
-# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
-# Select region of interest from original array
-window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
-
-# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-# Compute 1D spectrum
-prof_1D_fits = sum(window_fits; dims=1) |> vec;
+# ╔═╡ c47acd38-7c27-4d02-9f95-f9a7df93a4cd
+prof_1D_fits, xrange_ev_fits = compute_spec1D(arr_fits, limits_ev_fits);
 
 # ╔═╡ f9868858-6982-4906-8b52-38e058e98279
 plot(xrange_ev_fits, prof_1D_fits, Layout(
@@ -2084,11 +2097,11 @@ version = "17.4.0+0"
 # ╟─4406e5d7-9a75-480b-8a97-b92e6a064338
 # ╟─352ddf83-7ef4-487e-912e-c3e2b8ad055c
 # ╟─07d7dd41-8b49-4afc-9da2-b977473b24a3
-# ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
 # ╟─27ad53e4-40c6-4d2e-a87b-d766f048c4bd
-# ╠═ac74a5c7-c89c-41c0-bf09-c19e026364ab
-# ╠═6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-# ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
+# ╟─d25e3ef6-c9a8-4219-81cd-04202187e347
+# ╠═b4f43581-09e8-45f8-bdc1-766dd88bdfc3
+# ╠═8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
+# ╠═1898e267-84e5-4d76-adc3-086b1bfef3cd
 # ╟─7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╟─7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
@@ -2104,9 +2117,7 @@ version = "17.4.0+0"
 # ╟─2c163542-8825-491c-8277-6097da40221f
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
-# ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-# ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
-# ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
+# ╠═c47acd38-7c27-4d02-9f95-f9a7df93a4cd
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
 # ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
