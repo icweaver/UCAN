@@ -17,7 +17,8 @@ end
 # ╔═╡ e46b678e-0448-4e31-a465-0a82c7380ab8
 begin
 # Web
-using HTTP, JSON, PlutoUI
+using JSON, PlutoUI
+using Downloads: download
 using MarkdownLiteral: @mdx
 
 # Visualization
@@ -45,7 +46,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 !!! note "Using this notebook"
 	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. This is a fully hackable notebook, so exploring the source code and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files.
 
-	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest.
+	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest. The `Live Docs` button in the bottom right will also pull up documentation for any function that is selected.
 
 	<details>
 	
@@ -86,17 +87,6 @@ We can use an image of anything, really, so why not start with dogs? Clicking th
 # ╔═╡ 0f3ae63c-cc02-43a8-9560-3770439640a0
 @bind run_again Button("Random!")
 
-# ╔═╡ 0b7dff7d-26d2-4c00-8d39-dceabb7433b6
-begin
-	run_again
-	
-	img_dog = let
-		r = HTTP.get("https://dog.ceo/api/breeds/image/random")
-		url_dog = JSON.parse(String(r.body))["message"]
-		load(url_dog)
-	end
-end
-
 # ╔═╡ 9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 md"""
 *Images courtesy of* <https://dog.ceo/dog-api/>
@@ -128,32 +118,6 @@ To summarize, our image is just a matrix of pixels, where each pixel value is re
 # ╔═╡ 9427d980-2420-4285-992e-099bc6d1aa55
 @bind resample Button("Resample")
 
-# ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
-begin
-	N_sampled_pixels = 5
-	resample
-	sample_px_dog = rand(img_dog, N_sampled_pixels)
-end
-
-# ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
-@bind px_dog Slider(sample_px_dog; show_value=true)
-
-# ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
-@mdx """
-We have ``$(N_sampled_pixels)`` pixels above sampled from our image. Based on how colorful and varied the image is, these pixels can have a range of different colors between them. Pull the slider to look at each of these pixels one by one and/or click the `Resample` button to select ``$(N_sampled_pixels)`` new pixels at random. For convenience, we also display the individual ``(R, G, B)`` values next to our slider.
-"""
-
-# ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
-let
-	r, g, b = px_dog .|> (red, green, blue)
-	
-	md"""
-	**Selected pixel:** $(px_dog)
-	
-	``\Longrightarrow`` R $(RGB(r, 0, 0)), G $(RGB(0, g, 0)), B $(RGB(0, 0, b))
-	"""
-end
-
 # ╔═╡ 6880b7a1-0a74-4879-bd85-90c8f8e947d2
 @mdx """
 Below our selected pixel, we map these ``(R, G, B)`` values to their corresponding sub-pixel, where ``0`` represents black (or no brightness), and ``1`` represents the peak brightness for the given color channel. The resulting color is then the [additive combination](https://en.wikipedia.org/wiki/RGB_color_model#Additive_colors) of these individual subpixels.
@@ -180,9 +144,6 @@ The converversion process from ``RGB`` to Grayscale for a given pixel is achieve
 This is [already implemented for us](https://juliaimages.org/latest/examples/color_channels/rgb_grayscale/) in the `ColorTypes` package, which we apply below to each pixel of our image to produce the following grayscale version:
 """
 
-# ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
-gray_dog = Gray.(img_dog)
-
 # ╔═╡ 703050cd-57fc-4b8b-b631-d5b8124ef872
 @mdx """
 Taking a look at the properties of our new image, we see that now instead of being a matrix composed of `RGB{N0f8}` types, it is composed of `Gray{N0f8}`s.
@@ -198,9 +159,6 @@ md"""
 md"""
 In other words, instead of three numbers representing each pixel, we now have a single number for each, which we can view directly:
 """
-
-# ╔═╡ c77bb96f-357e-4676-a504-ff93a5cd1711
-gray.(gray_dog)
 
 # ╔═╡ a2842f26-520e-42c0-bc4e-b04feccf22b2
 md"""
@@ -225,29 +183,10 @@ Now that we are able to access the underlying structure of our data, let's explo
 Try using the sliders below to specify a region of interest where we would like to build a spectrum from. *Note that this will only work in the locally downladed version of this notebook.*
 """
 
-# ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
-md"""
-`rows:` $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
-`columns`: $(@bind col_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
-"""
-
-# ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
-let
-	tmp = copy(gray_dog)
-	tmp[row_range_dog, col_range_dog] .= RGB(0, 0, 0)
-	tmp
-end
-
-# ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
-window_dog = @view gray_dog[row_range_dog, col_range_dog];
-
 # ╔═╡ 9e16a591-4d89-4d90-a96f-eed8f2078dad
 md"""
 Calling the `gray` function again, we have the following array of pixel values to work with:
 """
-
-# ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
-window_dog_vals = gray.(window_dog)
 
 # ╔═╡ 14f83f54-f51c-4af4-b388-b76f188e7649
 md"""
@@ -256,50 +195,10 @@ To build a spectrum of this selection across a given direction, we next perform 
 Many libraries have this operation built in, typically with a `dims` or `axis` keyword to specify the direction to sum in, as shown below:
 """
 
-# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
-
-# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
-@mdx """
-!!! warning "Heads up"
-
-	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
-
-	```julia
-	eltype(prof_1D_dog_vals)
-	```
-
- 	--> **$(eltype(prof_1D_dog_vals))**
-"""
-
 # ╔═╡ 2f5da861-2a83-4ed1-9b6b-f9081768ca05
 md"""
 This returns a vector that should be as long as the number of columns in our original image. Plotting these value as a function of the column location then gives us our 1D spectrum!
 """
-
-# ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
-let
-	p = make_subplots(;
-		rows = 2,
-		shared_xaxes = true,
-		vertical_spacing = 0.02,
-		x_title = "pixel column",
-	)
-	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
-	add_trace!(p, heatmap(
-		x = col_range_dog,
-		y = reverse(row_range_dog),
-		z = window_dog_vals,
-		colorscale = :Greys,
-		showscale = false,
-	) ; row=2)
-	update!(p;
-		layout = Layout(
-			yaxis = attr(title="intensity"),
-			yaxis2 = attr(scaleanchor=:x, title="pixel row")
-		)
-	)
-end
 
 # ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 md"""
@@ -323,7 +222,7 @@ Following the procedures outlined in the [*RSpec Unistellar Manual*](https://www
 """
 
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
-ev_live = load("data/castor.png")
+ev_live = load("https://github.com/icweaver/UCAN/raw/main/spectroscopy/data/castor.png")
 
 # ╔═╡ 01ee9b23-caa3-49d6-aff4-972ea7be2d79
 md"""
@@ -424,7 +323,7 @@ md"""
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img_fits = load("data/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit");
+img_fits = load(download("https://github.com/icweaver/UCAN/raw/main/spectroscopy/data/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit"));
 
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
 arr_fits = img_fits.data |> permutedims;
@@ -499,32 +398,6 @@ function img_info(img)
 	@debug "Image info" nrows ncols eltype_img
 	return nrows, ncols, eltype_img
 end
-
-# ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
-nrows_dog, ncols_dog, eltype_dog = img_info(img_dog);
-
-# ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
-@mdx """
-We see here that our image is ``$(nrows_dog)`` rows by ``$(ncols_dog)`` columns wide, and each cell (or pixel) of this image is represented by:
-"""
-
-# ╔═╡ 256f479b-7c90-4ad4-a893-e3e5c2266516
-@debug eltype_dog
-
-# ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
-img_info(gray_dog);
-
-# ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
-nrows_window_dog, ncols_window_dog, _ = img_info(window_dog);
-
-# ╔═╡ fedb57fe-574c-4567-933a-052e9b8d50bd
-@mdx """
-Based on our selections, the black rectangular region of interest extends from row ``$(first(row_range_dog))`` to ``$(last(row_range_dog)),`` and from column ``$(first(col_range_dog))`` to ``$(last(col_range_dog))`` of our original image, resulting in a slice that is ``$(nrows_window_dog)`` rows by ``$(ncols_window_dog)`` columns. We selected this range by using the following array syntax:
-
-```julia
-array_slice = original_array[row_range, column_range]
-```
-"""
 
 # ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
 img_info(ev_live);
@@ -700,6 +573,145 @@ prof_1D_fits = sum(window_fits; dims=1) |> vec;
 # ╔═╡ f9868858-6982-4906-8b52-38e058e98279
 plot(xrange_ev_fits, prof_1D_fits)
 
+# ╔═╡ 7d1caf58-d1db-4fcb-a62b-5c2a16b56732
+stake! = String ∘ take!
+
+# ╔═╡ 0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+begin
+	run_again
+	
+	img_dog = let
+		url = "https://dog.ceo/api/breeds/image/random"
+		# Dogs like stake
+		payload = download(url, IOBuffer()) |> stake!
+		url = JSON.parse(payload)["message"]
+		load(url)
+	end
+end
+
+# ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
+nrows_dog, ncols_dog, eltype_dog = img_info(img_dog);
+
+# ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
+@mdx """
+We see here that our image is ``$(nrows_dog)`` rows by ``$(ncols_dog)`` columns wide, and each cell (or pixel) of this image is represented by:
+"""
+
+# ╔═╡ 256f479b-7c90-4ad4-a893-e3e5c2266516
+@debug eltype_dog
+
+# ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
+begin
+	N_sampled_pixels = 5
+	resample
+	sample_px_dog = rand(img_dog, N_sampled_pixels)
+end
+
+# ╔═╡ 9193e583-fe34-4a62-8142-5981e2335276
+@bind px_dog Slider(sample_px_dog; show_value=true)
+
+# ╔═╡ 5dc94909-7181-42be-a252-4fcfb6a84ff0
+let
+	r, g, b = px_dog .|> (red, green, blue)
+	
+	md"""
+	**Selected pixel:** $(px_dog)
+	
+	``\Longrightarrow`` R $(RGB(r, 0, 0)), G $(RGB(0, g, 0)), B $(RGB(0, 0, b))
+	"""
+end
+
+# ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
+@mdx """
+We have ``$(N_sampled_pixels)`` pixels above sampled from our image. Based on how colorful and varied the image is, these pixels can have a range of different colors between them. Pull the slider to look at each of these pixels one by one and/or click the `Resample` button to select ``$(N_sampled_pixels)`` new pixels at random. For convenience, we also display the individual ``(R, G, B)`` values next to our slider.
+"""
+
+# ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
+gray_dog = Gray.(img_dog)
+
+# ╔═╡ d39b4688-a25e-4e47-9037-eeb7e3a6918c
+img_info(gray_dog);
+
+# ╔═╡ c77bb96f-357e-4676-a504-ff93a5cd1711
+gray.(gray_dog)
+
+# ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
+md"""
+`rows:` $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
+`columns`: $(@bind col_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
+"""
+
+# ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
+let
+	tmp = copy(gray_dog)
+	tmp[row_range_dog, col_range_dog] .= RGB(0, 0, 0)
+	tmp
+end
+
+# ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
+window_dog = @view gray_dog[row_range_dog, col_range_dog];
+
+# ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
+nrows_window_dog, ncols_window_dog, _ = img_info(window_dog);
+
+# ╔═╡ fedb57fe-574c-4567-933a-052e9b8d50bd
+@mdx """
+Based on our selections, the black rectangular region of interest extends from row ``$(first(row_range_dog))`` to ``$(last(row_range_dog)),`` and from column ``$(first(col_range_dog))`` to ``$(last(col_range_dog))`` of our original image, resulting in a slice that is ``$(nrows_window_dog)`` rows by ``$(ncols_window_dog)`` columns. We selected this range by using the following array syntax:
+
+```julia
+array_slice = original_array[row_range, column_range]
+```
+"""
+
+# ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
+window_dog_vals = gray.(window_dog)
+
+# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
+prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
+
+# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
+@mdx """
+!!! warning "Heads up"
+
+	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
+
+	```julia
+	eltype(prof_1D_dog_vals)
+	```
+
+ 	--> **$(eltype(prof_1D_dog_vals))**
+"""
+
+# ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
+let
+	p = make_subplots(;
+		rows = 2,
+		shared_xaxes = true,
+		vertical_spacing = 0.02,
+		x_title = "pixel column",
+	)
+	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
+	add_trace!(p, heatmap(
+		x = col_range_dog,
+		y = reverse(row_range_dog),
+		z = window_dog_vals,
+		colorscale = :Greys,
+		showscale = false,
+	) ; row=2)
+	update!(p;
+		layout = Layout(
+			yaxis = attr(title="intensity"),
+			yaxis2 = attr(scaleanchor=:x, title="pixel row")
+		)
+	)
+end
+
+# ╔═╡ baa00c8f-9fd4-44b7-bc79-669d17908c2d
+md"""
+!!! note "What's ∘?"
+	This is an operator that allows us to [compose functions](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping) together.
+""" |> details
+
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
 ## Packages
@@ -709,7 +721,7 @@ md"""
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
-HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 MarkdownLiteral = "736d6165-7244-6769-4267-6b50796e6954"
@@ -718,12 +730,11 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 AstroImages = "~0.4.1"
-HTTP = "~1.10.0"
 Images = "~0.26.0"
 JSON = "~0.21.4"
 MarkdownLiteral = "~0.1.1"
-PlutoPlotly = "~0.4.3"
-PlutoUI = "~0.7.53"
+PlutoPlotly = "~0.4.4"
+PlutoUI = "~0.7.54"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -732,7 +743,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.4"
 manifest_format = "2.0"
-project_hash = "8828dd9f326e2483fbb6e71a9b94e5523bb1ead1"
+project_hash = "71295838e99b026d6db829acb20a649ec3ede6e0"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -827,11 +838,6 @@ git-tree-sha1 = "4b41ad09c2307d5f24e36cd6f92eb41b218af22c"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.2.1"
 
-[[deps.BitFlags]]
-git-tree-sha1 = "2dc09997850d68179b69dafb58ae806167a32b1b"
-uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
-version = "0.1.8"
-
 [[deps.BitTwiddlingConvenienceFunctions]]
 deps = ["Static"]
 git-tree-sha1 = "0c5f81f47bbbcf4aea7b2959135713459170798b"
@@ -889,12 +895,6 @@ git-tree-sha1 = "05f9816a77231b07e634ab8715ba50e5249d6f76"
 uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 version = "0.15.5"
 
-[[deps.CodecZlib]]
-deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "cd67fc487743b2f0fd4380d4cbd3a24660d0eec8"
-uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.3"
-
 [[deps.ColorSchemes]]
 deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "PrecompileTools", "Random"]
 git-tree-sha1 = "67c1f244b991cad9b0aa4b7540fb758c2488b129"
@@ -950,12 +950,6 @@ version = "1.0.5+0"
 git-tree-sha1 = "52cb3ec90e8a8bea0e62e275ba577ad0f74821f7"
 uuid = "ed09eef8-17a6-5b46-8889-db040fac31e3"
 version = "0.3.2"
-
-[[deps.ConcurrentUtilities]]
-deps = ["Serialization", "Sockets"]
-git-tree-sha1 = "8cfa272e8bdedfa88b6aefbbca7c19f1befac519"
-uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
-version = "2.3.0"
 
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
@@ -1048,12 +1042,6 @@ deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
 
-[[deps.ExceptionUnwrapping]]
-deps = ["Test"]
-git-tree-sha1 = "e90caa41f5a86296e014e148ee061bd6c3edec96"
-uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
-version = "0.1.9"
-
 [[deps.Extents]]
 git-tree-sha1 = "2140cd04483da90b2da7f99b2add0750504fc39c"
 uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
@@ -1109,12 +1097,6 @@ deps = ["ArnoldiMethod", "Compat", "DataStructures", "Distributed", "Inflate", "
 git-tree-sha1 = "899050ace26649433ef1af25bc17a815b3db52b7"
 uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
 version = "1.9.0"
-
-[[deps.HTTP]]
-deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "abbbb9ec3afd783a7cbd82ef01dcd088ea051398"
-uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.1"
 
 [[deps.HistogramThresholding]]
 deps = ["ImageBase", "LinearAlgebra", "MappedArrays"]
@@ -1429,12 +1411,6 @@ version = "0.3.26"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
-[[deps.LoggingExtras]]
-deps = ["Dates", "Logging"]
-git-tree-sha1 = "c1dd6d7978c12545b4179fb6153b9250c96b0075"
-uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
-version = "1.0.3"
-
 [[deps.LoopVectorization]]
 deps = ["ArrayInterface", "CPUSummary", "CloseOpenIntervals", "DocStringExtensions", "HostCPUFeatures", "IfElse", "LayoutPointers", "LinearAlgebra", "OffsetArrays", "PolyesterWeave", "PrecompileTools", "SIMDTypes", "SLEEFPirates", "Static", "StaticArrayInterface", "ThreadingUtilities", "UnPack", "VectorizationBase"]
 git-tree-sha1 = "0f5648fbae0d015e3abe5867bca2b362f67a5894"
@@ -1486,12 +1462,6 @@ deps = ["CommonMark", "HypertextLiteral"]
 git-tree-sha1 = "0d3fa2dd374934b62ee16a4721fe68c418b92899"
 uuid = "736d6165-7244-6769-4267-6b50796e6954"
 version = "0.1.1"
-
-[[deps.MbedTLS]]
-deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
-git-tree-sha1 = "c067a280ddc25f196b5e7df3877c6b226d390aaf"
-uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.9"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1572,18 +1542,6 @@ version = "3.1.4+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+0"
-
-[[deps.OpenSSL]]
-deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "51901a49222b09e3743c65b8847687ae5fc78eb2"
-uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.4.1"
-
-[[deps.OpenSSL_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "cc6e1927ac521b659af340e0ca45828a3ffc748f"
-uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.0.12+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
@@ -1792,11 +1750,6 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 [[deps.SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
-
-[[deps.SimpleBufferStream]]
-git-tree-sha1 = "874e8867b33a00e784c8a7e4b60afe9e037b74e1"
-uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
-version = "1.1.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -2046,7 +1999,7 @@ version = "17.4.0+0"
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─249dd9ce-239e-45a9-9f59-c8991ecd299f
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
-# ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+# ╠═0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 # ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
@@ -2136,6 +2089,8 @@ version = "17.4.0+0"
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
 # ╟─2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─75108863-4a62-4751-aeee-246250fbf8b8
+# ╟─7d1caf58-d1db-4fcb-a62b-5c2a16b56732
+# ╟─baa00c8f-9fd4-44b7-bc79-669d17908c2d
 # ╟─fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
 # ╟─00000000-0000-0000-0000-000000000001
