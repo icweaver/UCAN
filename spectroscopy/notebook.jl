@@ -387,8 +387,8 @@ Unlike Live View images, [FITS](https://en.wikipedia.org/wiki/FITS) images are a
 
 # ╔═╡ 27642020-21e5-4de1-9f67-a951a6a682ed
 md"""
-!!! note "But why greyscale?"
-	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array
+!!! note "But why grayscale?"
+	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array, and how strong that signal will be. Images taken at specific wavelengths can then be stacked together to create [full color composite images](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color). In contrast, many pre-colorized images, like the PNGs from our Live View images, use a [Bayer filter](https://en.wikipedia.org/wiki/Bayer_filter) which complicates this correspondance.
 """
 
 # ╔═╡ a412dd91-f4bd-4d55-933e-3a6d00db4ab0
@@ -2102,7 +2102,7 @@ version = "17.4.0+0"
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
-# ╟─7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
+# ╠═7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 # ╠═27642020-21e5-4de1-9f67-a951a6a682ed
 # ╟─a412dd91-f4bd-4d55-933e-3a6d00db4ab0
 # ╟─178d3b56-4963-4bcc-b490-e5b6550acda3
