@@ -398,7 +398,7 @@ Unlike Live View images, [FITS](https://en.wikipedia.org/wiki/FITS) images are a
 # ╔═╡ 27642020-21e5-4de1-9f67-a951a6a682ed
 md"""
 !!! note "But why grayscale?"
-	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array, and how strong that signal will be. Images taken at specific wavelengths can then be stacked together to create [full color composite images](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color). The downside for our particular usecase is that these images have not been [debayered](https://en.wikipedia.org/wiki/Bayer_filter), which complicates this correspondance. We will explore some of the imaging artifacts that are introduced by this, and potential techniques that we can use to mitigate them.
+	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array, and how strong that signal will be. Images taken at specific wavelengths can then be stacked together to create [full color composite images](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color). The downside for our particular usecase is that these images taken by our eVscope sensor have not been [debayered](https://en.wikipedia.org/wiki/Bayer_filter), which complicates this correspondance. We will explore some of the imaging artifacts that are introduced by this, and potential techniques that we can use to mitigate them.
 """
 
 # ╔═╡ b3dacdf9-f45f-40b8-b463-eac43ceb7e87
@@ -409,7 +409,9 @@ md"""
 
 # ╔═╡ 74d14b68-ff23-494b-8ded-2d072f1e9f27
 md"""
-We see some immediate qualitative similarities and differences from our dog spectrum.
+We see some immediate qualitative similarities and differences from our dog spectrum. The dips in our 1D spectrum line up with the dimmer regions in the image, just like the "dog" features noted earlier. Zooming in on the image though, we see a cross-hatching pattern emerge. This is an artifact of the Bayer filter used by our sensor, and it manifests as a "sawtooth" pattern in our 1D specrtrum.
+
+As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf)*, this imaging artifact can be reduced by either binning our data beforehand or applying a debayering algorithm as part of a stacking routine when combining our FITS images. For our purposes, the spectrum we have is good enough quality for the low-resolution spectroscopy analysis we are doing. For example, we already can see broad molecular band features that are characteristic of this stellar type.
 """
 
 # ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
@@ -2113,7 +2115,7 @@ version = "17.4.0+0"
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
 # ╟─b3dacdf9-f45f-40b8-b463-eac43ceb7e87
-# ╠═74d14b68-ff23-494b-8ded-2d072f1e9f27
+# ╟─74d14b68-ff23-494b-8ded-2d072f1e9f27
 # ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
