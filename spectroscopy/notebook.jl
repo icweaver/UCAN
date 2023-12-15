@@ -398,7 +398,7 @@ Unlike Live View images, [FITS](https://en.wikipedia.org/wiki/FITS) images are a
 # ╔═╡ 27642020-21e5-4de1-9f67-a951a6a682ed
 md"""
 !!! note "But why grayscale?"
-	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array, and how strong that signal will be. Images taken at specific wavelengths can then be stacked together to create [full color composite images](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color). In contrast, many pre-colorized images, like the PNGs from our Live View images, use a [Bayer filter](https://en.wikipedia.org/wiki/Bayer_filter) which complicates this correspondance. We will explore some of the imaging artifacts that are introduced by this, and potential techniques that we can use to mitigate them.
+	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array, and how strong that signal will be. Images taken at specific wavelengths can then be stacked together to create [full color composite images](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color). The downside for our particular usecase is that these images have not been [debayered](https://en.wikipedia.org/wiki/Bayer_filter), which complicates this correspondance. We will explore some of the imaging artifacts that are introduced by this, and potential techniques that we can use to mitigate them.
 """
 
 # ╔═╡ b3dacdf9-f45f-40b8-b463-eac43ceb7e87
