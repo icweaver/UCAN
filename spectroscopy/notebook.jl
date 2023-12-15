@@ -307,16 +307,13 @@ As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https
 
 # ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
 md"""
-!!! tip
-	For more on comparing stellar types from eVscope spectral data, see this lab. Are there other techniques that we can apply to improve the quality of our spectra?
-
-!!! danger "TODO"
-	Placeholder for now
+!!! note
+	Stay tuned for future labs on comparing different stellar types from eVscope spectral data!
 """
 
 # ╔═╡ 2c163542-8825-491c-8277-6097da40221f
 md"""
-Below are the similar steps that we used to produce the 1D spectrum of our eV Live View image from earlier. The main difference is that we are now working directly with the numerical image array instead of needing to convert from an RGB or grayscale image first. For more on working with FITS files, [see here](http://juliaastro.org/dev/modules/AstroImages/manual/loading-images/).
+Below are similar steps that we used to produce the 1D spectrum of our eV Live View image from earlier. The main difference is that we are now working directly with the numerical image array instead of needing to convert from an RGB or grayscale image first. For more on working with FITS files, [see here](http://juliaastro.org/dev/modules/AstroImages/manual/loading-images/).
 """
 
 # ╔═╡ 25326216-a51b-4e9c-a484-3853ae135a16
@@ -347,8 +344,8 @@ For example, let's use our image of Castor from earlier since it (well, technica
 \newcommand{\pxzero}{\mathrm{px}_0}
 
 \begin{align*}
-d &= \frac{\wavline - 0.0}{\pxline - \mathrm{px}_0} \\
-\lambda &= \boxed{\frac{\wavline}{\pxline - \wavzero}(\mathrm{px} - \pxzero)}\ ,
+d &= \frac{\wavline - 0.0}{\pxline - \pxzero} = \frac{\wavline}{\pxline - \pxzero} \\
+\lambda &= \boxed{d \times (\mathrm{px} - \pxzero)}\ ,
 \end{align*}
 ```
 """
@@ -373,24 +370,6 @@ Try to identify the zero-point and H-β line and record their column pixel coord
 # ╔═╡ e3cc6aff-b777-4391-97b2-f24f288127c5
 @mdx """
 $(@bind show_lines CheckBox()) **Show lines**
-"""
-
-# ╔═╡ 6ccf3190-66f3-4a09-aa50-8b102eb6949c
-let
-	p = plot(1:10, 1:10)
-	add_hline!(p, 4; annotation_text="Jan 1, 2018 baseline", 
-              annotation_position="bottom right")
-	p
-end
-
-# ╔═╡ 5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
-md"""
-!!! note "TODO: Extension problem ideas"
-
-	* Pixel binning
-	* Image stacking
-	* Background subtraction
-	* Non-linear wavelength calibration
 """
 
 # ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
@@ -760,10 +739,19 @@ $(@bind px_line NumberField(xrange_ev_live)) H-β (Å)
 d = λ_line / (px_line - px_0);
 
 # ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
-if 8.4 ≤ d ≤ 9.0 
+if 8.4 ≤ d ≤ 9.0
 	md"""
 	!!! tip "Success 🎉"
-		Congratulations, we have successfully calibrated our 1D spectrum!
+		Congratulations, you have successfully calibrated your 1D spectrum!
+	
+		We hope that this brief introduction to analyzing spectra has provided you with some general tools for tackling your own datasets, and inspiration to explore further interesting topics in this field. Below are a few potential items that may be of interest for extending the techniques developed here.
+	
+		!!! note "Extension ideas"
+			* Pixel binning
+			* Image stacking
+			* Background subtraction
+			* Non-linear wavelength calibration
+	
 	"""
 else
 	md"""
@@ -788,7 +776,7 @@ let
 
 	# Overlay reference lines
 	show_lines && for (name, wav) ∈ ref_wavs
-		add_vline!(p, wav; line_color=:darkgrey, line_width=1, annotation_text=name)
+		add_vline!(p, wav; line_color=:darkgrey, line_width=1)
 	end
 	p
 end
@@ -2206,10 +2194,8 @@ version = "17.4.0+0"
 # ╟─307c7c22-5dbf-4134-beaf-815bcfeb2e65
 # ╟─f6ac23d4-e63d-4914-aff0-fb47edc02e7c
 # ╟─e3cc6aff-b777-4391-97b2-f24f288127c5
-# ╠═272654a7-665f-48ee-beb5-13944c803e7e
-# ╠═6ccf3190-66f3-4a09-aa50-8b102eb6949c
+# ╟─272654a7-665f-48ee-beb5-13944c803e7e
 # ╟─3527ba04-3ea7-42ed-910e-ec72939a4c96
-# ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
 # ╟─5b638405-5f75-473c-9de9-6acac9856608
