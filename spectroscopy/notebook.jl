@@ -252,7 +252,7 @@ md"""
 
 # ╔═╡ 7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 md"""
-Below is a science image of [HD123657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD123657&submit=SIMBAD+search) taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package, which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
+Below is a science image of [HD123657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD123657&submit=SIMBAD+search) taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
 """
 
 # ╔═╡ a412dd91-f4bd-4d55-933e-3a6d00db4ab0
@@ -293,6 +293,11 @@ md"""
 
 !!! danger "TODO"
 	Placeholder for now
+"""
+
+# ╔═╡ 2c163542-8825-491c-8277-6097da40221f
+md"""
+Below are the similar steps that we used to produce the 1D spectrum of our eV Live View image from earlier. The main difference is that we are now working directly with the numerical image array instead of needing to convert from an RGB or grayscale image first. For more on working with FITS files, [see here](http://juliaastro.org/dev/modules/AstroImages/manual/loading-images/).
 """
 
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
@@ -691,12 +696,14 @@ let
 end
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
+# Load FITS file
 img_fits = load(download("$(DPATH)/HD123657.fits"));
 
 # ╔═╡ 178d3b56-4963-4bcc-b490-e5b6550acda3
 img_info(img_fits);
 
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
+# Get array data and swap rows/cols to match plotting convention
 arr_fits = img_fits.data |> permutedims;
 
 # ╔═╡ 60367274-b695-43f1-b16a-7c63fc9ef21a
@@ -717,12 +724,15 @@ arr_fits = img_fits.data |> permutedims;
 end
 
 # ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
+# Pull region of interest bounds from interactive plot
 xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits);
 
 # ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
+# Select region of interest from original array
 window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
 
 # ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
+# Compute 1D spectrum
 prof_1D_fits = sum(window_fits; dims=1) |> vec;
 
 # ╔═╡ f9868858-6982-4906-8b52-38e058e98279
@@ -2091,6 +2101,7 @@ version = "17.4.0+0"
 # ╟─b3dacdf9-f45f-40b8-b463-eac43ceb7e87
 # ╟─74d14b68-ff23-494b-8ded-2d072f1e9f27
 # ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
+# ╟─2c163542-8825-491c-8277-6097da40221f
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
 # ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
