@@ -228,9 +228,6 @@ md"""
 Following the procedures outlined in the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf), here is a brief Live View image of [Castor](https://en.wikipedia.org/wiki/Castor_(star)) that I captured from my backyard.
 """
 
-# ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
-ev_live = load("https://github.com/icweaver/UCAN/raw/main/spectroscopy/data/castor.png")
-
 # ╔═╡ 01ee9b23-caa3-49d6-aff4-972ea7be2d79
 md"""
 The zeroth order light appears as the bright white spot passing straight through the grating, and the first order spectrum of light can be seen being dispersed horizontally, with redder light to the right. Similarly to the dog images that we have been working with, this is just a regular PNG file which we can analyze in exactly the same way as earlier to produce our 1D spectrum.
@@ -242,37 +239,6 @@ For convenience, we have modified the region of interest selection process so th
 md"""
 Below are the steps used to produce the final spectrum. We use semicolons at the end of each line to suppress the output being displayed to the screen.
 """
-
-# ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
-# Convert to grayscale
-arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
-
-# ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
-@bind limits_ev_live_gray let
-	p = plot(
-		heatmap(;
-			z = arr_ev_live_gray_vals,
-			showscale = false
-		),
-		Layout(
-			xaxis = attr(title="column"),
-			yaxis = attr(
-				title = "row",
-				autorange = "reversed",
-				# scaleanchor = :x,
-			),
-		)
-	)
-
-	add_plotly_listener!(p, "plotly_relayout", "
-		e => {
-		let layout = PLOT.layout
-		PLOT.value = {xaxis: layout.xaxis.range, yaxis:layout.yaxis.range}
-		PLOT.dispatchEvent(new CustomEvent('input'))
-		}
-		"
-	)
-end
 
 # ╔═╡ 7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 md"""
@@ -330,7 +296,7 @@ md"""
 """
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img_fits = load(download("https://github.com/icweaver/UCAN/raw/main/spectroscopy/data/y9mrer_2023-07-24T22-38-36.606_Science_HD123657.fit"));
+img_fits = load(download("$(DAPTH)/HD123657.fit"));
 
 # ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
 arr_fits = img_fits.data |> permutedims;
@@ -405,9 +371,6 @@ function img_info(img)
 	@debug "Image info" nrows ncols eltype_img
 	return nrows, ncols, eltype_img
 end
-
-# ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
-img_info(ev_live);
 
 # ╔═╡ 178d3b56-4963-4bcc-b490-e5b6550acda3
 img_info(img_fits);
@@ -542,36 +505,6 @@ function get_lims(arr, limits)
 	# @debug :vals xlo xhi ylo yhi
 
 	return xlo:xhi, ylo:yhi
-end
-
-# ╔═╡ ac74a5c7-c89c-41c0-bf09-c19e026364ab
-# Get x and y limits from dragged region in plot
-xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray);
-
-# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
-# Use these bounds to select the region of interest from our grayscale image
-window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live];
-
-# ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
-# Sum across rows for each column
-prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
-
-# ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
-plot(xrange_ev_live, prof_1D_ev_live_gray_vals, Layout(
-	xaxis = attr(title="column"),
-	yaxis = attr(title="intensity"),
-))
-
-# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-xrange_ev_live_wav = y_wav.(xrange_ev_live)
-
-# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
-let
-	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
-	for (name, wav) ∈ ref_wavs
-		add_vline!(p, wav)
-	end
-	p
 end
 
 # ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
@@ -724,6 +657,76 @@ md"""
 !!! note "What's ∘?"
 	This is an operator that allows us to [compose functions](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping) together.
 """ |> details
+
+# ╔═╡ 80a54675-6662-4e66-b9a3-4746edc35c71
+const DPATH = "https://github.com/icweaver/UCAN/raw/main/spectroscopy/data/"
+
+# ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
+ev_live = load("$(DPATH)/castor.png")
+
+# ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
+img_info(ev_live);
+
+# ╔═╡ 8a2e3efc-670b-4ce0-8d8f-fb95b1b0676b
+# Convert to grayscale
+arr_ev_live_gray_vals = ev_live .|> Gray |> channelview;
+
+# ╔═╡ 4406e5d7-9a75-480b-8a97-b92e6a064338
+@bind limits_ev_live_gray let
+	p = plot(
+		heatmap(;
+			z = arr_ev_live_gray_vals,
+			showscale = false
+		),
+		Layout(
+			xaxis = attr(title="column"),
+			yaxis = attr(
+				title = "row",
+				autorange = "reversed",
+				# scaleanchor = :x,
+			),
+		)
+	)
+
+	add_plotly_listener!(p, "plotly_relayout", "
+		e => {
+		let layout = PLOT.layout
+		PLOT.value = {xaxis: layout.xaxis.range, yaxis:layout.yaxis.range}
+		PLOT.dispatchEvent(new CustomEvent('input'))
+		}
+		"
+	)
+end
+
+# ╔═╡ ac74a5c7-c89c-41c0-bf09-c19e026364ab
+# Get x and y limits from dragged region in plot
+xrange_ev_live, yrange_ev_live = get_lims(arr_ev_live_gray_vals, limits_ev_live_gray);
+
+# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
+xrange_ev_live_wav = y_wav.(xrange_ev_live)
+
+# ╔═╡ 6430beb9-4ec6-49c9-9be6-c03ecb33ff8d
+# Use these bounds to select the region of interest from our grayscale image
+window_ev_live_gray_vals = @view arr_ev_live_gray_vals[yrange_ev_live, xrange_ev_live];
+
+# ╔═╡ 2289cd9f-7969-47a0-a802-4efccab9e36e
+# Sum across rows for each column
+prof_1D_ev_live_gray_vals = sum(window_ev_live_gray_vals; dims=1) |> vec;
+
+# ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
+plot(xrange_ev_live, prof_1D_ev_live_gray_vals, Layout(
+	xaxis = attr(title="column"),
+	yaxis = attr(title="intensity"),
+))
+
+# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
+let
+	p = plot(xrange_ev_live_wav, prof_1D_ev_live_gray_vals)
+	for (name, wav) ∈ ref_wavs
+		add_vline!(p, wav)
+	end
+	p
+end
 
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
@@ -2106,6 +2109,7 @@ version = "17.4.0+0"
 # ╟─75108863-4a62-4751-aeee-246250fbf8b8
 # ╟─7d1caf58-d1db-4fcb-a62b-5c2a16b56732
 # ╟─baa00c8f-9fd4-44b7-bc79-669d17908c2d
+# ╟─80a54675-6662-4e66-b9a3-4746edc35c71
 # ╟─fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
 # ╟─00000000-0000-0000-0000-000000000001
