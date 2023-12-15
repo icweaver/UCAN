@@ -319,9 +319,21 @@ md"""
 Below are the similar steps that we used to produce the 1D spectrum of our eV Live View image from earlier. The main difference is that we are now working directly with the numerical image array instead of needing to convert from an RGB or grayscale image first. For more on working with FITS files, [see here](http://juliaastro.org/dev/modules/AstroImages/manual/loading-images/).
 """
 
+# ╔═╡ 25326216-a51b-4e9c-a484-3853ae135a16
+md"""
+So far we have just been working with everything in pixel space. To begin analyzing potential [absorption/emission features](https://en.wikipedia.org/wiki/Spectral_line), we will next see how to convert to wavelength space.
+"""
+
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
 md"""
 ## Wavelength calibration
+"""
+
+# ╔═╡ 25002ec9-6c1a-47e8-aebf-64b2c649c0c7
+md"""
+In this final process, we will use information about spectral features from known sources to determine the relationship between the pixel coordinate ``x_\mathrm{pix}`` on our sensor, and the wavelength of light falling upon it. For example, let's use our image of Castor from earlier since it (technically the three brightest stars in this sextuple system that all resolve into a single object) is an A-type star.
+
+These types of stars are wonderful calibration sources because they all tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres. Are there any prominent features in our spectrum below?
 """
 
 # ╔═╡ c028c979-51c8-44f5-a60e-5f3f456a3b0c
@@ -2118,7 +2130,9 @@ version = "17.4.0+0"
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
 # ╠═c47acd38-7c27-4d02-9f95-f9a7df93a4cd
+# ╟─25326216-a51b-4e9c-a484-3853ae135a16
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
+# ╟─25002ec9-6c1a-47e8-aebf-64b2c649c0c7
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
 # ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
 # ╠═447de825-9442-48ba-b373-2adc158799e3
