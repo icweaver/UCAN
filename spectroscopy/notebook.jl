@@ -295,29 +295,6 @@ md"""
 	Placeholder for now
 """
 
-# ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img_fits = load(download("$(DAPTH)/HD123657.fit"));
-
-# ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
-arr_fits = img_fits.data |> permutedims;
-
-# ╔═╡ 60367274-b695-43f1-b16a-7c63fc9ef21a
-@bind limits_ev_fits let
-	p = plot(heatmap(; z=arr_fits, showscale=false), Layout(
-		xaxis = attr(title="column"),
-		yaxis = attr(title="row", autorange="reversed"),
-	))
-
-	add_plotly_listener!(p, "plotly_relayout", "
-		e => {
-		let layout = PLOT.layout
-		PLOT.value = {xaxis: layout.xaxis.range, yaxis:layout.yaxis.range}
-		PLOT.dispatchEvent(new CustomEvent('input'))
-		}
-		"
-	)
-end
-
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
 md"""
 ## Wavelength calibration
@@ -371,9 +348,6 @@ function img_info(img)
 	@debug "Image info" nrows ncols eltype_img
 	return nrows, ncols, eltype_img
 end
-
-# ╔═╡ 178d3b56-4963-4bcc-b490-e5b6550acda3
-img_info(img_fits);
 
 # ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
 function details(content; state="close")
@@ -506,18 +480,6 @@ function get_lims(arr, limits)
 
 	return xlo:xhi, ylo:yhi
 end
-
-# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
-xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits);
-
-# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
-window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
-
-# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
-prof_1D_fits = sum(window_fits; dims=1) |> vec;
-
-# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
-plot(xrange_ev_fits, prof_1D_fits)
 
 # ╔═╡ 7d1caf58-d1db-4fcb-a62b-5c2a16b56732
 stake! = String ∘ take!
@@ -727,6 +689,44 @@ let
 	end
 	p
 end
+
+# ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
+img_fits = load(download("$(DPATH)/HD123657.fit"));
+
+# ╔═╡ 178d3b56-4963-4bcc-b490-e5b6550acda3
+img_info(img_fits);
+
+# ╔═╡ 3357c912-78e4-4c90-a784-55e489bbaf02
+arr_fits = img_fits.data |> permutedims;
+
+# ╔═╡ 60367274-b695-43f1-b16a-7c63fc9ef21a
+@bind limits_ev_fits let
+	p = plot(heatmap(; z=arr_fits, showscale=false), Layout(
+		xaxis = attr(title="column"),
+		yaxis = attr(title="row", autorange="reversed"),
+	))
+
+	add_plotly_listener!(p, "plotly_relayout", "
+		e => {
+		let layout = PLOT.layout
+		PLOT.value = {xaxis: layout.xaxis.range, yaxis:layout.yaxis.range}
+		PLOT.dispatchEvent(new CustomEvent('input'))
+		}
+		"
+	)
+end
+
+# ╔═╡ 1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
+xrange_ev_fits, yrange_ev_fits = get_lims(arr_fits, limits_ev_fits);
+
+# ╔═╡ b03e01f2-6dde-43ea-b6f5-06a671c62eae
+window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
+
+# ╔═╡ aaafd2e3-d831-4d88-96aa-4d0d075550e2
+prof_1D_fits = sum(window_fits; dims=1) |> vec;
+
+# ╔═╡ f9868858-6982-4906-8b52-38e058e98279
+plot(xrange_ev_fits, prof_1D_fits)
 
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
