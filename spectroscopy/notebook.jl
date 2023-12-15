@@ -84,6 +84,13 @@ md"""
 We can use an image of anything, really, so why not start with dogs? Clicking the button below will pull a new dog image from the internet.
 """
 
+# ╔═╡ 848cfcdc-d15e-4f8e-8729-a20bb50327fa
+md"""
+!!! warning "Heads up"
+
+	Sometimes a url returned by the [API](https://en.wikipedia.org/wiki/API) leads to a 404 page. Just hit the button again to download a new dog if this happens.
+"""
+
 # ╔═╡ 0f3ae63c-cc02-43a8-9560-3770439640a0
 @bind run_again Button("Random!")
 
@@ -2004,6 +2011,7 @@ version = "17.4.0+0"
 # ╟─127ca8df-46c7-4d02-8f9b-e27983978441
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─249dd9ce-239e-45a9-9f59-c8991ecd299f
+# ╟─848cfcdc-d15e-4f8e-8729-a20bb50327fa
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
 # ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
