@@ -334,20 +334,36 @@ md"""
 In this final process, we will use information about spectral features from a known reference to determine the general relationship between the pixel coordinate ``(\mathrm{px})`` on our sensor, and the wavelength of light falling upon it ``(\lambda)``. One common approach is to assume a linear relationship between these two spaces. In other words:
 
 ```math
-\lambda - \lambda_0= d(\mathrm{px} - \mathrm{px}_0)\ ,
+\lambda - \lambda_0= d \times (\mathrm{px} - \mathrm{px}_0)\ ,
 ```
 
-where ``(d)`` is the dispersion in wavelength per pixel and ``(\mathrm{px}_0)`` is the pixel coordinate corresponding  to where the wavelength ``(\lambda_0)`` is zero (this allows us to have a relation of the form ``λ = \dots``). To determine ``d``, we select one other feature in our reference spectrum with known wavelength.
+where ``(d)`` is the dispersion in wavelength per pixel and ``(\mathrm{px}_0)`` is the pixel coordinate corresponding  to where we would like the wavelength ``(\lambda_0)`` to be zero (this allows us to have a relation of the form ``λ = \dots``). Using the location of the zeroth order light is typically a good choice for this. To determine ``d`` we select one other feature in our reference spectrum with known wavelength.
 
 For example, let's use our image of Castor from earlier since it (well, technically the three brightest stars in this sextuple system that all resolve into a single point) is an A-type star. These types of stars are wonderful calibration sources because they tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres. Identifying the (pixel, wavelength) pair ``(\mathrm{px}_\mathrm{line}, \lambda_\mathrm{line})``, we have:
 
 ```math
+\newcommand{\wavline}{\lambda_\mathrm{line}}
+\newcommand{\pxline}{\mathrm{px}_\mathrm{line}}
+\newcommand{\pxzero}{\mathrm{px}_0}
+
 \begin{align*}
-d &= \frac{y_{\lambda,\mathrm{line}} - 0.0}{x_\mathrm{px,line} - x_\mathrm{px,0}} \\
-y_\lambda &= \frac{y_{\lambda,\mathrm{line}}}{x_\mathrm{px,line} - x_\mathrm{px,0}}(x_\mathrm{px} - x_\mathrm{px,0})\ ,
+d &= \frac{\wavline - 0.0}{\pxline - \mathrm{px}_0} \\
+\lambda &= \boxed{\frac{\wavline}{\pxline - \wavzero}(\mathrm{px} - \pxzero)}\ ,
 \end{align*}
 ```
 """
+
+# ╔═╡ 229088f2-922f-4b93-b6c1-63f683a4ae0f
+const ref_wavs = Dict(
+		:h_alpha => 6562.8,
+		:h_beta => 4861.4,
+		:h_gamma => 4340.5,
+		:h_delta => 4102.7,
+		:h_epsilon => 3970.1,
+	)
+
+# ╔═╡ 0b681466-bd74-4a4f-8c0f-6cb9186a3af8
+λ_line = ref_wavs[:h_beta];
 
 # ╔═╡ 307c7c22-5dbf-4134-beaf-815bcfeb2e65
 md"""
@@ -359,28 +375,13 @@ Try to identify the zero-point and H-β line and record their column pixel coord
 $(@bind show_lines CheckBox()) **Show lines**
 """
 
-# ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
-if 8.4 ≤ m ≤ 9.0 
-	md"""
-	!!! tip "Success 🎉"
-		Congratulations, we have successfully calibrated our 1D spectrum!
-	"""
-else
-	md"""
-	!!! warning "Note quite"
-		Try double checking which line is the H-β feature. A reference calibration sheet like [this one](https://www.aavso.org/sites/default/files/Calibration_Cheat_Sheet.png) may be helpful.
-	"""
+# ╔═╡ 6ccf3190-66f3-4a09-aa50-8b102eb6949c
+let
+	p = plot(1:10, 1:10)
+	add_hline!(p, 4; annotation_text="Jan 1, 2018 baseline", 
+              annotation_position="bottom right")
+	p
 end
-
-# ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
-# Balmer series lines in Å
-const ref_wavs = [
-	:h_alpha => 6562.8,
-	:h_beta => 4861.4,
-	:h_gamma => 4340.5,
-	:h_delta => 4102.7,
-	:h_epsilon => 3970.1,
-]
 
 # ╔═╡ 5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 md"""
@@ -750,30 +751,44 @@ p_spec1D_ev_live
 
 # ╔═╡ f6ac23d4-e63d-4914-aff0-fb47edc02e7c
 @mdx """
-$(@bind px_zero NumberField(xrange_ev_live)) Zero-point (px)
+$(@bind px_0 NumberField(xrange_ev_live)) Zero-point (px)
 
 $(@bind px_line NumberField(xrange_ev_live)) H-β (Å)
 """
 
 # ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-d = (4861 - 0.0) / (px_line - px_zero);
+d = λ_line / (px_line - px_0);
+
+# ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
+if 8.4 ≤ d ≤ 9.0 
+	md"""
+	!!! tip "Success 🎉"
+		Congratulations, we have successfully calibrated our 1D spectrum!
+	"""
+else
+	md"""
+	!!! warning "Note quite"
+		Try double checking which line is the H-β feature. A reference calibration sheet like [this one](https://www.aavso.org/sites/default/files/Calibration_Cheat_Sheet.png) may be helpful.
+	"""
+end
 
 # ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
-y_λ(d, x_px) = d * (x_px - px_zero)
+λ(d, px) = d * (px - px_0);
 
 # ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-xrange_ev_live_wav = y_λ.(d, xrange_ev_live);
+λ_ev_live = λ.(d, xrange_ev_live);
 
 # ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
 let
-	wav = y_λ.(m, xrange_ev_live);
-	p = plot(wav, prof_1D_ev_live, Layout(
+	p = plot(λ_ev_live, prof_1D_ev_live, Layout(
 		xaxis = attr(title="wavelength (Å)"),
 		yaxis = attr(title="intensity"),
-		title = "Dispersion: $(round(m; digits=2)) Å/pixel",
+		title = "Dispersion: $(round(d; digits=2)) Å/pixel",
 	))
+
+	# Overlay reference lines
 	show_lines && for (name, wav) ∈ ref_wavs
-		add_vline!(p, wav)
+		add_vline!(p, wav; line_color=:darkgrey, line_width=1, annotation_text=name)
 	end
 	p
 end
@@ -2181,17 +2196,19 @@ version = "17.4.0+0"
 # ╠═c47acd38-7c27-4d02-9f95-f9a7df93a4cd
 # ╟─25326216-a51b-4e9c-a484-3853ae135a16
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
-# ╠═25002ec9-6c1a-47e8-aebf-64b2c649c0c7
+# ╟─25002ec9-6c1a-47e8-aebf-64b2c649c0c7
+# ╟─229088f2-922f-4b93-b6c1-63f683a4ae0f
+# ╠═0b681466-bd74-4a4f-8c0f-6cb9186a3af8
 # ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-# ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
 # ╠═447de825-9442-48ba-b373-2adc158799e3
+# ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
 # ╟─c6617828-9ab4-4a60-bac2-78ec9b5f8fac
 # ╟─307c7c22-5dbf-4134-beaf-815bcfeb2e65
 # ╟─f6ac23d4-e63d-4914-aff0-fb47edc02e7c
 # ╟─e3cc6aff-b777-4391-97b2-f24f288127c5
-# ╟─272654a7-665f-48ee-beb5-13944c803e7e
+# ╠═272654a7-665f-48ee-beb5-13944c803e7e
+# ╠═6ccf3190-66f3-4a09-aa50-8b102eb6949c
 # ╟─3527ba04-3ea7-42ed-910e-ec72939a4c96
-# ╟─f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
