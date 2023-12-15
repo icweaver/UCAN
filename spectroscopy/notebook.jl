@@ -333,7 +333,14 @@ md"""
 md"""
 In this final process, we will use information about spectral features from known sources to determine the relationship between the pixel coordinate ``x_\mathrm{pix}`` on our sensor, and the wavelength of light falling upon it. For example, let's use our image of Castor from earlier since it (technically the three brightest stars in this sextuple system that all resolve into a single object) is an A-type star.
 
-These types of stars are wonderful calibration sources because they all tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres. Are there any prominent features in our spectrum below?
+These types of stars are wonderful calibration sources because they all tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres.
+
+Try to find the H-β line and record its column pixel coordinate in the field below:
+"""
+
+# ╔═╡ e3cc6aff-b777-4391-97b2-f24f288127c5
+@mdx """
+$(@bind show_lines CheckBox()) **Show lines**
 """
 
 # ╔═╡ c028c979-51c8-44f5-a60e-5f3f456a3b0c
@@ -712,10 +719,13 @@ end
 prof_1D_ev_live, xrange_ev_live = compute_spec1D(arr_ev_live, limits_ev_live);
 
 # ╔═╡ 352ddf83-7ef4-487e-912e-c3e2b8ad055c
-plot(xrange_ev_live, prof_1D_ev_live, Layout(
+p_spec1D_ev_live = plot(xrange_ev_live, prof_1D_ev_live, Layout(
 	xaxis = attr(title="column"),
 	yaxis = attr(title="intensity"),
 ))
+
+# ╔═╡ c6617828-9ab4-4a60-bac2-78ec9b5f8fac
+p_spec1D_ev_live
 
 # ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
 xrange_ev_live_wav = y_wav.(xrange_ev_live)
@@ -723,7 +733,7 @@ xrange_ev_live_wav = y_wav.(xrange_ev_live)
 # ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
 let
 	p = plot(xrange_ev_live_wav, prof_1D_ev_live)
-	for (name, wav) ∈ ref_wavs
+	show_lines && for (name, wav) ∈ ref_wavs
 		add_vline!(p, wav)
 	end
 	p
@@ -2133,11 +2143,13 @@ version = "17.4.0+0"
 # ╟─25326216-a51b-4e9c-a484-3853ae135a16
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╟─25002ec9-6c1a-47e8-aebf-64b2c649c0c7
+# ╠═c6617828-9ab4-4a60-bac2-78ec9b5f8fac
+# ╟─e3cc6aff-b777-4391-97b2-f24f288127c5
+# ╟─272654a7-665f-48ee-beb5-13944c803e7e
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
 # ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
 # ╠═447de825-9442-48ba-b373-2adc158799e3
 # ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
-# ╠═272654a7-665f-48ee-beb5-13944c803e7e
 # ╟─f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
