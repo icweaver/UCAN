@@ -331,12 +331,15 @@ md"""
 
 # ╔═╡ 25002ec9-6c1a-47e8-aebf-64b2c649c0c7
 md"""
-In this final process, we will use information about spectral features from known sources to determine the relationship between the pixel coordinate ``(x_\mathrm{px})`` on our sensor, and the wavelength of light falling upon it ``(y_\lambda)``. One common approach is to assume a linear relationship between these two spaces. In other words:
+In this final process, we will use information about spectral features from a known reference to determine the general relationship between the pixel coordinate ``(x_\mathrm{px})`` on our sensor, and the wavelength of light falling upon it ``(y_\lambda)``. One common approach is to assume a linear relationship between these two spaces. In other words:
 
 ```math
-y_\lambda - y_{λ,0} = d(x_\mathrm{px} - x_\mathrm{px,0})\ ,
+\begin{align*}
+y_\lambda - y_{\lambda,0} &= d(x_\mathrm{px} - x_\mathrm{px,0})\ ,
+\end{align*}
 ```
 
+where ``(d)`` is the dispersion in wavelength per pixel and ``(x_\mathrm{px,0})`` is the pixel coordinate corresponding  to where the wavelength ``(y_{\lambda,0})`` is zero. To determine ``d``, we select one other feature in our reference spectrum with known wavelength.
 
 For example, let's use our image of Castor from earlier since it (well, technically the three brightest stars in this sextuple system that all resolve into a single point) is an A-type star. These types of stars are wonderful calibration sources because they tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres.
 """
@@ -729,9 +732,9 @@ p_spec1D_ev_live
 
 # ╔═╡ f6ac23d4-e63d-4914-aff0-fb47edc02e7c
 @mdx """
-$(@bind px_zero NumberField(xrange_ev_live)) Zero-point
+$(@bind px_zero NumberField(xrange_ev_live)) Zero-point (px)
 
-$(@bind px_sample NumberField(xrange_ev_live)) H-β
+$(@bind px_sample NumberField(xrange_ev_live)) H-β (Å)
 """
 
 # ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
@@ -753,6 +756,9 @@ end
 # ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
 y_λ(m, x_px) = m * (x_px - px_zero)
 
+# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
+xrange_ev_live_wav = y_λ.(m, xrange_ev_live);
+
 # ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
 let
 	wav = y_λ.(m, xrange_ev_live);
@@ -766,9 +772,6 @@ let
 	end
 	p
 end
-
-# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-xrange_ev_live_wav = y_λ.(m, xrange_ev_live);
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # Load FITS file
@@ -2174,15 +2177,15 @@ version = "17.4.0+0"
 # ╟─25326216-a51b-4e9c-a484-3853ae135a16
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╠═25002ec9-6c1a-47e8-aebf-64b2c649c0c7
+# ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
+# ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
+# ╠═447de825-9442-48ba-b373-2adc158799e3
 # ╟─c6617828-9ab4-4a60-bac2-78ec9b5f8fac
 # ╟─307c7c22-5dbf-4134-beaf-815bcfeb2e65
 # ╟─f6ac23d4-e63d-4914-aff0-fb47edc02e7c
 # ╟─e3cc6aff-b777-4391-97b2-f24f288127c5
 # ╟─272654a7-665f-48ee-beb5-13944c803e7e
 # ╟─3527ba04-3ea7-42ed-910e-ec72939a4c96
-# ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-# ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
-# ╠═447de825-9442-48ba-b373-2adc158799e3
 # ╟─f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
