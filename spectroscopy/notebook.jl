@@ -331,11 +331,9 @@ md"""
 
 # ╔═╡ 25002ec9-6c1a-47e8-aebf-64b2c649c0c7
 md"""
-In this final process, we will use information about spectral features from known sources to determine the relationship between the pixel coordinate ``x_\mathrm{pix}`` on our sensor, and the wavelength of light falling upon it. For example, let's use our image of Castor from earlier since it (technically the three brightest stars in this sextuple system that all resolve into a single object) is an A-type star.
+In this final process, we will use information about spectral features from known sources to determine the relationship between the pixel coordinate ``(x_\mathrm{pix})`` on our sensor, and the wavelength of light falling upon it ``(y_\lambda)``. For example, let's use our image of Castor from earlier since it (technically the three brightest stars in this sextuple system that all resolve into a single point) is an A-type star. These types of stars are wonderful calibration sources because they tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres.
 
-These types of stars are wonderful calibration sources because they all tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres.
-
-Try to find the H-β line and record its column pixel coordinate in the field below:
+Try to identify the H-β line and record its column pixel coordinate in the field below. This will typically be the deepest absorption feature in the A-type spectrum:
 """
 
 # ╔═╡ e3cc6aff-b777-4391-97b2-f24f288127c5
@@ -343,16 +341,8 @@ Try to find the H-β line and record its column pixel coordinate in the field be
 $(@bind show_lines CheckBox()) **Show lines**
 """
 
-# ╔═╡ c028c979-51c8-44f5-a60e-5f3f456a3b0c
-px_zero, px_sample = [639.0, 1196.0]
-
-# ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-m = (4861 - 0.0) / (px_sample - px_zero)
-
-# ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
-y_wav(x_px) = m * (x_px - px_zero)
-
 # ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
+# Balmer series lines in Å
 const ref_wavs = [
 	:h_alpha => 6562.8,
 	:h_beta => 4861.4,
@@ -727,12 +717,28 @@ p_spec1D_ev_live = plot(xrange_ev_live, prof_1D_ev_live, Layout(
 # ╔═╡ c6617828-9ab4-4a60-bac2-78ec9b5f8fac
 p_spec1D_ev_live
 
+# ╔═╡ f6ac23d4-e63d-4914-aff0-fb47edc02e7c
+@mdx """
+$(@bind px_zero NumberField(xrange_ev_live)) Zero-point
+
+$(@bind px_sample NumberField(xrange_ev_live)) H-β
+"""
+
+# ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
+m = (4861 - 0.0) / (px_sample - px_zero)
+
+# ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
+y_wav(x_px) = m * (x_px - px_zero)
+
 # ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
 xrange_ev_live_wav = y_wav.(xrange_ev_live)
 
 # ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
 let
-	p = plot(xrange_ev_live_wav, prof_1D_ev_live)
+	p = plot(xrange_ev_live_wav, prof_1D_ev_live, Layout(
+		xaxis = attr(title="wavelength (Å)"),
+		yaxis = attr(title="intensity"),
+	))
 	show_lines && for (name, wav) ∈ ref_wavs
 		add_vline!(p, wav)
 	end
@@ -2142,11 +2148,11 @@ version = "17.4.0+0"
 # ╠═c47acd38-7c27-4d02-9f95-f9a7df93a4cd
 # ╟─25326216-a51b-4e9c-a484-3853ae135a16
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
-# ╟─25002ec9-6c1a-47e8-aebf-64b2c649c0c7
-# ╠═c6617828-9ab4-4a60-bac2-78ec9b5f8fac
+# ╠═25002ec9-6c1a-47e8-aebf-64b2c649c0c7
+# ╟─c6617828-9ab4-4a60-bac2-78ec9b5f8fac
+# ╟─f6ac23d4-e63d-4914-aff0-fb47edc02e7c
 # ╟─e3cc6aff-b777-4391-97b2-f24f288127c5
 # ╟─272654a7-665f-48ee-beb5-13944c803e7e
-# ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
 # ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
 # ╠═447de825-9442-48ba-b373-2adc158799e3
 # ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
