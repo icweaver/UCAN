@@ -327,7 +327,7 @@ ev_live = load("data/castor.png")
 
 # ╔═╡ 01ee9b23-caa3-49d6-aff4-972ea7be2d79
 md"""
-Similarly to the dog images that we have been working with, this is also just a regular PNG file which we can analyze in exactly the same way as earlier to produce our spectra.
+The zeroth order light appears as the bright white spot passing straight through the grating, and the first order spectrum of light can be seen being dispersed horizontally, with redder light to the right. Similarly to the dog images that we have been working with, this is just a regular PNG file which we can analyze in exactly the same way as earlier to produce our 1D spectrum.
 
 For convenience, we have modified the region of interest selection process so that it can be directly selected by clicking and dragging over the plot below. Note that the colormap used just artificially applies different colors for viewing purposes, but does not change the underlying data.
 """
