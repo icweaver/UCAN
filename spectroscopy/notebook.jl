@@ -252,7 +252,7 @@ md"""
 
 # ╔═╡ 7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 md"""
-Below is a science image of [HD122657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD122657&submit=SIMBAD+search), taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package, which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
+Below is a science image of [HD123657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD123657&submit=SIMBAD+search) taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package, which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
 """
 
 # ╔═╡ a412dd91-f4bd-4d55-933e-3a6d00db4ab0
@@ -276,14 +276,14 @@ md"""
 # ╔═╡ b3dacdf9-f45f-40b8-b463-eac43ceb7e87
 md"""
 !!! note "Why do the rows and columns look flipped?"
-	Note that the rows and columns appear flipped to what is shown in our image. This is because, like Julia and Fortran, FITS files store their array data in [column-major](https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-column-major) format in memory. To match the convention that we have adopted for displaying images (origin in top-left corner, x increasing downwards, y increasing rightwards), we use the [`permutedims`](https://docs.julialang.org/en/v1/base/arrays/#Base.permutedims) function to swap the row and column order.
+	Note that the rows and columns appear flipped relative to what is shown in our plot. This is because, like Julia and Fortran, FITS files store their array data in [column-major](https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-column-major) format in memory. To match the convention that we have adopted for displaying images (origin in top-left corner, x increasing downwards, y increasing rightwards), we use the [`permutedims`](https://docs.julialang.org/en/v1/base/arrays/#Base.permutedims) function to swap the row and column order.
 """
 
 # ╔═╡ 74d14b68-ff23-494b-8ded-2d072f1e9f27
 md"""
 We see some immediate qualitative similarities and differences from our dog spectrum. The dips in our 1D spectrum line up with the dimmer regions in the image, just like the "dog" features noted earlier. Zooming in on the image though, we see a cross-hatching pattern emerge. This is an artifact of the Bayer filter used by our sensor, and it manifests as a "sawtooth" pattern in our 1D specrtrum.
 
-As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf)*, this imaging artifact can be reduced by either binning our data beforehand or applying a debayering algorithm as part of a stacking routine when combining our FITS images. For our purposes, the spectrum we have is good enough quality for the low-resolution spectroscopy analysis we are doing. For example, we already can see broad molecular band features that are characteristic of this stellar type.
+As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf)*, this imaging artifact can be reduced by either binning our data beforehand or applying a debayering algorithm as part of a stacking routine when combining our FITS images. For our purposes, the spectrum we have is good enough quality for the low-resolution spectroscopy analysis we are doing. For example, we already can see broad molecular band features that are characteristic of this [M-type](https://en.wikipedia.org/wiki/Stellar_classification#Class_M) star.
 """
 
 # ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
@@ -300,15 +300,6 @@ md"""
 ## Wavelength calibration
 """
 
-# ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
-const ref_wavs = [
-	:h_alpha => 6562.8,
-	:h_beta => 4861.4,
-	:h_gamma => 4340.5,
-	:h_delta => 4102.7,
-	:h_epsilon => 3970.1,
-]
-
 # ╔═╡ c028c979-51c8-44f5-a60e-5f3f456a3b0c
 px_zero, px_sample = [639.0, 1196.0]
 
@@ -317,6 +308,15 @@ m = (4861 - 0.0) / (px_sample - px_zero)
 
 # ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
 y_wav(x_px) = m * (x_px - px_zero)
+
+# ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
+const ref_wavs = [
+	:h_alpha => 6562.8,
+	:h_beta => 4861.4,
+	:h_gamma => 4340.5,
+	:h_delta => 4102.7,
+	:h_epsilon => 3970.1,
+]
 
 # ╔═╡ 5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 md"""
@@ -691,7 +691,7 @@ let
 end
 
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
-img_fits = load(download("$(DPATH)/HD123657.fit"));
+img_fits = load(download("$(DPATH)/HD123657.fits"));
 
 # ╔═╡ 178d3b56-4963-4bcc-b490-e5b6550acda3
 img_info(img_fits);
@@ -726,7 +726,10 @@ window_fits = @view arr_fits[yrange_ev_fits, xrange_ev_fits];
 prof_1D_fits = sum(window_fits; dims=1) |> vec;
 
 # ╔═╡ f9868858-6982-4906-8b52-38e058e98279
-plot(xrange_ev_fits, prof_1D_fits)
+plot(xrange_ev_fits, prof_1D_fits, Layout(
+	xaxis = attr(title="column"),
+	yaxis = attr(title="intensity"),
+))
 
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
@@ -2084,7 +2087,7 @@ version = "17.4.0+0"
 # ╟─27642020-21e5-4de1-9f67-a951a6a682ed
 # ╟─178d3b56-4963-4bcc-b490-e5b6550acda3
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
-# ╠═f9868858-6982-4906-8b52-38e058e98279
+# ╟─f9868858-6982-4906-8b52-38e058e98279
 # ╟─b3dacdf9-f45f-40b8-b463-eac43ceb7e87
 # ╟─74d14b68-ff23-494b-8ded-2d072f1e9f27
 # ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
@@ -2094,12 +2097,12 @@ version = "17.4.0+0"
 # ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
-# ╠═f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╠═c028c979-51c8-44f5-a60e-5f3f456a3b0c
 # ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
 # ╠═447de825-9442-48ba-b373-2adc158799e3
 # ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
 # ╠═272654a7-665f-48ee-beb5-13944c803e7e
+# ╟─f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # ╟─5c341db9-2d8a-4ebd-af46-e6f3cc83ca9b
 # ╟─bdb84f9c-4eef-494d-8d8f-d70fe35286ac
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
