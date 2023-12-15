@@ -417,7 +417,7 @@ As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https
 # ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
 md"""
 !!! tip
-	For more on comparing stellar types from eVscope spectral data, see this lab.
+	For more on comparing stellar types from eVscope spectral data, see this lab. Are there other techniques that we can apply to improve the quality of our spectra?
 
 !!! danger "TODO"
 	Placeholder for now
