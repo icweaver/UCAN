@@ -381,14 +381,6 @@ md"""
 # ╔═╡ 7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 md"""
 Below is a science image of [HD122657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD122657&submit=SIMBAD+search), taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package, which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
-
-Unlike Live View images, [FITS](https://en.wikipedia.org/wiki/FITS) images are already in grayscale and can come packaged with additional metadata (known as *headers*) and data tables that inform us about the observing conditions (e.g., longitude, latitude, gain, exposure time) that our data were taken in. Together these are known as Headers + Data Units (or [*HDUs*](https://heasarc.gsfc.nasa.gov/docs/heasarc/fits_overview.html)), and they can help us reduce systematics from the instrument and environment. Additionally, individual science images can be stacked together to increase the overall signal-to-noise ratio (SNR) of our observations.
-"""
-
-# ╔═╡ 27642020-21e5-4de1-9f67-a951a6a682ed
-md"""
-!!! note "But why grayscale?"
-	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array, and how strong that signal will be. Images taken at specific wavelengths can then be stacked together to create [full color composite images](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color). In contrast, many pre-colorized images, like the PNGs from our Live View images, use a [Bayer filter](https://en.wikipedia.org/wiki/Bayer_filter) which complicates this correspondance.
 """
 
 # ╔═╡ a412dd91-f4bd-4d55-933e-3a6d00db4ab0
@@ -396,6 +388,17 @@ md"""
 !!! tip
 
 	For more on using science mode observations to analyze eVscope spectra, see this advanced section of the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf): "Using Method #3: Science menu’s Exoplanet transit mode with external stacking".
+"""
+
+# ╔═╡ 70040896-2bd3-43a1-adfa-2114424e42e7
+md"""
+Unlike Live View images, [FITS](https://en.wikipedia.org/wiki/FITS) images are already in grayscale and can come packaged with additional metadata (known as *headers*) and data tables that inform us about the observing conditions (e.g., longitude, latitude, gain, exposure time) that our data were taken in. Together these are known as Headers + Data Units (or [*HDUs*](https://heasarc.gsfc.nasa.gov/docs/heasarc/fits_overview.html)), and they can help us reduce systematics from the instrument and environment. Additionally, individual science images can be stacked together to increase the overall signal-to-noise ratio (SNR) of our observations.
+"""
+
+# ╔═╡ 27642020-21e5-4de1-9f67-a951a6a682ed
+md"""
+!!! note "But why grayscale?"
+	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array, and how strong that signal will be. Images taken at specific wavelengths can then be stacked together to create [full color composite images](https://hubblesite.org/contents/articles/the-meaning-of-light-and-color). In contrast, many pre-colorized images, like the PNGs from our Live View images, use a [Bayer filter](https://en.wikipedia.org/wiki/Bayer_filter) which complicates this correspondance. We will explore some of the imaging artifacts that are introduced by this, and potential techniques that we can use to mitigate them.
 """
 
 # ╔═╡ b3dacdf9-f45f-40b8-b463-eac43ceb7e87
@@ -406,7 +409,7 @@ md"""
 
 # ╔═╡ 74d14b68-ff23-494b-8ded-2d072f1e9f27
 md"""
-We see some immediate qualitative differences from our dog spectrum.
+We see some immediate qualitative similarities and differences from our dog spectrum.
 """
 
 # ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
@@ -2102,9 +2105,10 @@ version = "17.4.0+0"
 # ╠═2289cd9f-7969-47a0-a802-4efccab9e36e
 # ╟─7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
-# ╠═7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
-# ╠═27642020-21e5-4de1-9f67-a951a6a682ed
+# ╟─7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 # ╟─a412dd91-f4bd-4d55-933e-3a6d00db4ab0
+# ╟─70040896-2bd3-43a1-adfa-2114424e42e7
+# ╟─27642020-21e5-4de1-9f67-a951a6a682ed
 # ╟─178d3b56-4963-4bcc-b490-e5b6550acda3
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
