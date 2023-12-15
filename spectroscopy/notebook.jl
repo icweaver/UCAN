@@ -415,7 +415,7 @@ end
 # ╔═╡ bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 @mdx("""
 !!! note "Web aside"
-	The website we are pulling images from provides an [API](https://en.wikipedia.org/wiki/API) to interact with its data. We use the [`HTTP.jl`](https://github.com/JuliaWeb/HTTP.jl) package to call this API, [`JSON.jl`](https://github.com/JuliaIO/JSON.jl) to parse the data that we downloaded, and [`Images.jl`](https://github.com/JuliaImages/Images.jl) to load it into Julia. This is essentially the same as doing the following on a local PNG file:
+	The website we are pulling images from provides an [API](https://en.wikipedia.org/wiki/API) to interact with its data. We use the stdlib [`Downloads.jl`](https://github.com/JuliaLang/Downloads.jl) to call this API, [`JSON.jl`](https://github.com/JuliaIO/JSON.jl) to parse the data that we downloaded, and [`Images.jl`](https://github.com/JuliaImages/Images.jl) to load it into Julia. This is essentially the same as doing the following on a local PNG file:
 	```julia
 	using Images
 	img = load(LOCAL PATH TO MY FILE)
@@ -1999,7 +1999,7 @@ version = "17.4.0+0"
 # ╟─30585bee-7751-47ca-bcf8-2b57af2b1394
 # ╟─249dd9ce-239e-45a9-9f59-c8991ecd299f
 # ╟─0f3ae63c-cc02-43a8-9560-3770439640a0
-# ╠═0b7dff7d-26d2-4c00-8d39-dceabb7433b6
+# ╟─0b7dff7d-26d2-4c00-8d39-dceabb7433b6
 # ╟─9f83d261-61c8-4ab2-9e2e-a9a2fe24f3a5
 # ╟─bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 # ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
