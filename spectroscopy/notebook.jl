@@ -424,6 +424,12 @@ end
 	In this case, the path is just the url of the hosted image online provided by the API.
 """) |> details
 
+# ╔═╡ 248c07d3-48ee-40a1-b9b5-d57f49b56d6f
+md"""
+!!! note
+	By default, the value of a variable is displayed above the cell, and debugging/logging information below. Adding a semicolon to the end of the line will suppress the former being displayed in the notebook if we like.
+""" |> details
+
 # ╔═╡ cf371199-c283-46e8-8174-31796e2224cb
 md"""
 !!! note
@@ -590,7 +596,7 @@ begin
 end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
-nrows_dog, ncols_dog, eltype_dog = img_info(img_dog);
+nrows_dog, ncols_dog, eltype_dog = img_info(img_dog)
 
 # ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
 @mdx """
@@ -2004,6 +2010,7 @@ version = "17.4.0+0"
 # ╟─bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 # ╟─c402e19e-05f6-4b4f-a9dc-f2036e415b17
 # ╠═f102cbeb-edde-4814-94cb-0f8a8b73f836
+# ╟─248c07d3-48ee-40a1-b9b5-d57f49b56d6f
 # ╟─64a3d702-d229-4fd1-bd75-f351a4ee1172
 # ╟─256f479b-7c90-4ad4-a893-e3e5c2266516
 # ╟─9014873e-5b1b-4605-9dd6-efb9840e5732
