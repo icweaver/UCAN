@@ -331,17 +331,22 @@ md"""
 
 # ╔═╡ 25002ec9-6c1a-47e8-aebf-64b2c649c0c7
 md"""
-In this final process, we will use information about spectral features from a known reference to determine the general relationship between the pixel coordinate ``(x_\mathrm{px})`` on our sensor, and the wavelength of light falling upon it ``(y_\lambda)``. One common approach is to assume a linear relationship between these two spaces. In other words:
+In this final process, we will use information about spectral features from a known reference to determine the general relationship between the pixel coordinate ``(\mathrm{px})`` on our sensor, and the wavelength of light falling upon it ``(\lambda)``. One common approach is to assume a linear relationship between these two spaces. In other words:
+
+```math
+\lambda - \lambda_0= d(\mathrm{px} - \mathrm{px}_0)\ ,
+```
+
+where ``(d)`` is the dispersion in wavelength per pixel and ``(\mathrm{px}_0)`` is the pixel coordinate corresponding  to where the wavelength ``(\lambda_0)`` is zero (this allows us to have a relation of the form ``λ = \dots``). To determine ``d``, we select one other feature in our reference spectrum with known wavelength.
+
+For example, let's use our image of Castor from earlier since it (well, technically the three brightest stars in this sextuple system that all resolve into a single point) is an A-type star. These types of stars are wonderful calibration sources because they tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres. Identifying the (pixel, wavelength) pair ``(\mathrm{px}_\mathrm{line}, \lambda_\mathrm{line})``, we have:
 
 ```math
 \begin{align*}
-y_\lambda - y_{\lambda,0} &= d(x_\mathrm{px} - x_\mathrm{px,0})\ ,
+d &= \frac{y_{\lambda,\mathrm{line}} - 0.0}{x_\mathrm{px,line} - x_\mathrm{px,0}} \\
+y_\lambda &= \frac{y_{\lambda,\mathrm{line}}}{x_\mathrm{px,line} - x_\mathrm{px,0}}(x_\mathrm{px} - x_\mathrm{px,0})\ ,
 \end{align*}
 ```
-
-where ``(d)`` is the dispersion in wavelength per pixel and ``(x_\mathrm{px,0})`` is the pixel coordinate corresponding  to where the wavelength ``(y_{\lambda,0})`` is zero. To determine ``d``, we select one other feature in our reference spectrum with known wavelength.
-
-For example, let's use our image of Castor from earlier since it (well, technically the three brightest stars in this sextuple system that all resolve into a single point) is an A-type star. These types of stars are wonderful calibration sources because they tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres.
 """
 
 # ╔═╡ 307c7c22-5dbf-4134-beaf-815bcfeb2e65
@@ -353,6 +358,19 @@ Try to identify the zero-point and H-β line and record their column pixel coord
 @mdx """
 $(@bind show_lines CheckBox()) **Show lines**
 """
+
+# ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
+if 8.4 ≤ m ≤ 9.0 
+	md"""
+	!!! tip "Success 🎉"
+		Congratulations, we have successfully calibrated our 1D spectrum!
+	"""
+else
+	md"""
+	!!! warning "Note quite"
+		Try double checking which line is the H-β feature. A reference calibration sheet like [this one](https://www.aavso.org/sites/default/files/Calibration_Cheat_Sheet.png) may be helpful.
+	"""
+end
 
 # ╔═╡ f70d4024-e4a6-4059-a2b4-ee0cc792e0be
 # Balmer series lines in Å
@@ -734,30 +752,17 @@ p_spec1D_ev_live
 @mdx """
 $(@bind px_zero NumberField(xrange_ev_live)) Zero-point (px)
 
-$(@bind px_sample NumberField(xrange_ev_live)) H-β (Å)
+$(@bind px_line NumberField(xrange_ev_live)) H-β (Å)
 """
 
 # ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-m = (4861 - 0.0) / (px_sample - px_zero);
-
-# ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
-if 8.4 ≤ m ≤ 9.0 
-	md"""
-	!!! tip "Success 🎉"
-		Congratulations, we have successfully calibrated our 1D spectrum!
-	"""
-else
-	md"""
-	!!! warning "Note quite"
-		Try double checking which line is the H-β feature. A reference calibration sheet like [this one](https://www.aavso.org/sites/default/files/Calibration_Cheat_Sheet.png) may be helpful.
-	"""
-end
+d = (4861 - 0.0) / (px_line - px_zero);
 
 # ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
-y_λ(m, x_px) = m * (x_px - px_zero)
+y_λ(d, x_px) = d * (x_px - px_zero)
 
 # ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-xrange_ev_live_wav = y_λ.(m, xrange_ev_live);
+xrange_ev_live_wav = y_λ.(d, xrange_ev_live);
 
 # ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
 let
