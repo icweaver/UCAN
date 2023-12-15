@@ -380,12 +380,15 @@ md"""
 
 # ╔═╡ 7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 md"""
-Below is a science image of [HD122657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD122657&submit=SIMBAD+search), taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more one taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package, which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
+Below is a science image of [HD122657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD122657&submit=SIMBAD+search), taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package, which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
+
+Unlike Live View images, [FITS](https://en.wikipedia.org/wiki/FITS) images are already in grayscale and can come packaged with additional metadata (known as *headers*) and data tables that inform us about the observing conditions (e.g., longitude, latitude, gain, exposure time) that our data were taken in. Together these are known as Headers + Data Units (or [*HDUs*](https://heasarc.gsfc.nasa.gov/docs/heasarc/fits_overview.html)), and they can help us reduce systematics from the instrument and environment. Additionally, individual science images can be stacked together to increase the overall signal-to-noise ratio (SNR) of our observations.
 """
 
-# ╔═╡ 8f29a386-a472-4e80-9fe1-7f45d8435a43
+# ╔═╡ 27642020-21e5-4de1-9f67-a951a6a682ed
 md"""
-Unlike Live View images, [FITS](https://en.wikipedia.org/wiki/FITS) images are already in grayscale and come packed with additional metadata and data tables that inform us about the observing conditions (e.g., longitude, latitude, gain, exposure time) that our data were taken in. This can help us reduce systematics from the instrument and environment. Additionally, individual science images can be stacked together to increase the overall signal-to-noise ratio (SNR) of our observations. 
+!!! note "But why greyscale?"
+	FITS images give us a direct correspondence between the location of the pixel that a particular photon of light falls on in our array
 """
 
 # ╔═╡ a412dd91-f4bd-4d55-933e-3a6d00db4ab0
@@ -393,6 +396,12 @@ md"""
 !!! tip
 
 	For more on using science mode observations to analyze eVscope spectra, see this advanced section of the [*RSpec Unistellar Manual*](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf): "Using Method #3: Science menu’s Exoplanet transit mode with external stacking".
+"""
+
+# ╔═╡ b3dacdf9-f45f-40b8-b463-eac43ceb7e87
+md"""
+!!! note "Why do the rows and columns look flipped?"
+	Note that the rows and columns appear flipped to what is shown in our image. This is because, like Julia and Fortran, FITS files store their array data in [column-major](https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-column-major) format in memory. To match the convention that we have adopted for displaying images (origin in top-left corner, x increasing downwards, y increasing rightwards), we use the [`permutedims`](https://docs.julialang.org/en/v1/base/arrays/#Base.permutedims) function to swap the row and column order.
 """
 
 # ╔═╡ 74d14b68-ff23-494b-8ded-2d072f1e9f27
@@ -624,12 +633,6 @@ md"""
 !!! note "What is channelview?"
 
 	This is a more general version of `gray` that also works for color images and returns a view instead of a copy. Either function can be used. For more information, [see here](https://juliaimages.org/v0.20/conversions_views/#Color-separations:-views-for-converting-between-numbers-and-colors-1).
-""" |> details
-
-# ╔═╡ b3dacdf9-f45f-40b8-b463-eac43ceb7e87
-md"""
-!!! note "What is permutedims?"
-	Note that the rows and columns appear flipped to what is shown in our image. This is because, like Julia and Fortran, FITS files store their array data in [column-major](https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-column-major) format in memory. To match the convention that we have adopted for displaying images (origin in top-left corner, x increasing downwards, y increasing rightwards), we use the [`permutedims`](https://docs.julialang.org/en/v1/base/arrays/#Base.permutedims) function to swap the row and column order.
 """ |> details
 
 # ╔═╡ 75108863-4a62-4751-aeee-246250fbf8b8
@@ -2100,16 +2103,16 @@ version = "17.4.0+0"
 # ╟─7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 # ╟─f7dd6681-2792-4753-b016-2c7358a343a9
 # ╟─7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
-# ╟─8f29a386-a472-4e80-9fe1-7f45d8435a43
+# ╠═27642020-21e5-4de1-9f67-a951a6a682ed
 # ╟─a412dd91-f4bd-4d55-933e-3a6d00db4ab0
 # ╟─178d3b56-4963-4bcc-b490-e5b6550acda3
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╠═f9868858-6982-4906-8b52-38e058e98279
+# ╟─b3dacdf9-f45f-40b8-b463-eac43ceb7e87
 # ╠═74d14b68-ff23-494b-8ded-2d072f1e9f27
 # ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
-# ╟─b3dacdf9-f45f-40b8-b463-eac43ceb7e87
 # ╠═1b7d3b00-5c03-4ed9-aa40-ecc0fd787dcc
 # ╠═b03e01f2-6dde-43ea-b6f5-06a671c62eae
 # ╠═aaafd2e3-d831-4d88-96aa-4d0d075550e2
