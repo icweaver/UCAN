@@ -755,7 +755,7 @@ if 8.4 ≤ d ≤ 9.0
 	"""
 else
 	md"""
-	!!! warning "Note quite"
+	!!! warning "Not quite"
 		Try double checking which line is the H-β feature. A reference calibration sheet like [this one](https://www.aavso.org/sites/default/files/Calibration_Cheat_Sheet.png) may be helpful.
 	"""
 end
