@@ -44,9 +44,11 @@ Having some familiarity in high-level programming languages like Julia or Python
 # ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
 @mdx """
 !!! note "Using this notebook"
-	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. This is a fully hackable notebook, so exploring the source code and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files.
+	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page.
 
-	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest. The `Live Docs` button in the bottom right will also pull up documentation for any function that is selected.
+	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/spectroscopy/notebook.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
+
+	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
 
 	<details>
 	
@@ -59,7 +61,7 @@ Having some familiarity in high-level programming languages like Julia or Python
 	
 	</details>
 
-	Finally, clicking the "eye" icon at the top left of each cell will also reveal the underlying code behind it, and ctrl-clicking on underlined function names will jump to where we defined them.
+	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined.
 """
 
 # ╔═╡ 1e2dc809-1614-487e-b0fe-f058188555ee
