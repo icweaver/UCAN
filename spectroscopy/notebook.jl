@@ -289,14 +289,18 @@ cm"""
 
 # ╔═╡ 74d14b68-ff23-494b-8ded-2d072f1e9f27
 cm"""
-We see some immediate qualitative similarities and differences from our dog spectrum. The dips in our 1D spectrum line up with the dimmer regions in the image, just like the "dog" features noted earlier. Zooming in on the image though, we see a cross-hatching pattern emerge. This is an artifact of the Bayer filter used by our sensor, and it manifests as a "sawtooth" pattern in our 1D specrtrum.
+!!! warning "A note on debayering"
+	
+	We see some immediate qualitative similarities and differences from our dog spectrum. The dips in our 1D spectrum line up with the dimmer regions in the image, just like the "dog" features noted earlier. Zooming in on the image though, we see a cross-hatching pattern emerge. This is an artifact of the Bayer filter used by our sensor, and it manifests as a "sawtooth" pattern in our 1D specrtrum.
+	
+	As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf)*, this imaging artifact can be reduced by either binning our data beforehand or applying a debayering algorithm as part of a stacking routine when combining our FITS images. For our purposes, the spectrum we have is good enough quality for the low-resolution spectroscopy analysis we are doing. For example, we already can see broad molecular band features that are characteristic of this [M-type](https://en.wikipedia.org/wiki/Stellar_classification#Class_M) star.
 
-As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf)*, this imaging artifact can be reduced by either binning our data beforehand or applying a debayering algorithm as part of a stacking routine when combining our FITS images. For our purposes, the spectrum we have is good enough quality for the low-resolution spectroscopy analysis we are doing. For example, we already can see broad molecular band features that are characteristic of this [M-type](https://en.wikipedia.org/wiki/Stellar_classification#Class_M) star.
+	Stay tuned for future labs on comparing different stellar types from eVscope spectral data!
 """
 
 # ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
 cm"""
-!!! note
+!!! tip
 	Stay tuned for future labs on comparing different stellar types from eVscope spectral data!
 """
 
@@ -317,15 +321,15 @@ cm"""
 
 # ╔═╡ 25002ec9-6c1a-47e8-aebf-64b2c649c0c7
 cm"""
-In this final process, we will use information about spectral features from a known reference to determine the general relationship between the pixel coordinate ``(\mathrm{px}) on our sensor, and the wavelength of light falling upon it ``(\lambda). One common approach is to assume a linear relationship between these two spaces. In other words:
+In this final process, we will use information about spectral features from a known reference to determine the general relationship between the pixel coordinate ``(\mathrm{px})`` on our sensor, and the wavelength of light falling upon it ``(\lambda)``. One common approach is to assume a linear relationship between these two spaces. In other words:
 
 ```math
 \lambda - \lambda_0= d \times (\mathrm{px} - \mathrm{px}_0)\ ,
 ```
 
-where ``(d) is the dispersion in wavelength per pixel and ``(\mathrm{px}_0) is the pixel coordinate corresponding  to where we would like the wavelength ``(\lambda_0) to be zero (this allows us to have a relation of the form ``λ = \dots``). Using the location of the zeroth order light is typically a good choice for this. To determine ``d`` we select one other feature in our reference spectrum with known wavelength.
+where ``(d)`` is the dispersion in wavelength per pixel and ``(\mathrm{px}_0)`` is the pixel coordinate corresponding to where we would like the wavelength ``(\lambda_0)`` to be zero (this allows us to have a relation of the form ``λ = \dots``). Using the location of the zeroth order light is typically a good choice for this. To determine ``d`` we select one other feature in our reference spectrum with known wavelength.
 
-For example, let's use our image of Castor from earlier since it (well, technically the three brightest stars in this sextuple system that all resolve into a single point) is an A-type star. These types of stars are wonderful calibration sources because they tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres. Identifying the (pixel, wavelength) pair ``(\mathrm{px}_\mathrm{line}, \lambda_\mathrm{line}), we have:
+For example, let's use our image of Castor from earlier since it (well, technically the three brightest stars in this sextuple system that all resolve into a single point) is an A-type star. These types of stars are wonderful calibration sources because they tend to have prominent [Balmer series](https://en.wikipedia.org/wiki/Balmer_series) lines from hydrogen absorption in their atmopsheres. Identifying the (pixel, wavelength) pair ``(\mathrm{px}_\mathrm{line}, \lambda_\mathrm{line})``, we have:
 
 ```math
 \newcommand{\wavline}{\lambda_\mathrm{line}}
@@ -380,13 +384,6 @@ function img_info(img)
 	eltype_img = eltype(img)
 	@debug "Image info" nrows ncols eltype_img
 	return nrows, ncols, eltype_img
-end
-
-# ╔═╡ 2d37230e-1242-49be-932e-ebd00c6a78e6
-function details2(content; state="close")
-	cm"""
-	<details $(state)><summary><strong>Details</strong></summary>$(content)</details>
-	"""
 end
 
 # ╔═╡ 75108863-4a62-4751-aeee-246250fbf8b8
@@ -681,10 +678,10 @@ cm"""
 """ |> msg
 
 # ╔═╡ 80a54675-6662-4e66-b9a3-4746edc35c71
-const DPATH = "https://github.com/icweaver/UCAN/raw/main/spectroscopy/data/"
+const DPATH = "https://github.com/icweaver/UCAN/raw/main/spectroscopy/data"
 
 # ╔═╡ 95e3fec3-e03c-47c6-bdc4-7c93e0801718
-ev_live = joinpath(DPATH, "castor.png")
+ev_live = load(joinpath(DPATH, "castor.png"))
 
 # ╔═╡ 81307d16-74d2-462a-8bb9-936dafb27dd7
 img_info(ev_live);
@@ -745,7 +742,7 @@ $(@bind px_line NumberField(xrange_ev_live)) H-β (Å)
 d = λ_line / (px_line - px_0);
 
 # ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
-if 8.4 ≤ d ≤ 9.0
+if 8.4 ≤ d ≤ 8.79
 	cm"""
 	!!! tip "Success 🎉"
 		Congratulations, you have successfully calibrated your 1D spectrum!
@@ -2222,10 +2219,9 @@ version = "17.4.0+2"
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
 # ╟─5b638405-5f75-473c-9de9-6acac9856608
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
-# ╠═2d37230e-1242-49be-932e-ebd00c6a78e6
 # ╟─75108863-4a62-4751-aeee-246250fbf8b8
 # ╟─7d1caf58-d1db-4fcb-a62b-5c2a16b56732
-# ╠═baa00c8f-9fd4-44b7-bc79-669d17908c2d
+# ╟─baa00c8f-9fd4-44b7-bc79-669d17908c2d
 # ╟─e1ae334d-548b-4259-af7c-e13b773f7b3e
 # ╠═80a54675-6662-4e66-b9a3-4746edc35c71
 # ╟─fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
