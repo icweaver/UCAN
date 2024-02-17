@@ -26,7 +26,7 @@ using Images, AstroImages, PlutoPlotly
 end
 
 # ╔═╡ 205f4b56-8343-11ee-0ebd-5713fac733ae
-cm"""
+md"""
 # Spectroscopy Lab 🌈
 """
 
@@ -47,24 +47,26 @@ With this requisite information out of the way, let's get our hands on some real
 """
 
 # ╔═╡ 7e3aedd9-6c94-42ce-aeaa-ea0c2d71a9b1
-msg_adding_colors = cm"""
+msg_adding_colors = md"""
 #### Adding colors in Julia 🎨
 This makes magenta!
 
 ```julia
 RGB(1, 0, 0) + RGB(0, 0, 1)
 ```
+
+$(RGB(1, 0, 0) + RGB(0, 0, 1))
 """;
 
 # ╔═╡ 127ca8df-46c7-4d02-8f9b-e27983978441
-cm"""
+md"""
 ## Image processing
 
 Astronomical spectra start their lives as a picture. These images can come in a variety of different formats, the most popular being the [Flexible Image Transport System](https://en.wikipedia.org/wiki/FITS) (FITS) format. We will explore this later in the notebook, but let's start with another common format that you probably use everyday, [Portable Network Graphics](https://en.wikipedia.org/wiki/PNG) (PNG), to get an idea of how image data is represented.
 """
 
 # ╔═╡ 30585bee-7751-47ca-bcf8-2b57af2b1394
-cm"""
+md"""
 ### Color images
 """
 
@@ -116,7 +118,7 @@ To summarize, our image is just a matrix of pixels, where each pixel value is re
 
 # ╔═╡ 6880b7a1-0a74-4879-bd85-90c8f8e947d2
 cm"""
-Below our selected pixel, we map these ``(R, G, B) values to their corresponding sub-pixel, where ``0`` represents black (or no brightness), and ``1`` represents the peak brightness for the given color channel. The resulting color is then the [additive combination](https://en.wikipedia.org/wiki/RGB_color_model#Additive_colors) of these individual subpixels.
+Below our selected pixel, we map these (R, G, B) values to their corresponding sub-pixel, where 0 represents black (or no brightness), and 1 represents the peak brightness for the given color channel. The resulting color is then the [additive combination](https://en.wikipedia.org/wiki/RGB_color_model#Additive_colors) of these individual subpixels.
 """
 
 # ╔═╡ 736e7f03-7eb9-4805-afe4-74170c046c4c
@@ -125,7 +127,7 @@ We are now one step closer to building a spectrum of our image. Astronomers typi
 """
 
 # ╔═╡ 9932a3b1-6d52-4ed1-8884-2f90f765ac68
-cm"""
+md"""
 ### Grayscale images
 """
 
@@ -168,7 +170,7 @@ cm"""
 """
 
 # ╔═╡ 2f18fb1a-2178-4e12-b411-13fa49f3084f
-cm"""
+md"""
 ## Array/matrix operations
 """
 
@@ -208,7 +210,7 @@ Now that we are experts at constructing the spectra of dogs, let's turn next to 
 """
 
 # ╔═╡ ee3ee62d-1548-4b13-afac-ea50cdec1ba5
-cm"""
+md"""
 ### eVscope Live View image
 """
 
@@ -254,13 +256,13 @@ To close out this section on performing array operations on image data, we will 
 """
 
 # ╔═╡ f7dd6681-2792-4753-b016-2c7358a343a9
-cm"""
+md"""
 ### FITS
 """
 
 # ╔═╡ 7d052ff9-f0dd-4ce7-a5c8-5eed191ae467
 cm"""
-Below is a science image of [HD123657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD123657&submit=SIMBAD+search) taken courtesy of Unistellar Citizen Scientist, **@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
+Below is a science image of [HD123657](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=HD123657&submit=SIMBAD+search) taken courtesy of Unistellar Citizen Scientist, **\@Stephen Haythornthwaite**. For more on taking science images, [see here](https://www.unistellar.com/citizen-science/exoplanets/tutorial/). One of the benefits of taking images in science mode is that it allows our users to [download their raw data](https://help.unistellar.com/hc/en-us/articles/10989728346780-UniData-Access-How-to-Download-Your-RAW-Data-) in FITS format. To open it, we use the [`AstroImages.jl`](https://github.com/JuliaAstro/AstroImages.jl) package which behaves similarly to [`ds9`](https://sites.google.com/cfa.harvard.edu/saoimageds9) and [`astropy`](https://docs.astropy.org/en/stable/io/fits/).
 """
 
 # ╔═╡ a412dd91-f4bd-4d55-933e-3a6d00db4ab0
@@ -285,21 +287,13 @@ cm"""
 cm"""
 !!! note "Why do the rows and columns look flipped?"
 	Note that the rows and columns appear flipped relative to what is shown in our plot. This is because, like Julia and Fortran, FITS files store their array data in [column-major](https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-column-major) format in memory. To match the convention that we have adopted for displaying images (origin in top-left corner, x increasing downwards, y increasing rightwards), we use the [`permutedims`](https://docs.julialang.org/en/v1/base/arrays/#Base.permutedims) function to swap the row and column order.
-"""
 
-# ╔═╡ 74d14b68-ff23-494b-8ded-2d072f1e9f27
-cm"""
 !!! warning "A note on debayering"
 	
 	We see some immediate qualitative similarities and differences from our dog spectrum. The dips in our 1D spectrum line up with the dimmer regions in the image, just like the "dog" features noted earlier. Zooming in on the image though, we see a cross-hatching pattern emerge. This is an artifact of the Bayer filter used by our sensor, and it manifests as a "sawtooth" pattern in our 1D specrtrum.
 	
 	As discussed in the "Debayering" section of the *[RSpec Unistellar Manual](https://www.rspec-astro.com/download/Unistellar%20Spectra.pdf)*, this imaging artifact can be reduced by either binning our data beforehand or applying a debayering algorithm as part of a stacking routine when combining our FITS images. For our purposes, the spectrum we have is good enough quality for the low-resolution spectroscopy analysis we are doing. For example, we already can see broad molecular band features that are characteristic of this [M-type](https://en.wikipedia.org/wiki/Stellar_classification#Class_M) star.
 
-	Stay tuned for future labs on comparing different stellar types from eVscope spectral data!
-"""
-
-# ╔═╡ ee774d48-5c36-44cd-876b-f8d157cd9fa0
-cm"""
 !!! tip
 	Stay tuned for future labs on comparing different stellar types from eVscope spectral data!
 """
@@ -315,7 +309,7 @@ So far we have just been working with everything in pixel space. To begin analyz
 """
 
 # ╔═╡ 2c36115d-c399-404a-80f0-1a8ee3223cb1
-cm"""
+md"""
 ## Wavelength calibration
 """
 
@@ -366,7 +360,7 @@ $(@bind show_lines CheckBox()) **Show lines**
 """
 
 # ╔═╡ bdb84f9c-4eef-494d-8d8f-d70fe35286ac
-cm"""
+md"""
 # Notebook setup 🔧
 """
 
@@ -374,7 +368,7 @@ cm"""
 TableOfContents()
 
 # ╔═╡ 5b638405-5f75-473c-9de9-6acac9856608
-cm"""
+md"""
 ## Convenience functions
 """
 
@@ -385,6 +379,131 @@ function img_info(img)
 	@debug "Image info" nrows ncols eltype_img
 	return nrows, ncols, eltype_img
 end
+
+# ╔═╡ e1ae334d-548b-4259-af7c-e13b773f7b3e
+msg(x) = details("Details", x)
+
+# ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
+cm"""
+!!! note "Using this notebook"
+	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page.
+
+	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/spectroscopy/notebook.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
+
+	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
+
+	$(msg(msg_adding_colors))
+
+	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined.
+"""
+
+# ╔═╡ bed3c1a0-aa13-4c61-a074-9b38f9a4d306
+cm"""
+!!! note "Web aside"
+	The website we are pulling images from provides an [API](https://en.wikipedia.org/wiki/API) to interact with its data. We use the stdlib [`Downloads.jl`](https://github.com/JuliaLang/Downloads.jl) to call this API, [`JSON.jl`](https://github.com/JuliaIO/JSON.jl) to parse the data that we downloaded, and [`Images.jl`](https://github.com/JuliaImages/Images.jl) to load it into Julia. This is essentially the same as doing the following on a local PNG file:
+	```julia
+	using Images
+	img = load(LOCAL PATH TO MY FILE)
+	```
+
+	In this case, the path is just the url of the hosted image online provided by the API.
+""" |> msg
+
+# ╔═╡ 248c07d3-48ee-40a1-b9b5-d57f49b56d6f
+cm"""
+!!! note
+	By default, the value of a variable is displayed above the cell, and debugging/logging information below. Adding a semicolon to the end of the line will suppress the former being displayed in the notebook if we like.
+""" |> msg
+
+# ╔═╡ cf371199-c283-46e8-8174-31796e2224cb
+cm"""
+!!! note
+	Julia has a delightful way of applying a function element-wise to its inputs, known as [dot syntax](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized).
+""" |> msg
+
+# ╔═╡ f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
+md"""
+!!! note
+	We used the optional [`@view`](https://docs.julialang.org/en/v1/base/arrays/#Base.@view) macro here to access the data directly instead of making a copy. For more on views vs. copies [see here](https://docs.julialang.org/en/v1/base/arrays/#Views-(SubArrays-and-other-view-types)), and for more on macros [see here](https://docs.julialang.org/en/v1/manual/metaprogramming/#man-macros).
+""" |> msg
+
+# ╔═╡ c37fc603-8943-4be6-9c73-1f327e8b7885
+cm"""
+!!! note "Why vec?"
+	Array operations in Julia preserve dimensionality to make things [more consistent and composable](https://stackoverflow.com/a/42353230/16402912). For example,
+
+	```julia
+	sum([
+		1 2
+		3 4
+	]; dims=1)
+	```
+
+	returns another matrix
+
+	```julia
+	1×2 Matrix{Int64}:
+	 4  6
+	```
+
+	instead of silently changing the shape out from under us to a 1D vector
+
+	```julia
+	[4, 6]
+	```
+
+	The flipside is that the [plotting library we are using](https://plotly.com/) expects a simple vector, so we call [`vec`](https://docs.julialang.org/en/v1/base/arrays/#Base.vec) on the original sum to make this transformation for us before passing it to Plotly.
+
+!!! note "What does |> do?"
+	Known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to another. For example,
+
+	```julia
+	sqrt(sum([1, 4, 5, 6])) # 4.0
+	```
+
+	is equivalent to:
+
+	```julia
+	[1, 4, 5, 6] |> sum |> sqrt # 4.0
+	```
+""" |> msg
+
+# ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
+cm"""
+!!! note "Plotly commands"
+	```julia
+	p = make_subplots(;
+		rows = 2,
+		shared_xaxes = true,
+		vertical_spacing = 0.02,
+		x_title = "pixel column",
+	)
+	
+	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
+	
+	add_trace!(p, heatmap(
+		x = col_range_dog,
+		y = reverse(row_range_dog),
+		z = window_dog_vals,
+		colorscale = :Greys,
+		showscale = false,
+	) ; row=2)
+	
+	update!(p;
+		layout = Layout(
+			yaxis = attr(title="intensity"),
+			yaxis2 = attr(scaleanchor=:x, title="pixel row")
+		)
+	)
+	```
+""" |> msg
+
+# ╔═╡ 27ad53e4-40c6-4d2e-a87b-d766f048c4bd
+cm"""
+!!! note "What is channelview?"
+
+	This is a more general version of `gray` that also works for color images and returns a view instead of a copy. Either function can be used. For more information, [see here](https://juliaimages.org/v0.20/conversions_views/#Color-separations:-views-for-converting-between-numbers-and-colors-1).
+""" |> msg
 
 # ╔═╡ 75108863-4a62-4751-aeee-246250fbf8b8
 function get_lims(arr, limits)
@@ -466,7 +585,7 @@ end
 
 # ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
 cm"""
-We have $(N_sampled_pixels) pixels above sampled from our image. Based on how colorful and varied the image is, these pixels can have a range of different colors between them. Pull the slider to look at each of these pixels one by one and/or click the `Resample` button to select $(N_sampled_pixels) new pixels at random. For convenience, we also display the individual ``(R, G, B) values next to our slider.
+We have $(N_sampled_pixels) pixels above sampled from our image. Based on how colorful and varied the image is, these pixels can have a range of different colors between them. Pull the slider to look at each of these pixels one by one and/or click the `Resample` button to select $(N_sampled_pixels) new pixels at random. For convenience, we also display the individual (R, G, B) values next to our slider.
 """
 
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
@@ -548,128 +667,6 @@ let
 		)
 	)
 end
-
-# ╔═╡ e1ae334d-548b-4259-af7c-e13b773f7b3e
-msg(x) = details("Details", x)
-
-# ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
-cm"""
-!!! note "Using this notebook"
-	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page.
-
-	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/spectroscopy/notebook.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
-
-	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
-
-	$(msg(msg_adding_colors))
-
-	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined.
-"""
-
-# ╔═╡ bed3c1a0-aa13-4c61-a074-9b38f9a4d306
-cm"""
-!!! note "Web aside"
-	The website we are pulling images from provides an [API](https://en.wikipedia.org/wiki/API) to interact with its data. We use the stdlib [`Downloads.jl`](https://github.com/JuliaLang/Downloads.jl) to call this API, [`JSON.jl`](https://github.com/JuliaIO/JSON.jl) to parse the data that we downloaded, and [`Images.jl`](https://github.com/JuliaImages/Images.jl) to load it into Julia. This is essentially the same as doing the following on a local PNG file:
-	```julia
-	using Images
-	img = load(LOCAL PATH TO MY FILE)
-	```
-
-	In this case, the path is just the url of the hosted image online provided by the API.
-""" |> msg
-
-# ╔═╡ 248c07d3-48ee-40a1-b9b5-d57f49b56d6f
-cm"""
-!!! note
-	By default, the value of a variable is displayed above the cell, and debugging/logging information below. Adding a semicolon to the end of the line will suppress the former being displayed in the notebook if we like.
-""" |> msg
-
-# ╔═╡ cf371199-c283-46e8-8174-31796e2224cb
-cm"""
-!!! note
-	Julia has a delightful way of applying a function element-wise to its inputs, known as [dot syntax](https://docs.julialang.org/en/v1/manual/functions/#man-vectorized).
-""" |> msg
-
-# ╔═╡ f7f490fe-32d5-4a00-a12a-07bfcc1d3edf
-md"""
-!!! note
-	We also used the [`@view`](https://docs.julialang.org/en/v1/base/arrays/#Base.@view) macro here to access the data directly instead of making a copy. For more on views vs. copies [see here](https://docs.julialang.org/en/v1/base/arrays/#Views-(SubArrays-and-other-view-types)), and for more on macros [see here](https://docs.julialang.org/en/v1/manual/metaprogramming/#man-macros).
-""" |> msg
-
-# ╔═╡ c37fc603-8943-4be6-9c73-1f327e8b7885
-cm"""
-!!! note "Why vec?"
-	Array operations in Julia preserve dimensionality to make things [more consistent and composable](https://stackoverflow.com/a/42353230/16402912). For example,
-
-	```julia
-	sum([
-		1 2
-		3 4
-	]; dims=1)
-	```
-
-	returns another matrix
-
-	```julia
-	1×2 Matrix{Int64}:
-	 4  6
-	```
-
-	instead of silently changing the shape out from under us to a 1D vector
-
-	```julia
-	[4, 6]
-	```
-
-	The flipside is that the [plotting library we are using](https://plotly.com/) expects a simple vector, so we call [`vec`](https://docs.julialang.org/en/v1/base/arrays/#Base.vec) on the original sum to make this transformation for us before passing it to Plotly.
-
-!!! note "What does |> do?"
-	Known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to another. For example,
-
-	```julia
-	sqrt(sum([1, 4, 5, 6])) # 4.0
-	```
-
-	is equivalent to:
-
-	```julia
-	[1, 4, 5, 6] |> sum |> sqrt # 4.0
-	```
-""" |> msg
-
-# ╔═╡ 1cef03ec-1991-4491-a415-c711ea457e05
-cm"""
-!!! note "Plotly commands"
-	```julia
-	p = make_subplots(;
-		rows = 2,
-		shared_xaxes = true,
-		vertical_spacing = 0.02,
-		x_title = "pixel column",
-	)
-	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
-	add_trace!(p, heatmap(
-		x = col_range_dog,
-		y = reverse(row_range_dog),
-		z = window_dog_vals,
-		colorscale = :Greys,
-		showscale = false,
-	) ; row=2)
-	update!(p;
-		layout = Layout(
-			yaxis = attr(title="intensity"),
-			yaxis2 = attr(scaleanchor=:x, title="pixel row")
-		)
-	)
-	```
-""" |> msg
-
-# ╔═╡ 27ad53e4-40c6-4d2e-a87b-d766f048c4bd
-cm"""
-!!! note "What is channelview?"
-
-	This is a more general version of `gray` that also works for color images and returns a view instead of a copy. Either function can be used. For more information, [see here](https://juliaimages.org/v0.20/conversions_views/#Color-separations:-views-for-converting-between-numbers-and-colors-1).
-""" |> msg
 
 # ╔═╡ baa00c8f-9fd4-44b7-bc79-669d17908c2d
 cm"""
@@ -822,7 +819,7 @@ plot(xrange_ev_fits, prof_1D_fits, Layout(
 ))
 
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
-cm"""
+md"""
 ## Packages
 """
 
@@ -2195,8 +2192,6 @@ version = "17.4.0+2"
 # ╟─60367274-b695-43f1-b16a-7c63fc9ef21a
 # ╟─f9868858-6982-4906-8b52-38e058e98279
 # ╟─b3dacdf9-f45f-40b8-b463-eac43ceb7e87
-# ╟─74d14b68-ff23-494b-8ded-2d072f1e9f27
-# ╟─ee774d48-5c36-44cd-876b-f8d157cd9fa0
 # ╟─2c163542-8825-491c-8277-6097da40221f
 # ╠═b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # ╠═3357c912-78e4-4c90-a784-55e489bbaf02
@@ -2204,12 +2199,11 @@ version = "17.4.0+2"
 # ╟─25326216-a51b-4e9c-a484-3853ae135a16
 # ╟─2c36115d-c399-404a-80f0-1a8ee3223cb1
 # ╟─25002ec9-6c1a-47e8-aebf-64b2c649c0c7
-# ╟─229088f2-922f-4b93-b6c1-63f683a4ae0f
 # ╠═0b681466-bd74-4a4f-8c0f-6cb9186a3af8
 # ╠═f6fcc525-e1ef-48b1-9a28-7caa5e68b334
 # ╠═447de825-9442-48ba-b373-2adc158799e3
 # ╠═71c3f396-600b-40fc-b6a6-a796bd634a76
-# ╠═c6617828-9ab4-4a60-bac2-78ec9b5f8fac
+# ╟─c6617828-9ab4-4a60-bac2-78ec9b5f8fac
 # ╟─307c7c22-5dbf-4134-beaf-815bcfeb2e65
 # ╟─f6ac23d4-e63d-4914-aff0-fb47edc02e7c
 # ╟─e3cc6aff-b777-4391-97b2-f24f288127c5
@@ -2219,11 +2213,12 @@ version = "17.4.0+2"
 # ╠═46deb312-8f07-4b4e-a5b4-b852fb1d016d
 # ╟─5b638405-5f75-473c-9de9-6acac9856608
 # ╟─4c6a8538-2124-44f0-9891-4a3e1472ea4e
+# ╟─e1ae334d-548b-4259-af7c-e13b773f7b3e
 # ╟─75108863-4a62-4751-aeee-246250fbf8b8
 # ╟─7d1caf58-d1db-4fcb-a62b-5c2a16b56732
 # ╟─baa00c8f-9fd4-44b7-bc79-669d17908c2d
-# ╟─e1ae334d-548b-4259-af7c-e13b773f7b3e
-# ╠═80a54675-6662-4e66-b9a3-4746edc35c71
+# ╟─80a54675-6662-4e66-b9a3-4746edc35c71
+# ╟─229088f2-922f-4b93-b6c1-63f683a4ae0f
 # ╟─fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 # ╠═e46b678e-0448-4e31-a465-0a82c7380ab8
 # ╟─00000000-0000-0000-0000-000000000001
