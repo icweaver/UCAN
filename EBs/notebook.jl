@@ -85,6 +85,7 @@ df_selected = @chain dropmissing(df) begin
 	@rsubset begin
 		# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
 		:min_mag - :max_mag ≥ 0.5 &&
+		:period ≤ 3.0 &&
 		startswith(:other_info, "[[Ephemeris")
 	end
 	
