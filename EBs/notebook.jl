@@ -4,16 +4,6 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-end
-
 # ╔═╡ 7dc13fcd-3b52-4d78-834c-f619783d38e1
 begin
 	using PlutoUI, HTTP, DataFramesMeta, JSONTables
@@ -58,8 +48,10 @@ md"""
 Username is your [AAVSO API key](https://targettool.aavso.org/TargetTool/api/index)
 """
 
-# ╔═╡ 9178c66e-0e05-4877-bab6-8c571e2a54b9
-@bind username confirm(TextField(;default=""))
+# ╔═╡ 7e20896c-63d6-4ad8-83d6-ec580d0b3955
+username = open("data/.aavso_api") do f
+	readline(f)
+end;
 
 # ╔═╡ 96b00b80-d2cf-4902-9a4f-cdf370fa548e
 if !isempty(username)
@@ -93,7 +85,8 @@ df_selected = @chain dropmissing(df) begin
 
 	@select begin
 		:star_name
-		:constellation
+		:ra
+		:dec
 		:period
 		# :min_mag
 		# :max_mag
@@ -662,7 +655,7 @@ version = "17.4.0+2"
 # ╠═3ddb1a3f-203c-4e15-9785-d32b860655a2
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
-# ╠═9178c66e-0e05-4877-bab6-8c571e2a54b9
+# ╠═7e20896c-63d6-4ad8-83d6-ec580d0b3955
 # ╠═96b00b80-d2cf-4902-9a4f-cdf370fa548e
 # ╟─0e8d4a7a-d259-430c-a949-5ce563f7f5f1
 # ╠═a6133ce4-7bd2-4b85-884d-e9beaa5beb7f
