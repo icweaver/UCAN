@@ -15,7 +15,10 @@ macro bind(def, element)
 end
 
 # ╔═╡ 7dc13fcd-3b52-4d78-834c-f619783d38e1
-using PlutoUI, CommonMark, HTTP, DataFramesMeta, JSONTables
+begin
+	using PlutoUI, HTTP, DataFramesMeta, JSONTables
+	using MarkdownLiteral: @mdx
+end
 
 # ╔═╡ a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
 cm"""
@@ -32,6 +35,18 @@ But why EBs?
 md"""
 ## Target list
 """
+
+# ╔═╡ 3ddb1a3f-203c-4e15-9785-d32b860655a2
+function get_url(s)
+	url = @chain s begin
+		split("Ephemeris info ")
+		last
+		split("]]")
+		first
+	end
+	
+	@mdx """[link]($(url))"""
+end
 
 # ╔═╡ c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 md"""
@@ -60,32 +75,28 @@ if !isempty(username)
 		HTTP.get(url; query)
 	end
 
-	df = DataFrame(jsontable(String(r.body)).targets)
+	# The table under the `target` field of the JSONTable does not
+	# seem to convert nulls to missings, so using the raw string directly instead
+	df = DataFrame(jsontable(chop(String(r.body); head=12)))
 end;
 
-# ╔═╡ 5b7b899e-17ea-467d-8f32-678b0ba04870
-get_url(s) = Markdown.parse("""<$(first(split(last(split(s)), "]]")))>""")
-
 # ╔═╡ b74a34ba-dc2c-4123-b7aa-e8168ba9a96b
-df_selected = @chain df begin
-	
+df_selected = @chain dropmissing(df) begin
 	@rsubset begin
-		all(!isnothing, (:min_mag, :max_mag, :other_info)) &&
+		# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
 		:min_mag - :max_mag ≥ 0.5 &&
 		startswith(:other_info, "[[Ephemeris")
 	end
 	
-	@rtransform begin
-		:other_info = get_url(:other_info)
-	end
+	@rtransform :ephem = get_url(:other_info)
 
 	@select begin
 		:star_name
 		:constellation
 		:period
-		:min_mag
-		:max_mag
-		:other_info
+		# :min_mag
+		# :max_mag
+		:ephem
 	end
 end
 
@@ -100,17 +111,17 @@ TableOfContents()
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
+MarkdownLiteral = "736d6165-7244-6769-4267-6b50796e6954"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
-CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.0"
 HTTP = "~1.10.1"
 JSONTables = "~1.0.3"
+MarkdownLiteral = "~0.1.1"
 PlutoUI = "~0.7.55"
 """
 
@@ -120,7 +131,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "d6c1ffa108ad3bebcebbe23c9f5072ac02d45d02"
+project_hash = "3ce1163908ec67be1e34968de6f64a1ba40a2c66"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -382,6 +393,12 @@ version = "0.5.13"
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
+[[deps.MarkdownLiteral]]
+deps = ["CommonMark", "HypertextLiteral"]
+git-tree-sha1 = "0d3fa2dd374934b62ee16a4721fe68c418b92899"
+uuid = "736d6165-7244-6769-4267-6b50796e6954"
+version = "0.1.1"
+
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
 git-tree-sha1 = "c067a280ddc25f196b5e7df3877c6b226d390aaf"
@@ -641,11 +658,11 @@ version = "17.4.0+2"
 # ╟─a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
 # ╟─4200b8ad-690b-40e6-a501-ed7c3ee3286f
 # ╠═b74a34ba-dc2c-4123-b7aa-e8168ba9a96b
+# ╠═3ddb1a3f-203c-4e15-9785-d32b860655a2
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
 # ╠═9178c66e-0e05-4877-bab6-8c571e2a54b9
 # ╠═96b00b80-d2cf-4902-9a4f-cdf370fa548e
-# ╠═5b7b899e-17ea-467d-8f32-678b0ba04870
 # ╟─0e8d4a7a-d259-430c-a949-5ce563f7f5f1
 # ╠═a6133ce4-7bd2-4b85-884d-e9beaa5beb7f
 # ╠═7dc13fcd-3b52-4d78-834c-f619783d38e1
