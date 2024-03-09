@@ -11,7 +11,7 @@ begin
 end
 
 # ╔═╡ a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
-cm"""
+md"""
 # Eclipsing binaries lab ⚪ ⚫
 
 But why EBs?
@@ -20,6 +20,32 @@ But why EBs?
 
 <https://www.aavso.org/general-notes>
 """
+
+# ╔═╡ 94036d88-3ac6-41af-a63a-7b15ad75b398
+md"""
+!!! note "Update"
+
+	Let's just go after [W UMa](https://en.wikipedia.org/wiki/W_Ursae_Majoris) for now. It's super well studied and short-period, so going after it on really any given night would be super helpful!
+
+	```
+	Ra: 09h 43m 45.4705
+	Dec: 55h 57m 09.0667 	
+	Duration: 4 hours
+	Exposure: 3970
+	Cadence: 3970
+	Gain: 8 (honestly just picked out of a hat)
+	```
+"""
+
+# ╔═╡ 08d6711d-a667-435f-bfb7-4073fc869374
+md"""
+## Finder chart
+
+Red dot to the right of the Big Dipper
+"""
+
+# ╔═╡ 98d76407-2a80-4662-915a-7a43cb72a81f
+Resource("https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/311406345-4936b40a-fc49-4b55-bad3-272c9cb0cb2c.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240309%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240309T022855Z&X-Amz-Expires=300&X-Amz-Signature=bbc02c219a872ade6f46c4c87a4e313c816b22a432c6e8a99fa0dce0e47b428c&X-Amz-SignedHeaders=host&actor_id=25312320&key_id=0&repo_id=242439725")
 
 # ╔═╡ 4200b8ad-690b-40e6-a501-ed7c3ee3286f
 md"""
@@ -650,6 +676,9 @@ version = "17.4.0+2"
 
 # ╔═╡ Cell order:
 # ╟─a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
+# ╟─94036d88-3ac6-41af-a63a-7b15ad75b398
+# ╟─08d6711d-a667-435f-bfb7-4073fc869374
+# ╟─98d76407-2a80-4662-915a-7a43cb72a81f
 # ╟─4200b8ad-690b-40e6-a501-ed7c3ee3286f
 # ╠═b74a34ba-dc2c-4123-b7aa-e8168ba9a96b
 # ╠═3ddb1a3f-203c-4e15-9785-d32b860655a2
