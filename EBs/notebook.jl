@@ -10,6 +10,21 @@ begin
 	using MarkdownLiteral: @mdx
 end
 
+# ╔═╡ 4200b8ad-690b-40e6-a501-ed7c3ee3286f
+md"""
+## Target list
+"""
+
+# ╔═╡ 08d6711d-a667-435f-bfb7-4073fc869374
+md"""
+## Finder chart for W UMa
+
+Red dot to the right of the Big Dipper
+"""
+
+# ╔═╡ 98d76407-2a80-4662-915a-7a43cb72a81f
+Resource("https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/311892258-c34768f6-c741-423b-878a-444f2fffed47.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240311%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240311T232254Z&X-Amz-Expires=300&X-Amz-Signature=09a4be2945820eed7057d6e8a2957c1bf4d8e279306b5252f3461efdd9b8df00&X-Amz-SignedHeaders=host&actor_id=25312320&key_id=0&repo_id=242439725")
+
 # ╔═╡ a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
 md"""
 # Eclipsing binaries lab ⚪ ⚫
@@ -28,29 +43,51 @@ md"""
 	Let's just go after [W UMa](https://en.wikipedia.org/wiki/W_Ursae_Majoris) for now. It's super well studied and short-period, so going after it on really any given night would be super helpful!
 
 	```
-	Ra: 09h 43m 45.4705
+	RA: 09h 43m 45.4705
 	Dec: 55h 57m 09.0667 	
 	Duration: 4 hours
-	Exposure: 3970
-	Cadence: 3970
-	Gain: 8 (honestly just picked out of a hat)
+	Exposure time: 1400 ms
+	Cadence: 1400 ms
+	Recommended Gain: 0	
+	Max Gain: 1.78
 	```
 """
 
-# ╔═╡ 08d6711d-a667-435f-bfb7-4073fc869374
-md"""
-## Finder chart
+# ╔═╡ ee793922-b294-4b34-a0b2-b89c65bb2f64
+target = (
+	v_mag = 7.9,
+	t_exp = 1400,
+)
 
-Red dot to the right of the Big Dipper
-"""
+# ╔═╡ 92b221c2-5179-4f82-a449-817c4415c3c3
+baseline = (
+	v_mag = 11.7, # V (mag)
+	t_exp = 3200.0, # Exptime (ms)
+	gain = 25.0, # Gain (dB)
+	peak_px = 3000, # Peak Pixel ADU
+)
 
-# ╔═╡ 98d76407-2a80-4662-915a-7a43cb72a81f
-Resource("https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/311406345-4936b40a-fc49-4b55-bad3-272c9cb0cb2c.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240309%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240309T022855Z&X-Amz-Expires=300&X-Amz-Signature=bbc02c219a872ade6f46c4c87a4e313c816b22a432c6e8a99fa0dce0e47b428c&X-Amz-SignedHeaders=host&actor_id=25312320&key_id=0&repo_id=242439725")
+# ╔═╡ 99b5684c-29ab-477f-ae0f-d466e02720fb
+function flux_factor(target, baseline)
+	f_mag = (target.v_mag - baseline.v_mag) / -2.5 |> exp10
+	f_exp = target.t_exp / baseline.t_exp
+	return f_mag * f_exp 
+end
 
-# ╔═╡ 4200b8ad-690b-40e6-a501-ed7c3ee3286f
-md"""
-## Target list
-"""
+# ╔═╡ 295176ce-e650-48fb-9d78-188d494f01a7
+max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
+
+# ╔═╡ 1b7111f1-2fbd-42cd-ad52-dc04ddabbd8b
+rec_gain(g) = round(g, RoundDown) - 1.0
+
+# ╔═╡ c44ef82e-381d-4c04-9b4e-87f1bd538555
+f = flux_factor(target, baseline)
+
+# ╔═╡ 33217081-e558-4194-938c-8d1ebf2e8d01
+g = max_gain(baseline, f)
+
+# ╔═╡ ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
+rec_gain(g)
 
 # ╔═╡ 3ddb1a3f-203c-4e15-9785-d32b860655a2
 function get_url(s)
@@ -99,21 +136,32 @@ if !isempty(username)
 end;
 
 # ╔═╡ b74a34ba-dc2c-4123-b7aa-e8168ba9a96b
-df_selected = @chain dropmissing(df) begin
+df_selected = @chain df begin
+	dropmissing
 	@rsubset begin
 		# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
 		:min_mag - :max_mag ≥ 0.5 &&
+		:min_mag_band == "V" && :max_mag_band == "V" &&
 		:period ≤ 3.0 &&
 		startswith(:other_info, "[[Ephemeris")
 	end
-	
-	@rtransform :ephem = get_url(:other_info)
+		
+	@rtransform begin
+		:ephem = get_url(:other_info)
+		:V_mag = (:min_mag + :max_mag) / 2.0
+	end
 
 	@select begin
 		:star_name
 		:ra
 		:dec
+		:min_mag
+		# :min_mag_band
+		:V_mag
+		:max_mag
+		# :max_mag_band
 		:period
+		:var_type
 		# :min_mag
 		# :max_mag
 		:ephem
@@ -675,12 +723,20 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╟─a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
+# ╟─4200b8ad-690b-40e6-a501-ed7c3ee3286f
 # ╟─94036d88-3ac6-41af-a63a-7b15ad75b398
 # ╟─08d6711d-a667-435f-bfb7-4073fc869374
 # ╟─98d76407-2a80-4662-915a-7a43cb72a81f
-# ╟─4200b8ad-690b-40e6-a501-ed7c3ee3286f
 # ╠═b74a34ba-dc2c-4123-b7aa-e8168ba9a96b
+# ╟─a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
+# ╠═ee793922-b294-4b34-a0b2-b89c65bb2f64
+# ╠═92b221c2-5179-4f82-a449-817c4415c3c3
+# ╟─99b5684c-29ab-477f-ae0f-d466e02720fb
+# ╟─295176ce-e650-48fb-9d78-188d494f01a7
+# ╟─1b7111f1-2fbd-42cd-ad52-dc04ddabbd8b
+# ╠═c44ef82e-381d-4c04-9b4e-87f1bd538555
+# ╠═33217081-e558-4194-938c-8d1ebf2e8d01
+# ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
 # ╠═3ddb1a3f-203c-4e15-9785-d32b860655a2
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
