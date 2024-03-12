@@ -15,6 +15,24 @@ md"""
 ## Target list
 """
 
+# ╔═╡ 94036d88-3ac6-41af-a63a-7b15ad75b398
+md"""
+!!! note "Update"
+
+	Let's just go after [W UMa](https://en.wikipedia.org/wiki/W_Ursae_Majoris) for now. It's super well studied and short-period, so going after it on really any given night would be super helpful!
+
+	```
+	Observing mode: Exoplanets
+	RA: 09h 43m 45.4705
+	Dec: 55h 57m 09.0667 	
+	Duration: 4 hours
+	Exposure time: 1400 ms
+	Cadence: 1400 ms
+	Recommended Gain: 0	
+	Max Gain: 1.78
+	```
+"""
+
 # ╔═╡ 08d6711d-a667-435f-bfb7-4073fc869374
 md"""
 ## Finder chart for W UMa
@@ -23,7 +41,7 @@ Red dot to the right of the Big Dipper
 """
 
 # ╔═╡ 98d76407-2a80-4662-915a-7a43cb72a81f
-Resource("https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/311892258-c34768f6-c741-423b-878a-444f2fffed47.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240311%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240311T232254Z&X-Amz-Expires=300&X-Amz-Signature=09a4be2945820eed7057d6e8a2957c1bf4d8e279306b5252f3461efdd9b8df00&X-Amz-SignedHeaders=host&actor_id=25312320&key_id=0&repo_id=242439725")
+Resource("https://github-production-user-asset-6210df.s3.amazonaws.com/25312320/312196802-ed69219e-f169-46a5-b1b0-6a903d9a52f1.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240312%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240312T182934Z&X-Amz-Expires=300&X-Amz-Signature=fed3044d5324390c777c04ab739286abee025a1b2932acc2bf2fbd746540b410&X-Amz-SignedHeaders=host&actor_id=25312320&key_id=0&repo_id=242439725")
 
 # ╔═╡ a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
 md"""
@@ -34,23 +52,6 @@ But why EBs?
 <https://www.aavso.org/introduction-why-are-eclipsing-binary-stars-important>
 
 <https://www.aavso.org/general-notes>
-"""
-
-# ╔═╡ 94036d88-3ac6-41af-a63a-7b15ad75b398
-md"""
-!!! note "Update"
-
-	Let's just go after [W UMa](https://en.wikipedia.org/wiki/W_Ursae_Majoris) for now. It's super well studied and short-period, so going after it on really any given night would be super helpful!
-
-	```
-	RA: 09h 43m 45.4705
-	Dec: 55h 57m 09.0667 	
-	Duration: 4 hours
-	Exposure time: 1400 ms
-	Cadence: 1400 ms
-	Recommended Gain: 0	
-	Max Gain: 1.78
-	```
 """
 
 # ╔═╡ ee793922-b294-4b34-a0b2-b89c65bb2f64
