@@ -41,7 +41,7 @@ Red dot to the right of the Big Dipper
 """
 
 # ╔═╡ 98d76407-2a80-4662-915a-7a43cb72a81f
-LocalResource("./data/finder_chart_WUMa.png")
+Resource("https://github.com/icweaver/UCAN/blob/main/EBs/data/finder_chart_WUMa.png?raw=true")
 
 # ╔═╡ a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
 md"""
