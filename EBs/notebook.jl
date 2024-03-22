@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ 7dc13fcd-3b52-4d78-834c-f619783d38e1
 begin
 	using PlutoUI, HTTP, DataFramesMeta, JSONTables, CommonMark
-	using Photometry, AstroImages, Plots
+	using Photometry, AstroImages, Plots, PlutoPlotly
 end
 
 # ╔═╡ 4200b8ad-690b-40e6-a501-ed7c3ee3286f
@@ -101,39 +101,55 @@ md"""
 """
 
 # ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-img = load("./data/TRANSIT/mgcc3f_2024-03-16T06-31-33.660_TRANSIT.fits") # |> reverse
+img = load("./data/TRANSIT/mgcc3f_2024-03-16T06-31-33.660_TRANSIT.fits")
 
-# ╔═╡ 9bcc5d1b-5b29-4a93-b3dd-0212026d1ae5
-err = zeros(axes(img))
+# ╔═╡ dfda8a7d-8920-4bc5-842b-47ccfdc663fa
+img.header
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
-sources = extract_sources(PeakMesh(), img, err, true)
+# sources = let
+# 	err = 5_000 * ones(axes(img))
+# 	extract_sources(PeakMesh(), img, err, true)
+# end
 
 # ╔═╡ 7674ff50-f6e9-4118-ac93-0899235d5d24
-aps = CircularAperture.(sources.x, sources.y, 30)[1:20]
+# aps = CircularAperture.(sources.x, sources.y, 37)
+aps = let
+	positions = [
+		[766, 1033],
+		[910, 1195],
+		[675, 1143],
+	]
 
-# ╔═╡ c4f21ad0-495f-4712-8faf-d24c03a20fb7
-let
-	implot(permutedims(img); colorbar=false)
-	plot!(aps)
-end
-
-# ╔═╡ 3ddb1a3f-203c-4e15-9785-d32b860655a2
-function get_url(s)
-	url = @chain s begin
-		split("Ephemeris info ")
-		last
-		split("]]")
-		first
-	end
+	radii = 35
 	
-	cm"""[link]($(url))"""
+	CircularAperture.(positions, radii)
 end
 
-# ╔═╡ 174be8d4-cf04-4f2e-9025-047e1bf77cd0
+# ╔═╡ 76efff1b-fcf7-4a59-95b8-34dc089f2a3e
+photometry(aps, img) |> DataFrame
+
+# ╔═╡ cbf2bc7b-882b-449b-a03f-91dd579d4b62
 let
-	url = "https://en.wikipedia.org/wiki/Dog"
-	"""[dogs]($(url))"""
+	implot(permutedims(img); colorbar=true, colormap=:magma)
+	plot!(aps; linewidth=0.5, color=:lightgreen)
+end
+
+# ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
+let
+	hm = PlutoPlotly.heatmap(; z=img.data, zmin=2500, zmax=3000)
+	
+	sc = PlutoPlotly.scatter(;
+		x = [ap.x for ap ∈ aps],
+		y = [ap.y for ap ∈ aps],
+		marker = attr(
+			size = first(aps).r,
+			line = attr(width=1, color=:lightgreen),
+			color = "rgba(0, 0, 0, 0)",
+		)
+	)
+	
+	PlutoPlotly.plot([hm, sc])
 end
 
 # ╔═╡ c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
@@ -169,6 +185,23 @@ if !isempty(username)
 	# seem to convert nulls to missings, so using the raw string directly instead
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
 end;
+
+# ╔═╡ 5818fc22-84ac-4341-b666-6599f9022ffa
+md"""
+### Convenience functions
+"""
+
+# ╔═╡ 3ddb1a3f-203c-4e15-9785-d32b860655a2
+function get_url(s)
+	url = @chain s begin
+		split("Ephemeris info ")
+		last
+		split("]]")
+		first
+	end
+	
+	cm"""[link]($(url))"""
+end
 
 # ╔═╡ b74a34ba-dc2c-4123-b7aa-e8168ba9a96b
 df_selected = @chain df begin
@@ -221,6 +254,7 @@ HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
@@ -231,6 +265,7 @@ HTTP = "~1.10.1"
 JSONTables = "~1.0.3"
 Photometry = "~0.9.0"
 Plots = "~1.40.2"
+PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.55"
 """
 
@@ -240,7 +275,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "5f38e35d21a512964a3dcf96033da1e2e5140318"
+project_hash = "c354bf380c6f0e199b79e4c441d2065bb9dca1b7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -371,6 +406,11 @@ version = "0.4.1"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.BaseDirs]]
+git-tree-sha1 = "3e93fcd95fe8db4704e98dbda14453a0bfc6f6c3"
+uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
+version = "1.2.3"
 
 [[deps.Baselet]]
 git-tree-sha1 = "aebf55e6d7795e02ca500a689d326ac979aaf89e"
@@ -1488,6 +1528,12 @@ git-tree-sha1 = "7b1a9df27f072ac4c9c7cbe5efb198489258d1f5"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.1"
 
+[[deps.PlotlyBase]]
+deps = ["ColorSchemes", "Dates", "DelimitedFiles", "DocStringExtensions", "JSON", "LaTeXStrings", "Logging", "Parameters", "Pkg", "REPL", "Requires", "Statistics", "UUIDs"]
+git-tree-sha1 = "56baf69781fc5e61607c3e46227ab17f7040ffa2"
+uuid = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
+version = "0.8.19"
+
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "UnitfulLatexify", "Unzip"]
 git-tree-sha1 = "3c403c6590dd93b36752634115e20137e79ab4df"
@@ -1506,6 +1552,20 @@ version = "1.40.2"
     GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
     IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
     ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
+[[deps.PlutoPlotly]]
+deps = ["AbstractPlutoDingetjes", "BaseDirs", "Colors", "Dates", "Downloads", "HypertextLiteral", "InteractiveUtils", "LaTeXStrings", "Markdown", "Pkg", "PlotlyBase", "Reexport", "TOML"]
+git-tree-sha1 = "1ae939782a5ce9a004484eab5416411c7190d3ce"
+uuid = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
+version = "0.4.6"
+
+    [deps.PlutoPlotly.extensions]
+    PlotlyKaleidoExt = "PlotlyKaleido"
+    UnitfulExt = "Unitful"
+
+    [deps.PlutoPlotly.weakdeps]
+    PlotlyKaleido = "f2990250-8cf9-495f-b13a-cce12b45703c"
     Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.PlutoUI]]
@@ -2287,16 +2347,18 @@ version = "1.4.1+1"
 # ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
 # ╟─570cbe72-a363-468d-aaa8-42af6273c4ee
 # ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-# ╠═9bcc5d1b-5b29-4a93-b3dd-0212026d1ae5
+# ╠═dfda8a7d-8920-4bc5-842b-47ccfdc663fa
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # ╠═7674ff50-f6e9-4118-ac93-0899235d5d24
-# ╠═c4f21ad0-495f-4712-8faf-d24c03a20fb7
-# ╠═3ddb1a3f-203c-4e15-9785-d32b860655a2
-# ╠═174be8d4-cf04-4f2e-9025-047e1bf77cd0
+# ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
+# ╠═cbf2bc7b-882b-449b-a03f-91dd579d4b62
+# ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
 # ╠═7e20896c-63d6-4ad8-83d6-ec580d0b3955
 # ╠═96b00b80-d2cf-4902-9a4f-cdf370fa548e
+# ╟─5818fc22-84ac-4341-b666-6599f9022ffa
+# ╠═3ddb1a3f-203c-4e15-9785-d32b860655a2
 # ╟─0e8d4a7a-d259-430c-a949-5ce563f7f5f1
 # ╠═a6133ce4-7bd2-4b85-884d-e9beaa5beb7f
 # ╠═7dc13fcd-3b52-4d78-834c-f619783d38e1
