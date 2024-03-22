@@ -101,7 +101,7 @@ md"""
 """
 
 # ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-img = load("./data/TRANSIT/mgcc3f_2024-03-16T06-39-59.092_TRANSIT.fits")
+img = load("./data/TRANSIT/mgcc3f_2024-03-16T06-32-56.265_TRANSIT.fits")
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # sources = let
