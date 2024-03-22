@@ -101,10 +101,7 @@ md"""
 """
 
 # ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-img = load("./data/TRANSIT/mgcc3f_2024-03-16T06-31-33.660_TRANSIT.fits")
-
-# ╔═╡ dfda8a7d-8920-4bc5-842b-47ccfdc663fa
-img.header
+img = load("./data/TRANSIT/mgcc3f_2024-03-16T06-39-59.092_TRANSIT.fits")
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # sources = let
@@ -137,19 +134,20 @@ end
 
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
-	hm = PlutoPlotly.heatmap(; z=img.data, zmin=2500, zmax=3000)
-	
-	sc = PlutoPlotly.scatter(;
-		x = [ap.x for ap ∈ aps],
-		y = [ap.y for ap ∈ aps],
-		marker = attr(
-			size = first(aps).r,
-			line = attr(width=1, color=:lightgreen),
-			color = "rgba(0, 0, 0, 0)",
-		)
+	layout = Layout(
+		yaxis = attr(scaleanchor=:x),
 	)
 	
-	PlutoPlotly.plot([hm, sc])
+	hm = PlutoPlotly.heatmap(; z=img.data, zmin=2500, zmax=3000)
+
+	p = PlutoPlotly.plot(hm, layout)
+	
+	for ap ∈ aps
+		sc = circle(x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen)
+		add_shape!(p, sc)
+	end
+	
+	p
 end
 
 # ╔═╡ c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
@@ -2347,7 +2345,6 @@ version = "1.4.1+1"
 # ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
 # ╟─570cbe72-a363-468d-aaa8-42af6273c4ee
 # ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-# ╠═dfda8a7d-8920-4bc5-842b-47ccfdc663fa
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # ╠═7674ff50-f6e9-4118-ac93-0899235d5d24
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
