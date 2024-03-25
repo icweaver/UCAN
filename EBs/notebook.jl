@@ -114,10 +114,10 @@ md"""
 """
 
 # ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-imgs = [load(f) for f in first(readdir("./data/TRANSIT"; join=true), 200)];
+imgs = [load(f) for f in first(readdir("./data/TRANSIT"; join=true), 10)];
 
-# ╔═╡ 63975301-708c-438c-8df7-7e74a8d93a9d
-last(imgs).header["DATE-AVG"]
+# ╔═╡ 2babd4bb-e9a4-4b74-b3b7-a99a3a827259
+readdir("./data/TRANSIT"; join=true) |> length
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # sources = let
@@ -139,13 +139,16 @@ aps = let
 	CircularAperture.(positions, radii)
 end
 
+# ╔═╡ 92d6a36f-bce8-4f7e-920e-0636f9b3b45b
+t = [img.header["DATE-AVG"] for img in imgs]
+
 # ╔═╡ 76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 fluxes = [photometry(aps, img) for img in imgs];
 
 # ╔═╡ 9704186b-95e1-4150-a819-9b3647808574
 f_targ = [first(f).aperture_sum for f in fluxes]
 
-# ╔═╡ ec8000bf-81da-4868-b8b4-0755d14b36b3
+# ╔═╡ bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
 scatterplot(f_targ)
 
 # ╔═╡ cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
@@ -165,9 +168,10 @@ let
 	layout = Layout(
 		xaxis = attr(range=(500, 1000)),
 		yaxis = attr(scaleanchor=:x, range=(900, 1300)),
+		title = img_i["DATE-AVG"],
 	)
 	
-	hm = heatmap(; z=img_i.data, zmin=2500, zmax=3000)
+	hm = heatmap(; z=Matrix(img_i), zmin=2500, zmax=3000)
 
 	p = plot(hm, layout)
 	
@@ -178,6 +182,9 @@ let
 	
 	p
 end
+
+# ╔═╡ 218adfbe-53b8-4806-9cb4-d3d2daa4619d
+img_i["DATE-AVG"]
 
 # ╔═╡ c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 md"""
@@ -1839,11 +1846,12 @@ version = "17.4.0+2"
 # ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
 # ╠═570cbe72-a363-468d-aaa8-42af6273c4ee
 # ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-# ╠═ec8000bf-81da-4868-b8b4-0755d14b36b3
+# ╠═2babd4bb-e9a4-4b74-b3b7-a99a3a827259
+# ╠═bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
 # ╠═d770ab8d-b0fc-4cd9-88f7-8e2e99653833
-# ╠═63975301-708c-438c-8df7-7e74a8d93a9d
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # ╠═7674ff50-f6e9-4118-ac93-0899235d5d24
+# ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 # ╠═9704186b-95e1-4150-a819-9b3647808574
 # ╠═cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
@@ -1851,6 +1859,7 @@ version = "17.4.0+2"
 # ╠═91eb7c98-d65a-4177-ac79-530127844a67
 # ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 # ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
+# ╠═218adfbe-53b8-4806-9cb4-d3d2daa4619d
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
 # ╠═7e20896c-63d6-4ad8-83d6-ec580d0b3955
