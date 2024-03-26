@@ -143,6 +143,9 @@ sources = @chain extract_sources(PeakMesh(box_size=11), img_i, err) begin
 	# first(_, 3)
 end
 
+# ╔═╡ 967e61aa-73d7-4242-a3b3-b0bf94dec189
+sources.value
+
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
 aps = CircularAperture.(sources.x, sources.y, 35);
 
@@ -173,11 +176,11 @@ let
 
 	scatters = scatter(; x=sources.x, y=sources.y, mode=:markers,
 		marker = attr(
-			symbol="x",
-			# color="rgba(135, 206, 250, 0.0)",
-			customdata = sources.value,
-			hovertemplate = "%{customdata}",
-		)
+			# symbol="x",
+			color="rgba(135, 206, 250, 0.0)",
+		),
+		customdata = sources.value,
+		hovertemplate = "%{customdata}",
 	)
 	add_trace!(p, scatters)
 	
@@ -1879,6 +1882,7 @@ version = "17.4.0+2"
 # ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 # ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 # ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
+# ╠═967e61aa-73d7-4242-a3b3-b0bf94dec189
 # ╠═2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
 # ╠═e43a0512-3059-4aab-8058-2af0c8b3ac26
 # ╠═cde0a72b-0b17-4faf-b82b-2728742cdc2e
