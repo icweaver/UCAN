@@ -134,11 +134,11 @@ t = [img.header["DATE-AVG"] for img in imgs]
 err = let
 	# get background and background rms with box-size (50, 50) and filter_size (5, 5)
 	bkg, bkg_rms = estimate_background(img_i, 50, filter_size=5)
-	mean(bkg) * ones(axes(img_i))
+	mean(bkg) * ones(axes(img_i)) .* 4
 end;
 
 # ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
-sources = extract_sources(PeakMesh(box_size=11), img_i, err);
+sources = extract_sources(PeakMesh(box_size=5), img_i, err);
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
 aps = CircularAperture.(sources.y, sources.x, 35);
@@ -146,15 +146,15 @@ aps = CircularAperture.(sources.y, sources.x, 35);
 # ╔═╡ c412cb2e-b342-4ce9-b6b4-5211561c4581
 counts = @chain photometry(aps, img_i) begin
 	sort(_; by=x -> x.aperture_sum, rev=true)
-	first(_, 6)
+	first(_, 9)
 end
 
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
 	layout = Layout(
-		# xaxis = attr(range=(200, 1300)),
-		# yaxis = attr(range=(600, 1600), scaleanchor=:x),
-		yaxis = attr(scaleanchor=:x),
+		xaxis = attr(range=(145, 155)),
+		yaxis = attr(range=(350, 360), scaleanchor=:x),
+		# yaxis = attr(scaleanchor=:x),
 		title = img_i["DATE-AVG"],
 	)
 	
