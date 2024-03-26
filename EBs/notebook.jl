@@ -163,17 +163,18 @@ let
 	)
 
 	p = plot(hm, layout)
-	
-	for ap ∈ aps
+	r = first(aps).r
+	for ap ∈ counts
+		x, y = ap.xcenter, ap.ycenter
 		circs = circle(
-			x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen,
+			x0=x-r, y0=y-r, x1=x+r, y1=y+r, line_color=:lightgreen,
 		)
 		add_shape!(p, circs)
 	end
 
 	scatters = scatter(; x=counts.xcenter, y=counts.ycenter, mode=:markers,
 		marker = attr(
-			symbol="x-thin",
+			symbol="cross",
 			# color="rgba(135, 206, 250, 0.0)",
 		),
 		customdata = counts.aperture_sum,
