@@ -14,6 +14,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ e43a0512-3059-4aab-8058-2af0c8b3ac26
+using Statistics
+
 # ╔═╡ 91eb7c98-d65a-4177-ac79-530127844a67
 using UnicodePlots: scatterplot
 
@@ -127,23 +130,17 @@ t = [img.header["DATE-AVG"] for img in imgs]
 # ╔═╡ f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 @bind img_i Slider(imgs; show_value=false)
 
-# ╔═╡ 09e17464-a976-4b5c-adec-bcc4681fa9eb
-# clipped = sigma_clip(img_i, 1; fill=NaN);
-
-# ╔═╡ bfde0bd2-f833-4c3d-9988-21b56d7d4e5b
-# # get background and background rms with box-size (50, 50) and filter_size (5, 5)
-# bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5);
-
-# ╔═╡ ee90d6ab-caf8-4f7a-ba95-e9dbe221dcb9
-# subt = img_i .- bkg_f[axes(img_i)...];
-
 # ╔═╡ 2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
-err = 5_000 * ones(axes(img_i));
+err = let
+	# get background and background rms with box-size (50, 50) and filter_size (5, 5)
+	bkg, bkg_rms = estimate_background(img_i, 50, filter_size=5)
+	mean(bkg) * ones(axes(img_i))
+end;
 
 # ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
-begin
-	sources = extract_sources(PeakMesh(), img_i, err)
-	filter!(x -> x.value > 50_000, sources)
+sources = @chain extract_sources(PeakMesh(box_size=11), img_i, err) begin
+	filter!(x -> x.value < 40_000, _)
+	first(_, 3)
 end
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
@@ -168,15 +165,14 @@ let
 	p = plot(hm, layout)
 	
 	for ap ∈ aps
-		sc = circle(x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen)
+		sc = circle(
+			x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen
+		)
 		add_shape!(p, sc)
 	end
 	
 	p
 end
-
-# ╔═╡ a3d9cca2-c88b-49e8-b662-f0241da1b31e
-length(aps)
 
 # ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 md"""
@@ -305,6 +301,7 @@ JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
@@ -326,7 +323,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "5c182ba4a1cd39879795c213f3bb8195e8e770d6"
+project_hash = "d62cdcb935e5fcb213e2f06d2f859f3a6ef682e5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1871,14 +1868,11 @@ version = "17.4.0+2"
 # ╠═ead18878-996c-49f2-b47f-32bcfe82544c
 # ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 # ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
-# ╠═09e17464-a976-4b5c-adec-bcc4681fa9eb
-# ╠═bfde0bd2-f833-4c3d-9988-21b56d7d4e5b
-# ╠═ee90d6ab-caf8-4f7a-ba95-e9dbe221dcb9
 # ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 # ╠═2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
+# ╠═e43a0512-3059-4aab-8058-2af0c8b3ac26
 # ╠═cde0a72b-0b17-4faf-b82b-2728742cdc2e
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
-# ╠═a3d9cca2-c88b-49e8-b662-f0241da1b31e
 # ╟─8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 # ╠═9704186b-95e1-4150-a819-9b3647808574
