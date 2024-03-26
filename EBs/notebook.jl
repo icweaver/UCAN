@@ -140,7 +140,7 @@ end;
 # ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
 sources = @chain extract_sources(PeakMesh(box_size=11), img_i, err) begin
 	filter!(x -> x.value < 40_000, _)
-	first(_, 3)
+	# first(_, 3)
 end
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
@@ -165,11 +165,17 @@ let
 	p = plot(hm, layout)
 	
 	for ap ∈ aps
-		sc = circle(
-			x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen
+		circs = circle(
+			x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen,
 		)
-		add_shape!(p, sc)
+		add_shape!(p, circs)
 	end
+
+	scatters = scatter(; x=sources.x, y=sources.y, mode=:markers,
+		customdata = sources.value,
+		hovertemplate = "%{customdata}",
+	)
+	add_trace!(p, scatters)
 	
 	p
 end
