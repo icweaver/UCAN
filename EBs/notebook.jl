@@ -133,19 +133,20 @@ t = [img.header["DATE-AVG"] for img in imgs]
 # ╔═╡ 2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
 err = let
 	# get background and background rms with box-size (50, 50) and filter_size (5, 5)
-	bkg, bkg_rms = estimate_background(img_i, 50, filter_size=5)
-	mean(bkg) * ones(axes(img_i)) .* 4
+	# bkg, bkg_rms = estimate_background(img_i, 50, filter_size=5)
+	# mean(bkg) * ones(axes(img_i)) .* 4
+	2500 * ones(axes(img_i))
 end;
 
 # ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
-sources = extract_sources(PeakMesh(), img_i, err);
+sources = extract_sources(PeakMesh(nsigma=5.0), img_i, err);
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
 aps = CircularAperture.(sources.y, sources.x, 35);
 
 # ╔═╡ c412cb2e-b342-4ce9-b6b4-5211561c4581
 counts = @chain photometry(aps, img_i) begin
-	sort(_; by=x -> x.aperture_sum, rev=true)
+	# sort(_; by=x -> x.aperture_sum, rev=true)
 	# first(_, 9)
 end
 
@@ -175,15 +176,15 @@ let
 		add_shape!(p, circs)
 	end
 
-	scatters = scatter(; x=counts.xcenter, y=counts.ycenter, mode=:markers,
-		marker = attr(
-			symbol="cross",
-			# color="rgba(135, 206, 250, 0.0)",
-		),
-		customdata = counts.aperture_sum,
-		hovertemplate = "%{customdata}",
-	)
-	add_trace!(p, scatters)
+	# scatters = scatter(; x=counts.xcenter, y=counts.ycenter, mode=:markers,
+	# 	marker = attr(
+	# 		symbol="cross",
+	# 		# color="rgba(135, 206, 250, 0.0)",
+	# 	),
+	# 	customdata = counts.aperture_sum,
+	# 	hovertemplate = "%{customdata}",
+	# )
+	# add_trace!(p, scatters)
 	
 	p
 end

@@ -11,11 +11,7 @@ using PythonCall, CondaPkg
 @py begin
 	import photutils.detection: DAOStarFinder
 	import photutils.aperture: CircularAperture
-	
 	import astropy.io: fits
-	import astropy.stats: sigma_clipped_stats
-	import astropy.visualization.mpl_normalize: ImageNormalize
-	import astropy.visualization: SqrtStretch
 
 	import numpy as np
 	import matplotlib.pyplot as plt
@@ -25,34 +21,37 @@ end
 begin
 	hdul = fits.open("./data/mgcc3f/mgcc3f_2024-03-25T04-51-29.429_TRANSIT/TRANSIT/mgcc3f_2024-03-25T04-51-37.893_TRANSIT.fits")
 
+	hdul_dark = fits.open("./data/mgcc3f/mgcc3f_2024-03-20T06-59-09.154_DARKFRAMEMEAN.fits")
+
 	data = hdul[0].data
+	dark = hdul_dark[0].data
 
 	hdul.close()
+	hdul_dark.close()
 end;
 
-# ╔═╡ f2cfba8f-b8ec-4a21-9fab-a223ae462ac0
-mean, median, std = sigma_clipped_stats(data, sigma=3.0)
-
 # ╔═╡ c690f8ca-2d8b-4a0d-90cf-2ac5b56e64fc
-daofind = DAOStarFinder(fwhm=5.0, threshold=5.0*std)
+daofind = DAOStarFinder(fwhm=8.0, threshold=2_500.0)
 
 # ╔═╡ e6827445-c7b7-47b5-98a7-b59bdbbcb074
-sources = daofind(data - median)
+sources = daofind(data)
 
 # ╔═╡ abdcb6e4-98bb-411b-8fec-010220b30b22
-positions = np.transpose((sources["xcentroid"], sources["ycentroid"]))
+positions = np.transpose((sources["xcentroid"], sources["ycentroid"]));
 
 # ╔═╡ 90692b09-4bbd-4c54-9cd9-ef7fae78eccc
-apertures = CircularAperture(positions, r=35.0)
-
-# ╔═╡ 9fa0f022-5b41-41d0-860d-fd5dbfca00c5
-norm = ImageNormalize(stretch=SqrtStretch())
+apertures = CircularAperture(positions, r=35.0);
 
 # ╔═╡ 30099318-5e1f-45b1-a30c-4e74cf4f5a8e
-begin
-	plt.imshow(data; norm, origin="lower")
+let
+	plt.imshow(data;
+		origin = "lower",
+		vmin = 2_000,
+		vmax = 5_000,
+		cmap = "viridis",
+	)
 
-	apertures.plot()
+	apertures.plot(color="lightgreen")
 	
 	plt.gcf()
 end
@@ -377,13 +376,11 @@ version = "17.4.0+2"
 # ╔═╡ Cell order:
 # ╠═09eb8266-7ab2-464a-806f-09db67dec05b
 # ╠═82646318-967d-4ba9-b32c-b3324faad977
-# ╠═f2cfba8f-b8ec-4a21-9fab-a223ae462ac0
 # ╠═c690f8ca-2d8b-4a0d-90cf-2ac5b56e64fc
+# ╠═30099318-5e1f-45b1-a30c-4e74cf4f5a8e
 # ╠═e6827445-c7b7-47b5-98a7-b59bdbbcb074
 # ╠═abdcb6e4-98bb-411b-8fec-010220b30b22
 # ╠═90692b09-4bbd-4c54-9cd9-ef7fae78eccc
-# ╠═9fa0f022-5b41-41d0-860d-fd5dbfca00c5
-# ╠═30099318-5e1f-45b1-a30c-4e74cf4f5a8e
 # ╟─6394a44e-b352-465c-b73c-59f089ac7b5e
 # ╠═e186d275-2bdb-4cca-92c4-6bbf30f16d08
 # ╠═a42ef462-be92-4330-82c4-ae3e6d75934b
