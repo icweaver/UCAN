@@ -138,7 +138,7 @@ err = let
 end;
 
 # ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
-sources = extract_sources(PeakMesh(box_size=5), img_i, err);
+sources = extract_sources(PeakMesh(), img_i, err);
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
 aps = CircularAperture.(sources.y, sources.x, 35);
@@ -146,15 +146,15 @@ aps = CircularAperture.(sources.y, sources.x, 35);
 # ╔═╡ c412cb2e-b342-4ce9-b6b4-5211561c4581
 counts = @chain photometry(aps, img_i) begin
 	sort(_; by=x -> x.aperture_sum, rev=true)
-	first(_, 9)
+	# first(_, 9)
 end
 
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
 	layout = Layout(
-		xaxis = attr(range=(145, 155)),
-		yaxis = attr(range=(350, 360), scaleanchor=:x),
-		# yaxis = attr(scaleanchor=:x),
+		# xaxis = attr(range=(145, 155)),
+		# yaxis = attr(range=(350, 360), scaleanchor=:x),
+		yaxis = attr(scaleanchor=:x),
 		title = img_i["DATE-AVG"],
 	)
 	
@@ -187,6 +187,9 @@ let
 	
 	p
 end
+
+# ╔═╡ 5040c847-0965-49f9-a86e-255460307025
+length(aps), length(counts)
 
 # ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 md"""
@@ -1888,6 +1891,7 @@ version = "17.4.0+2"
 # ╠═e43a0512-3059-4aab-8058-2af0c8b3ac26
 # ╠═cde0a72b-0b17-4faf-b82b-2728742cdc2e
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
+# ╠═5040c847-0965-49f9-a86e-255460307025
 # ╟─8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 # ╠═9704186b-95e1-4150-a819-9b3647808574
