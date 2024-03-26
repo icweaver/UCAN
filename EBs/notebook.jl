@@ -14,6 +14,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ ce34de4b-6254-400a-859c-07e23ef7aa08
+using Glob
+
 # ╔═╡ 91eb7c98-d65a-4177-ac79-530127844a67
 using UnicodePlots: scatterplot
 
@@ -114,33 +117,26 @@ md"""
 """
 
 # ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-imgs = [load(f) for f in first(readdir("./data/TRANSIT"; join=true), 10)];
-
-# ╔═╡ 2babd4bb-e9a4-4b74-b3b7-a99a3a827259
-readdir("./data/TRANSIT"; join=true) |> length
-
-# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
-# sources = let
-# 	err = 5_000 * ones(axes(img))
-# 	extract_sources(PeakMesh(), img, err, true)
-# end
-
-# ╔═╡ 7674ff50-f6e9-4118-ac93-0899235d5d24
-# aps = CircularAperture.(sources.x, sources.y, 37)
-aps = let
-	positions = [
-		[766, 1033],
-		[910, 1195],
-		[675, 1143],
-	]
-
-	radii = 35
-	
-	CircularAperture.(positions, radii)
-end
+imgs = [load(f)
+	for f in glob("./data/mgcc3f/mgcc3f_2024-03-25*/TRANSIT/*.fits")[begin:100:end]
+];
 
 # ╔═╡ 92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 t = [img.header["DATE-AVG"] for img in imgs]
+
+# ╔═╡ f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
+@bind img_i Slider(imgs; show_value=false)
+
+# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
+aps = let
+	err = 5_000 * ones(axes(img_i))
+	sources = extract_sources(PeakMesh(), img_i, err, true)
+	filter!(sources) do source
+		860 ≤ source.y ≤ 1200 ||
+		700 ≤ source.y ≤ 900
+	end
+	CircularAperture.(sources.x, sources.y, 35)
+end
 
 # ╔═╡ 76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 fluxes = [photometry(aps, img) for img in imgs];
@@ -160,18 +156,16 @@ f_div = f_targ ./ f_comp
 # ╔═╡ d770ab8d-b0fc-4cd9-88f7-8e2e99653833
 scatterplot(f_div)
 
-# ╔═╡ f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
-@bind img_i Slider(imgs; show_value=false)
-
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
 	layout = Layout(
-		xaxis = attr(range=(500, 1000)),
-		yaxis = attr(scaleanchor=:x, range=(900, 1300)),
+		xaxis = attr(range=(200, 1300)),
+		yaxis = attr(range=(600, 1600), scaleanchor=:x),
+		# yaxis = attr(scaleanchor=:x),
 		title = img_i["DATE-AVG"],
 	)
 	
-	hm = heatmap(; z=Matrix(img_i), zmin=2500, zmax=3000)
+	hm = heatmap(; z=Matrix(img_i), zmin=3000, zmax=4000)
 
 	p = plot(hm, layout)
 	
@@ -182,9 +176,6 @@ let
 	
 	p
 end
-
-# ╔═╡ 218adfbe-53b8-4806-9cb4-d3d2daa4619d
-img_i["DATE-AVG"]
 
 # ╔═╡ c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 md"""
@@ -284,6 +275,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
@@ -295,6 +287,7 @@ UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 AstroImages = "~0.4.2"
 CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.0"
+Glob = "~1.3.1"
 HTTP = "~1.10.1"
 JSONTables = "~1.0.3"
 Photometry = "~0.9.0"
@@ -309,7 +302,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "b11cd8211ea1e12a84adecc917268e546590988e"
+project_hash = "5c182ba4a1cd39879795c213f3bb8195e8e770d6"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -827,6 +820,11 @@ version = "5.0.1+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "781609d7-10c4-51f6-84f2-b8444358ff6d"
 version = "6.2.1+6"
+
+[[deps.Glob]]
+git-tree-sha1 = "97285bbd5230dd766e9ef6749b80fc617126d496"
+uuid = "c27321d9-0574-5035-807b-f59d2c89b15c"
+version = "1.3.1"
 
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
@@ -1846,11 +1844,9 @@ version = "17.4.0+2"
 # ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
 # ╠═570cbe72-a363-468d-aaa8-42af6273c4ee
 # ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-# ╠═2babd4bb-e9a4-4b74-b3b7-a99a3a827259
+# ╠═ce34de4b-6254-400a-859c-07e23ef7aa08
 # ╠═bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
 # ╠═d770ab8d-b0fc-4cd9-88f7-8e2e99653833
-# ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
-# ╠═7674ff50-f6e9-4118-ac93-0899235d5d24
 # ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 # ╠═9704186b-95e1-4150-a819-9b3647808574
@@ -1859,7 +1855,7 @@ version = "17.4.0+2"
 # ╠═91eb7c98-d65a-4177-ac79-530127844a67
 # ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 # ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
-# ╠═218adfbe-53b8-4806-9cb4-d3d2daa4619d
+# ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
 # ╠═7e20896c-63d6-4ad8-83d6-ec580d0b3955
