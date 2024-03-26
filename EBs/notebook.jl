@@ -14,16 +14,13 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ ce34de4b-6254-400a-859c-07e23ef7aa08
-using Glob
-
 # ╔═╡ 91eb7c98-d65a-4177-ac79-530127844a67
 using UnicodePlots: scatterplot
 
 # ╔═╡ 7dc13fcd-3b52-4d78-834c-f619783d38e1
 begin
 	using PlutoUI, HTTP, DataFramesMeta, JSONTables, CommonMark
-	using Photometry, AstroImages, PlutoPlotly
+	using Photometry, AstroImages, PlutoPlotly, Glob
 end
 
 # ╔═╡ 4200b8ad-690b-40e6-a501-ed7c3ee3286f
@@ -121,22 +118,51 @@ imgs = [load(f)
 	for f in glob("./data/mgcc3f/mgcc3f_2024-03-25*/TRANSIT/*.fits")[begin:100:end]
 ];
 
+# ╔═╡ ead18878-996c-49f2-b47f-32bcfe82544c
+dark = load("./data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits");
+
 # ╔═╡ 92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 t = [img.header["DATE-AVG"] for img in imgs]
 
 # ╔═╡ f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 @bind img_i Slider(imgs; show_value=false)
 
-# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
-aps = let
-	err = 5_000 * ones(axes(img_i))
-	sources = extract_sources(PeakMesh(), img_i, err, true)
-	filter!(sources) do source
-		860 ≤ source.y ≤ 1200 ||
-		700 ≤ source.y ≤ 900
-	end
-	CircularAperture.(sources.x, sources.y, 35)
+# ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
+let
+	layout = Layout(
+		# xaxis = attr(range=(200, 1300)),
+		# yaxis = attr(range=(600, 1600), scaleanchor=:x),
+		yaxis = attr(scaleanchor=:x),
+		title = img_i["DATE-AVG"],
+	)
+	
+	hm = heatmap(; z=Matrix(img_i))
+
+	p = plot(hm, layout)
+	
+	# for ap ∈ aps
+	# 	sc = circle(x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen)
+	# 	add_shape!(p, sc)
+	# end
+	
+	p
 end
+
+# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
+# aps = let
+# 	err = 2_000 * ones(axes(img_i))
+# 	sources = extract_sources(PeakMesh(), img_i, err, true)
+# 	# filter!(sources) do source
+# 	# 	860 ≤ source.y ≤ 1200 ||
+# 	# 	700 ≤ source.y ≤ 900
+# 	# end
+# 	CircularAperture.(sources.x, sources.y, 35)
+# end
+
+# ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
+md"""
+### Light curve
+"""
 
 # ╔═╡ 76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 fluxes = [photometry(aps, img) for img in imgs];
@@ -144,38 +170,17 @@ fluxes = [photometry(aps, img) for img in imgs];
 # ╔═╡ 9704186b-95e1-4150-a819-9b3647808574
 f_targ = [first(f).aperture_sum for f in fluxes]
 
-# ╔═╡ bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
-scatterplot(f_targ)
-
 # ╔═╡ cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
 f_comp = [last(f).aperture_sum for f in fluxes]
 
 # ╔═╡ 59e39cdd-c27c-4c59-896c-880eb39bc94f
 f_div = f_targ ./ f_comp
 
+# ╔═╡ bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
+scatterplot(f_targ)
+
 # ╔═╡ d770ab8d-b0fc-4cd9-88f7-8e2e99653833
 scatterplot(f_div)
-
-# ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
-let
-	layout = Layout(
-		xaxis = attr(range=(200, 1300)),
-		yaxis = attr(range=(600, 1600), scaleanchor=:x),
-		# yaxis = attr(scaleanchor=:x),
-		title = img_i["DATE-AVG"],
-	)
-	
-	hm = heatmap(; z=Matrix(img_i), zmin=3000, zmax=4000)
-
-	p = plot(hm, layout)
-	
-	for ap ∈ aps
-		sc = circle(x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen)
-		add_shape!(p, sc)
-	end
-	
-	p
-end
 
 # ╔═╡ c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 md"""
@@ -1844,18 +1849,19 @@ version = "17.4.0+2"
 # ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
 # ╠═570cbe72-a363-468d-aaa8-42af6273c4ee
 # ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-# ╠═ce34de4b-6254-400a-859c-07e23ef7aa08
-# ╠═bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
-# ╠═d770ab8d-b0fc-4cd9-88f7-8e2e99653833
+# ╠═ead18878-996c-49f2-b47f-32bcfe82544c
 # ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
+# ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
+# ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
+# ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
+# ╟─8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 # ╠═9704186b-95e1-4150-a819-9b3647808574
 # ╠═cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
 # ╠═59e39cdd-c27c-4c59-896c-880eb39bc94f
+# ╠═bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
+# ╠═d770ab8d-b0fc-4cd9-88f7-8e2e99653833
 # ╠═91eb7c98-d65a-4177-ac79-530127844a67
-# ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
-# ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
-# ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
 # ╠═7e20896c-63d6-4ad8-83d6-ec580d0b3955
