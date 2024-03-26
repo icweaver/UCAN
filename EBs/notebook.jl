@@ -144,7 +144,10 @@ sources = extract_sources(PeakMesh(box_size=11), img_i, err);
 aps = CircularAperture.(sources.y, sources.x, 35);
 
 # ╔═╡ c412cb2e-b342-4ce9-b6b4-5211561c4581
-counts = photometry(aps, img_i)
+counts = @chain photometry(aps, img_i) begin
+	sort(_; by=x -> x.aperture_sum, rev=true)
+	first(_, 6)
+end
 
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
