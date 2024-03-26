@@ -138,16 +138,13 @@ err = let
 end;
 
 # ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
-sources = @chain extract_sources(PeakMesh(box_size=11), img_i, err) begin
-	filter!(x -> x.value < 40_000, _)
-	# first(_, 3)
-end
-
-# ╔═╡ 967e61aa-73d7-4242-a3b3-b0bf94dec189
-sources.value
+sources = extract_sources(PeakMesh(box_size=11), img_i, err);
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
-aps = CircularAperture.(sources.x, sources.y, 35);
+aps = CircularAperture.(sources.y, sources.x, 35);
+
+# ╔═╡ c412cb2e-b342-4ce9-b6b4-5211561c4581
+counts = photometry(aps, img_i)
 
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
@@ -159,7 +156,7 @@ let
 	)
 	
 	hm = heatmap(;
-		z = Matrix(img_i),
+		z = Matrix(img_i)',
 		zmin = 2_000.0,
 		zmax = 5_000.0,
 		colorscale = :Viridis,
@@ -174,12 +171,12 @@ let
 		add_shape!(p, circs)
 	end
 
-	scatters = scatter(; x=sources.x, y=sources.y, mode=:markers,
+	scatters = scatter(; x=counts.xcenter, y=counts.ycenter, mode=:markers,
 		marker = attr(
-			# symbol="x",
-			color="rgba(135, 206, 250, 0.0)",
+			symbol="x-thin",
+			# color="rgba(135, 206, 250, 0.0)",
 		),
-		customdata = sources.value,
+		customdata = counts.aperture_sum,
 		hovertemplate = "%{customdata}",
 	)
 	add_trace!(p, scatters)
@@ -1882,7 +1879,7 @@ version = "17.4.0+2"
 # ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 # ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 # ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
-# ╠═967e61aa-73d7-4242-a3b3-b0bf94dec189
+# ╠═c412cb2e-b342-4ce9-b6b4-5211561c4581
 # ╠═2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
 # ╠═e43a0512-3059-4aab-8058-2af0c8b3ac26
 # ╠═cde0a72b-0b17-4faf-b82b-2728742cdc2e
