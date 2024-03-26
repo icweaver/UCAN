@@ -172,8 +172,12 @@ let
 	end
 
 	scatters = scatter(; x=sources.x, y=sources.y, mode=:markers,
-		customdata = sources.value,
-		hovertemplate = "%{customdata}",
+		marker = attr(
+			symbol="x",
+			# color="rgba(135, 206, 250, 0.0)",
+			customdata = sources.value,
+			hovertemplate = "%{customdata}",
+		)
 	)
 	add_trace!(p, scatters)
 	
