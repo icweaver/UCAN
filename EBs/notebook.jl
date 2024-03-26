@@ -130,64 +130,65 @@ t = [img.header["DATE-AVG"] for img in imgs]
 # ╔═╡ f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 @bind img_i Slider(imgs; show_value=false)
 
-# ╔═╡ 2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
-err = let
-	# get background and background rms with box-size (50, 50) and filter_size (5, 5)
-	# bkg, bkg_rms = estimate_background(img_i, 50, filter_size=5)
-	# mean(bkg) * ones(axes(img_i)) .* 4
-	2500 * ones(axes(img_i))
-end;
+# ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
+# let
+# 	layout = Layout(
+# 		# xaxis = attr(range=(145, 155)),
+# 		# yaxis = attr(range=(350, 360), scaleanchor=:x),
+# 		yaxis = attr(scaleanchor=:x),
+# 		title = img_i["DATE-AVG"],
+# 	)
+	
+# 	hm = heatmap(;
+# 		z = Matrix(img_i),
+# 		zmin = 2_000.0,
+# 		zmax = 5_000.0,
+# 		colorscale = :Viridis,
+# 	)
 
-# ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
-sources = extract_sources(PeakMesh(nsigma=5.0), img_i, err);
+# 	p = plot(hm, layout)
+# 	r = first(aps).r
+# 	for ap ∈ counts
+# 		x, y = ap.xcenter, ap.ycenter
+# 		circs = circle(
+# 			x0=x-r, y0=y-r, x1=x+r, y1=y+r, line_color=:lightgreen,
+# 		)
+# 		add_shape!(p, circs)
+# 	end
 
-# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
-aps = CircularAperture.(sources.x, sources.y, 35);
+# 	# scatters = scatter(; x=counts.xcenter, y=counts.ycenter, mode=:markers,
+# 	# 	marker = attr(
+# 	# 		symbol="cross",
+# 	# 		# color="rgba(135, 206, 250, 0.0)",
+# 	# 	),
+# 	# 	customdata = counts.aperture_sum,
+# 	# 	hovertemplate = "%{customdata}",
+# 	# )
+# 	# add_trace!(p, scatters)
+	
+# 	p
+# end
 
 # ╔═╡ c412cb2e-b342-4ce9-b6b4-5211561c4581
-counts = @chain photometry(aps, img_i') begin
-	# sort(_; by=x -> x.aperture_sum, rev=true)
-	# first(_, 9)
-end
+# counts = @chain photometry(aps, img_i') begin
+# 	# sort(_; by=x -> x.aperture_sum, rev=true)
+# 	# first(_, 9)
+# 	filter(c -> 900 ≤ c.ycenter ≤ 1100, _)
+# end
 
-# ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
-let
-	layout = Layout(
-		# xaxis = attr(range=(145, 155)),
-		# yaxis = attr(range=(350, 360), scaleanchor=:x),
-		yaxis = attr(scaleanchor=:x),
-		title = img_i["DATE-AVG"],
-	)
-	
-	hm = heatmap(;
-		z = Matrix(img_i),
-		zmin = 2_000.0,
-		zmax = 5_000.0,
-		colorscale = :Viridis,
-	)
+# ╔═╡ 2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
+# err = let
+# 	# get background and background rms with box-size (50, 50) and filter_size (5, 5)
+# 	# bkg, bkg_rms = estimate_background(img_i, 50, filter_size=5)
+# 	# mean(bkg) * ones(axes(img_i)) .* 4
+# 	2500 * ones(axes(img_i))
+# end;
 
-	p = plot(hm, layout)
-	r = first(aps).r
-	for ap ∈ counts
-		x, y = ap.xcenter, ap.ycenter
-		circs = circle(
-			x0=x-r, y0=y-r, x1=x+r, y1=y+r, line_color=:lightgreen,
-		)
-		add_shape!(p, circs)
-	end
+# ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
+# sources = extract_sources(PeakMesh(nsigma=5.0), img_i, err);
 
-	# scatters = scatter(; x=counts.xcenter, y=counts.ycenter, mode=:markers,
-	# 	marker = attr(
-	# 		symbol="cross",
-	# 		# color="rgba(135, 206, 250, 0.0)",
-	# 	),
-	# 	customdata = counts.aperture_sum,
-	# 	hovertemplate = "%{customdata}",
-	# )
-	# add_trace!(p, scatters)
-	
-	p
-end
+# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
+# aps = CircularAperture.(sources.x, sources.y, 35);
 
 # ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 md"""
@@ -195,7 +196,32 @@ md"""
 """
 
 # ╔═╡ 76efff1b-fcf7-4a59-95b8-34dc089f2a3e
-fluxes = [photometry(aps, img) for img in imgs];
+# fluxes = [
+# 	# photometry(aps, img) for img in imgs
+
+# 	@chain photometry(aps, img') begin
+# 		# sort(_; by=x -> x.aperture_sum, rev=true)
+# 		# first(_, 9)
+# 		filter(c -> 900 ≤ c.ycenter ≤ 1100, _)
+# 	end
+
+# 	for img in imgs
+# ];
+
+# ╔═╡ 4a8c7d19-7064-4c29-be30-0736374787ec
+begin
+	fluxes = []
+	for img in imgs
+		# sources = extract_sources(PeakMesh(nsigma=5.0), img, 2500)
+		# aps = CircularAperture.(sources.x, sources.y, 35)
+		# flux = @chain photometry(aps, img') begin
+		# 	# sort(_; by=x -> x.aperture_sum, rev=true)
+		# 	# first(_, 9)
+		# 	filter(c -> 900 ≤ c.ycenter ≤ 1100, _)
+		# end
+		# push!(fluxes, flux)
+	end
+end
 
 # ╔═╡ 9704186b-95e1-4150-a819-9b3647808574
 f_targ = [first(f).aperture_sum for f in fluxes]
@@ -1891,6 +1917,7 @@ version = "17.4.0+2"
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
 # ╟─8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
+# ╠═4a8c7d19-7064-4c29-be30-0736374787ec
 # ╠═9704186b-95e1-4150-a819-9b3647808574
 # ╠═cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
 # ╠═59e39cdd-c27c-4c59-896c-880eb39bc94f
