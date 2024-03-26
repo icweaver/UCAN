@@ -17,9 +17,6 @@ end
 # ╔═╡ e43a0512-3059-4aab-8058-2af0c8b3ac26
 using Statistics
 
-# ╔═╡ 91eb7c98-d65a-4177-ac79-530127844a67
-using UnicodePlots: scatterplot
-
 # ╔═╡ 7dc13fcd-3b52-4d78-834c-f619783d38e1
 begin
 	using PlutoUI, HTTP, DataFramesMeta, JSONTables, CommonMark
@@ -118,7 +115,7 @@ md"""
 
 # ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
 imgs = [load(f)
-	for f in glob("./data/mgcc3f/mgcc3f_2024-03-25*/TRANSIT/*.fits")[begin:100:end]
+	for f in glob("./data/mgcc3f/mgcc3f_2024-03-25*/TRANSIT/*.fits")[begin:80:end]
 ];
 
 # ╔═╡ ead18878-996c-49f2-b47f-32bcfe82544c
@@ -226,10 +223,16 @@ begin
 end
 
 # ╔═╡ 9704186b-95e1-4150-a819-9b3647808574
-f_targ = [
-	first(f).aperture_sum for f in fluxes
-	if length(f) == 1
-]
+begin
+	t_targ, f_targ = [], []
+
+	for (t, f) in zip(t, fluxes)
+		if !isempty(f)
+			push!(f_targ, first(f).aperture_sum)
+			push!(t_targ, t)
+		end
+	end
+end
 
 # ╔═╡ cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
 # f_comp = [last(f).aperture_sum for f in fluxes]
@@ -237,11 +240,18 @@ f_targ = [
 # ╔═╡ 59e39cdd-c27c-4c59-896c-880eb39bc94f
 # f_div = f_targ ./ f_comp
 
-# ╔═╡ bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
-scatterplot(f_targ)
+# ╔═╡ 4a42d87e-f8fb-43bb-880b-dedce1b6edcf
+let
+	layout = Layout(
+		xaxis = attr(title="Date (UTC)"),
+		yaxis = attr(title="Aperture sum"),
+		title = "W UMa light curve",
+	)
 
-# ╔═╡ d770ab8d-b0fc-4cd9-88f7-8e2e99653833
-# scatterplot(f_div)
+	sc = scatter(; x=t_targ, y=f_targ, mode=:markers)
+	
+	plot(sc, layout)
+end
 
 # ╔═╡ c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 md"""
@@ -348,7 +358,6 @@ Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
 AstroImages = "~0.4.2"
@@ -360,7 +369,6 @@ JSONTables = "~1.0.3"
 Photometry = "~0.9.0"
 PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.55"
-UnicodePlots = "~3.6.4"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -369,7 +377,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "d62cdcb935e5fcb213e2f06d2f859f3a6ef682e5"
+project_hash = "33a8435a855933ac9260fd6722140eac93df40a8"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -671,11 +679,6 @@ weakdeps = ["IntervalSets", "StaticArrays"]
     [deps.ConstructionBase.extensions]
     ConstructionBaseIntervalSetsExt = "IntervalSets"
     ConstructionBaseStaticArraysExt = "StaticArrays"
-
-[[deps.Contour]]
-git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
-uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
-version = "0.6.2"
 
 [[deps.CoordinateTransformations]]
 deps = ["LinearAlgebra", "StaticArrays"]
@@ -1220,12 +1223,6 @@ version = "0.5.13"
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
 uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
 version = "0.4.2"
-
-[[deps.MarchingCubes]]
-deps = ["PrecompileTools", "StaticArrays"]
-git-tree-sha1 = "27d162f37cc29de047b527dab11a826dd3a650ad"
-uuid = "299715c1-40a9-479a-aaf9-4a633d36f717"
-version = "0.1.9"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -1810,27 +1807,6 @@ version = "1.0.2"
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
-[[deps.UnicodePlots]]
-deps = ["ColorSchemes", "ColorTypes", "Contour", "Crayons", "Dates", "LinearAlgebra", "MarchingCubes", "NaNMath", "PrecompileTools", "Printf", "Requires", "SparseArrays", "StaticArrays", "StatsBase"]
-git-tree-sha1 = "30646456e889c18fb3c23e58b2fc5da23644f752"
-uuid = "b8865327-cd53-5732-bb35-84acbb429228"
-version = "3.6.4"
-
-    [deps.UnicodePlots.extensions]
-    FreeTypeExt = ["FileIO", "FreeType"]
-    ImageInTerminalExt = "ImageInTerminal"
-    IntervalSetsExt = "IntervalSets"
-    TermExt = "Term"
-    UnitfulExt = "Unitful"
-
-    [deps.UnicodePlots.weakdeps]
-    FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-    FreeType = "b38be410-82b0-50bf-ab77-7b57e271db43"
-    ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
-    IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
-    Term = "22787eb5-b846-44ae-b979-8e399b8463ab"
-    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
-
 [[deps.Unitful]]
 deps = ["Dates", "LinearAlgebra", "Random"]
 git-tree-sha1 = "3c793be6df9dd77a0cf49d80984ef9ff996948fa"
@@ -1926,9 +1902,7 @@ version = "17.4.0+2"
 # ╠═9704186b-95e1-4150-a819-9b3647808574
 # ╠═cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
 # ╠═59e39cdd-c27c-4c59-896c-880eb39bc94f
-# ╠═bfb92ed6-34c0-4ed2-bda6-9f5c54f0ca0f
-# ╠═d770ab8d-b0fc-4cd9-88f7-8e2e99653833
-# ╠═91eb7c98-d65a-4177-ac79-530127844a67
+# ╟─4a42d87e-f8fb-43bb-880b-dedce1b6edcf
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
 # ╠═7e20896c-63d6-4ad8-83d6-ec580d0b3955
