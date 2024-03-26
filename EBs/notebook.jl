@@ -142,10 +142,10 @@ end;
 sources = extract_sources(PeakMesh(nsigma=5.0), img_i, err);
 
 # ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
-aps = CircularAperture.(sources.y, sources.x, 35);
+aps = CircularAperture.(sources.x, sources.y, 35);
 
 # ╔═╡ c412cb2e-b342-4ce9-b6b4-5211561c4581
-counts = @chain photometry(aps, img_i) begin
+counts = @chain photometry(aps, img_i') begin
 	# sort(_; by=x -> x.aperture_sum, rev=true)
 	# first(_, 9)
 end
@@ -160,7 +160,7 @@ let
 	)
 	
 	hm = heatmap(;
-		z = Matrix(img_i)',
+		z = Matrix(img_i),
 		zmin = 2_000.0,
 		zmax = 5_000.0,
 		colorscale = :Viridis,
@@ -188,9 +188,6 @@ let
 	
 	p
 end
-
-# ╔═╡ 5040c847-0965-49f9-a86e-255460307025
-length(aps), length(counts)
 
 # ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 md"""
@@ -1892,7 +1889,6 @@ version = "17.4.0+2"
 # ╠═e43a0512-3059-4aab-8058-2af0c8b3ac26
 # ╠═cde0a72b-0b17-4faf-b82b-2728742cdc2e
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
-# ╠═5040c847-0965-49f9-a86e-255460307025
 # ╟─8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 # ╠═9704186b-95e1-4150-a819-9b3647808574

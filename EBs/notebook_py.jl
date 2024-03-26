@@ -19,19 +19,15 @@ end
 
 # ╔═╡ 82646318-967d-4ba9-b32c-b3324faad977
 begin
-	hdul = fits.open("./data/mgcc3f/mgcc3f_2024-03-25T04-51-29.429_TRANSIT/TRANSIT/mgcc3f_2024-03-25T04-51-37.893_TRANSIT.fits")
-
-	hdul_dark = fits.open("./data/mgcc3f/mgcc3f_2024-03-20T06-59-09.154_DARKFRAMEMEAN.fits")
+	hdul = fits.open("./data/mgcc3f/mgcc3f_2024-03-25T04-51-29.429_TRANSIT/TRANSIT/mgcc3f_2024-03-25T05-02-21.905_TRANSIT.fits")
 
 	data = hdul[0].data
-	dark = hdul_dark[0].data
 
 	hdul.close()
-	hdul_dark.close()
 end;
 
 # ╔═╡ c690f8ca-2d8b-4a0d-90cf-2ac5b56e64fc
-daofind = DAOStarFinder(fwhm=8.0, threshold=2_500.0)
+daofind = DAOStarFinder(fwhm=3.0, threshold=2_500.0)
 
 # ╔═╡ e6827445-c7b7-47b5-98a7-b59bdbbcb074
 sources = daofind(data)
