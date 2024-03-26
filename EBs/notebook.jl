@@ -127,6 +127,28 @@ t = [img.header["DATE-AVG"] for img in imgs]
 # ╔═╡ f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
 @bind img_i Slider(imgs; show_value=false)
 
+# ╔═╡ 09e17464-a976-4b5c-adec-bcc4681fa9eb
+# clipped = sigma_clip(img_i, 1; fill=NaN);
+
+# ╔═╡ bfde0bd2-f833-4c3d-9988-21b56d7d4e5b
+# # get background and background rms with box-size (50, 50) and filter_size (5, 5)
+# bkg_f, bkg_rms_f = estimate_background(clipped, 50, filter_size=5);
+
+# ╔═╡ ee90d6ab-caf8-4f7a-ba95-e9dbe221dcb9
+# subt = img_i .- bkg_f[axes(img_i)...];
+
+# ╔═╡ 2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
+err = 5_000 * ones(axes(img_i));
+
+# ╔═╡ cde0a72b-0b17-4faf-b82b-2728742cdc2e
+begin
+	sources = extract_sources(PeakMesh(), img_i, err)
+	filter!(x -> x.value > 50_000, sources)
+end
+
+# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
+aps = CircularAperture.(sources.x, sources.y, 35);
+
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
 	layout = Layout(
@@ -136,28 +158,25 @@ let
 		title = img_i["DATE-AVG"],
 	)
 	
-	hm = heatmap(; z=Matrix(img_i))
+	hm = heatmap(;
+		z = Matrix(img_i),
+		zmin = 2_000.0,
+		zmax = 5_000.0,
+		colorscale = :Viridis,
+	)
 
 	p = plot(hm, layout)
 	
-	# for ap ∈ aps
-	# 	sc = circle(x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen)
-	# 	add_shape!(p, sc)
-	# end
+	for ap ∈ aps
+		sc = circle(x0=ap.x-ap.r, y0=ap.y-ap.r, x1=ap.x+ap.r, y1=ap.y+ap.r, line_color=:lightgreen)
+		add_shape!(p, sc)
+	end
 	
 	p
 end
 
-# ╔═╡ e2585fd8-72c6-4ac9-86a1-45f30afc2348
-# aps = let
-# 	err = 2_000 * ones(axes(img_i))
-# 	sources = extract_sources(PeakMesh(), img_i, err, true)
-# 	# filter!(sources) do source
-# 	# 	860 ≤ source.y ≤ 1200 ||
-# 	# 	700 ≤ source.y ≤ 900
-# 	# end
-# 	CircularAperture.(sources.x, sources.y, 35)
-# end
+# ╔═╡ a3d9cca2-c88b-49e8-b662-f0241da1b31e
+length(aps)
 
 # ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 md"""
@@ -1847,13 +1866,19 @@ version = "17.4.0+2"
 # ╠═c44ef82e-381d-4c04-9b4e-87f1bd538555
 # ╠═33217081-e558-4194-938c-8d1ebf2e8d01
 # ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
-# ╠═570cbe72-a363-468d-aaa8-42af6273c4ee
+# ╟─570cbe72-a363-468d-aaa8-42af6273c4ee
 # ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
 # ╠═ead18878-996c-49f2-b47f-32bcfe82544c
 # ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 # ╠═f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
+# ╠═09e17464-a976-4b5c-adec-bcc4681fa9eb
+# ╠═bfde0bd2-f833-4c3d-9988-21b56d7d4e5b
+# ╠═ee90d6ab-caf8-4f7a-ba95-e9dbe221dcb9
 # ╠═35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
+# ╠═2467db13-bcbe-49fd-b1f2-b1f9b23eaffe
+# ╠═cde0a72b-0b17-4faf-b82b-2728742cdc2e
 # ╠═e2585fd8-72c6-4ac9-86a1-45f30afc2348
+# ╠═a3d9cca2-c88b-49e8-b662-f0241da1b31e
 # ╟─8ee73593-ac62-4c5b-affc-2d7a6f9f6074
 # ╠═76efff1b-fcf7-4a59-95b8-34dc089f2a3e
 # ╠═9704186b-95e1-4150-a819-9b3647808574
