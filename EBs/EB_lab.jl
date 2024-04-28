@@ -65,11 +65,8 @@ img = load(first(df_fits).path)
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
 header(img)
 
-# ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
-imgs = [load(f.path) for f in eachrow(df_fits)];
-
 # ╔═╡ 13f47111-88a7-42a8-8cf2-97a218b2154d
-typeof(imgs[end])
+typeof(img)
 
 # ╔═╡ 5b8d79a0-5b92-4e88-b595-2105989521aa
 img_size, img_eltype = size(img), eltype(img);
@@ -78,6 +75,14 @@ img_size, img_eltype = size(img), eltype(img);
 md"""
 This image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel is stored as a $(img_eltype).
 """
+
+# ╔═╡ dc988a40-da50-4f05-88b8-12abe8915208
+md"""
+Movie
+"""
+
+# ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
+imgs = [load(f.path) for f in eachrow(df_fits)];
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for i in imgs
@@ -89,10 +94,18 @@ This image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts
 	)
 end fps=2
 
+# ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
+md"""
+Field rotation. Need to deal with
+"""
+
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
 md"""
 ## Aperture photometry 🔾
 """
+
+# ╔═╡ 89e9d984-60df-4a51-bd1d-1037a0356a61
+
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -1726,12 +1739,15 @@ version = "1.4.1+1"
 # ╠═a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
-# ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═13f47111-88a7-42a8-8cf2-97a218b2154d
 # ╠═5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 # ╠═5b8d79a0-5b92-4e88-b595-2105989521aa
+# ╠═dc988a40-da50-4f05-88b8-12abe8915208
+# ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
-# ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
+# ╠═7d54fd96-b268-4964-929c-d62c7d89b4b2
+# ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
+# ╠═89e9d984-60df-4a51-bd1d-1037a0356a61
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
