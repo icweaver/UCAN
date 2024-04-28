@@ -295,6 +295,8 @@ Alright, it looks like this approach successfully identified our target star! We
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 md"""
 ## Putting it all together
+
+Now that we have the building blocks for identifying our source target in place, we wrap them into a function that we can call on each of our frames:
 """
 
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
@@ -320,6 +322,11 @@ aps = [get_aps(img, pixel_left, pixel_right, 24)
 	for img in imgs
 ];
 
+# ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
+md"""
+Let's place the apertures onto our movie from earlier to doule check how we did:
+"""
+
 # ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
 @gif for (ap, img) in zip(aps, imgs)
 	implot(img;
@@ -332,12 +339,17 @@ aps = [get_aps(img, pixel_left, pixel_right, 24)
 	plot!(ap; color=:lightgreen)
 end fps=2
 
+# ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
+md"""
+Not bad! We can now sum up the flux in the target aperture for each frame to create our final light curve:
+"""
+
 # ╔═╡ 050b8516-b375-4f1f-906f-6362034b6564
 begin
-	times = []
-	fluxes = []
+	times = String[]
+	fluxes = Float64[]
 	
-	for (ap, img) in zip(aps_list, imgs)
+	for (ap, img) in zip(aps, imgs)
 		phot = first(photometry(ap, img))
 		push!(times, header(img)["DATE-OBS"])
 		push!(fluxes, phot.aperture_sum)
@@ -2538,10 +2550,12 @@ version = "1.4.1+1"
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
-# ╠═19747ca2-c9a7-4960-b5f0-04f3d82b6caf
+# ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
+# ╟─bd10f1c9-4b0d-4a30-8917-016f22582d06
 # ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+# ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
