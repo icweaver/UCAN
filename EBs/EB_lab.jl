@@ -129,12 +129,17 @@ Max Gain (dB): 1.78
 	The sample data for this lab can be downloaded [here](https://drive.google.com/drive/folders/1P7PTtx9LUnR-QF_SWjszTBjCwpJHZ7AN?usp=sharing).
 """
 
+# ╔═╡ b360ad74-58b7-47b5-a8b0-437ef1119303
+md"""
+Let's use [CCDReductions.jl](https://github.com/JuliaAstro/CCDReduction.jl?tab=readme-ov-file) to take a quick glance at the fits files in this folder:
+"""
+
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
 df_fits = fitscollection("./data/TRANSIT"; abspath=false)
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
-We have $(nrow(df_fits)) fits files with the following header keys:
+We see that we have $(nrow(df_fits)) fits files with the following header keys:
 """
 
 # ╔═╡ 8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
@@ -142,19 +147,16 @@ df_fits |> names |> print
 
 # ╔═╡ a38466b5-c7fb-4600-904b-b7ddd7afd272
 md"""
-Let's take a look at one of them
+Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a look at the image data for one of these files:
 """
-
-# ╔═╡ dc988a40-da50-4f05-88b8-12abe8915208
-md"""
-Movie
-"""
-
-# ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
-imgs = [load(f.path) for f in eachrow(df_fits)];
 
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = imgs[6] #load(first(df_fits).path)
+img = load(first(df_fits).path)
+
+# ╔═╡ a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
+md"""
+Ok, we have some stars! And here is its associated header file:
+"""
 
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
 header(img)
@@ -164,8 +166,16 @@ img_size, img_eltype = size(img), eltype(img);
 
 # ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 md"""
-This image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel is stored as a $(img_eltype).
+It looks like this image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel stored as a $(img_eltype) to reduce memory useage, neat!
 """
+
+# ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
+md"""
+Let's use [Plots.jl](https://github.com/JuliaPlots/Plots.jl) next to make a quick gif of all 34 frames:
+"""
+
+# ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
+imgs = [load(f.path) for f in eachrow(df_fits)];
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for i in imgs
@@ -2414,15 +2424,17 @@ version = "1.4.1+1"
 # ╟─aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
 # ╟─c1bbb6a2-6996-4fee-a642-a0212b473474
 # ╟─abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
+# ╟─b360ad74-58b7-47b5-a8b0-437ef1119303
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
 # ╟─06d26240-81b6-401b-8eda-eab3a9a0fb20
 # ╠═8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
-# ╠═a38466b5-c7fb-4600-904b-b7ddd7afd272
+# ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
+# ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
-# ╠═5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
+# ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 # ╠═5b8d79a0-5b92-4e88-b595-2105989521aa
-# ╠═dc988a40-da50-4f05-88b8-12abe8915208
+# ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╠═7d54fd96-b268-4964-929c-d62c7d89b4b2
