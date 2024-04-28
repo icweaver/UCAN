@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.40
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -113,13 +113,38 @@ md"""
 ## Playing around with photometry
 """
 
-# ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
-imgs = [load(f)
-	for f in glob("./data/mgcc3f/mgcc3f_2024-03-25*/TRANSIT/*.fits")[begin:80:end]
-];
-
 # ╔═╡ ead18878-996c-49f2-b47f-32bcfe82544c
 dark = load("./data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits");
+
+# ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
+md"""
+### Light curve
+"""
+
+# ╔═╡ 76efff1b-fcf7-4a59-95b8-34dc089f2a3e
+# fluxes = [
+# 	# photometry(aps, img) for img in imgs
+
+# 	@chain photometry(aps, img') begin
+# 		# sort(_; by=x -> x.aperture_sum, rev=true)
+# 		# first(_, 9)
+# 		filter(c -> 900 ≤ c.ycenter ≤ 1100, _)
+# 	end
+
+# 	for img in imgs
+# ];
+
+# ╔═╡ cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
+# f_comp = [last(f).aperture_sum for f in fluxes]
+
+# ╔═╡ 59e39cdd-c27c-4c59-896c-880eb39bc94f
+# f_div = f_targ ./ f_comp
+
+# ╔═╡ 5dbc8b2f-6f15-4862-9067-a6e16c99cf56
+imgs = [load(f)
+	# for f in glob("./data/mgcc3f/mgcc3f_2024-03-25*/TRANSIT/*.fits")[begin:80:end]
+	for f in glob("data/TRANSIT/ut20240325/*.fits")
+];
 
 # ╔═╡ 92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 t = [img.header["DATE-AVG"] for img in imgs]
@@ -151,9 +176,9 @@ end
 # ╔═╡ 35fcddcd-6baa-4775-a0e1-a9fae9cdd3da
 let
 	layout = Layout(
-		xaxis = attr(range=(600, 1_000), title=:row),
-		yaxis = attr(range=(800, 1_200), title=:column, scaleanchor=:x),
-		# yaxis = attr(scaleanchor=:x),
+		# xaxis = attr(range=(600, 1_000), title=:row),
+		# axis = attr(range=(800, 1_200), title=:column, scaleanchor=:x),
+		yaxis = attr(scaleanchor=:x),
 		title = img_i["DATE-AVG"],
 	)
 	
@@ -188,24 +213,6 @@ let
 	p
 end
 
-# ╔═╡ 8ee73593-ac62-4c5b-affc-2d7a6f9f6074
-md"""
-### Light curve
-"""
-
-# ╔═╡ 76efff1b-fcf7-4a59-95b8-34dc089f2a3e
-# fluxes = [
-# 	# photometry(aps, img) for img in imgs
-
-# 	@chain photometry(aps, img') begin
-# 		# sort(_; by=x -> x.aperture_sum, rev=true)
-# 		# first(_, 9)
-# 		filter(c -> 900 ≤ c.ycenter ≤ 1100, _)
-# 	end
-
-# 	for img in imgs
-# ];
-
 # ╔═╡ 4a8c7d19-7064-4c29-be30-0736374787ec
 begin
 	fluxes = []
@@ -234,11 +241,8 @@ begin
 	end
 end
 
-# ╔═╡ cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
-# f_comp = [last(f).aperture_sum for f in fluxes]
-
-# ╔═╡ 59e39cdd-c27c-4c59-896c-880eb39bc94f
-# f_div = f_targ ./ f_comp
+# ╔═╡ 2200aab8-d4ed-4e6f-aa58-e39faf08fcd8
+readdir("data/TRANSIT/ut20240325")
 
 # ╔═╡ 4a42d87e-f8fb-43bb-880b-dedce1b6edcf
 let
@@ -1873,10 +1877,10 @@ version = "17.4.0+2"
 # ╟─4200b8ad-690b-40e6-a501-ed7c3ee3286f
 # ╟─94036d88-3ac6-41af-a63a-7b15ad75b398
 # ╟─08d6711d-a667-435f-bfb7-4073fc869374
-# ╟─712a49a7-feb5-4c7e-b714-082f81f0e443
+# ╠═712a49a7-feb5-4c7e-b714-082f81f0e443
 # ╟─98d76407-2a80-4662-915a-7a43cb72a81f
 # ╠═b74a34ba-dc2c-4123-b7aa-e8168ba9a96b
-# ╟─a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
+# ╠═a6dc11ce-bfc9-11ee-2e99-9b68bd0f081e
 # ╠═ee793922-b294-4b34-a0b2-b89c65bb2f64
 # ╠═92b221c2-5179-4f82-a449-817c4415c3c3
 # ╟─99b5684c-29ab-477f-ae0f-d466e02720fb
@@ -1886,7 +1890,6 @@ version = "17.4.0+2"
 # ╠═33217081-e558-4194-938c-8d1ebf2e8d01
 # ╠═ec39ec59-5f84-4381-8bdb-f3a6a9b118aa
 # ╟─570cbe72-a363-468d-aaa8-42af6273c4ee
-# ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
 # ╠═ead18878-996c-49f2-b47f-32bcfe82544c
 # ╠═92d6a36f-bce8-4f7e-920e-0636f9b3b45b
 # ╟─f7cc75a1-cde4-42b4-b4ba-9cfa3737e9ed
@@ -1902,6 +1905,8 @@ version = "17.4.0+2"
 # ╠═9704186b-95e1-4150-a819-9b3647808574
 # ╠═cfb2f185-fea2-44bc-b1b5-bfc96fc536fd
 # ╠═59e39cdd-c27c-4c59-896c-880eb39bc94f
+# ╠═5dbc8b2f-6f15-4862-9067-a6e16c99cf56
+# ╠═2200aab8-d4ed-4e6f-aa58-e39faf08fcd8
 # ╟─4a42d87e-f8fb-43bb-880b-dedce1b6edcf
 # ╟─c36717ba-d5a6-4c5e-91e2-6a8b7c5a87aa
 # ╟─80cc2843-c7e5-4649-856a-9582aa73763d
