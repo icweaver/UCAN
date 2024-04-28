@@ -116,25 +116,6 @@ Put a little hoop around it!
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
 """
 
-# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
-# daofind = DAOStarFinder(fwhm=5.0, threshold=2_000.0)
-
-# ╔═╡ c89bd7dd-2264-45c3-ab80-d90b4a1708b6
-df_sources = let
-	sources = extract_sources(PeakMesh(box_size=49, nsigma=5.0), img)
-	filter(sources) do source
-		18_000 ≤ source.value ≤ 50_000
-	end
-end
-
-# ╔═╡ f8f33f4d-6322-4bf1-a454-19fe81da1f26
-# df_sources = let
-# 	qt = daofind(np.array(img))
-# 	df = qt.to_pandas() |> PyPandasDataFrame |> DataFrame
-# 	sort!(df, :flux; rev=true)
-# 	first(df, 4)
-# end
-
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
 ---
@@ -152,8 +133,19 @@ TableOfContents()
 	import pandas as pd
 end
 
+# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
+daofind = DAOStarFinder(fwhm=5.0, threshold=2_000.0)
+
+# ╔═╡ f8f33f4d-6322-4bf1-a454-19fe81da1f26
+df_sources = let
+	qt = daofind(np.array(img))
+	df = qt.to_pandas() |> PyPandasDataFrame |> DataFrame
+	sort!(df, :flux; rev=true)
+	first(df, 4)
+end
+
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
-aps = CircularAperture.(df_sources.y, df_sources.x, 24)
+aps = CA.(df_sources.ycentroid, df_sources.xcentroid, 24)
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
@@ -161,8 +153,14 @@ let
 	plot!(aps; color=:lightgreen)
 end
 
+# ╔═╡ 7b0aae98-47e2-4505-9eb5-e6fbf320f7e3
+positions = np.c_[df_sources.xcentroid, df_sources.ycentroid]
+
+# ╔═╡ a343c09a-b528-4492-927d-cb45ee7723d9
+apertures = CircularAperture(positions, 24)
+
 # ╔═╡ 1ff85e71-a242-4272-9c83-ab8f37c2d240
-aperture_photometry(np.array(img), aps)
+aperture_photometry(np.array(img), apertures)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2305,10 +2303,11 @@ version = "1.4.1+1"
 # ╠═7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
-# ╠═c89bd7dd-2264-45c3-ab80-d90b4a1708b6
 # ╠═f8f33f4d-6322-4bf1-a454-19fe81da1f26
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╠═7b0aae98-47e2-4505-9eb5-e6fbf320f7e3
+# ╠═a343c09a-b528-4492-927d-cb45ee7723d9
 # ╠═1ff85e71-a242-4272-9c83-ab8f37c2d240
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
