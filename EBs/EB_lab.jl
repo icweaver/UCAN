@@ -69,8 +69,16 @@ md"""
 Let's take a look at one of them
 """
 
+# ╔═╡ dc988a40-da50-4f05-88b8-12abe8915208
+md"""
+Movie
+"""
+
+# ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
+imgs = [load(f.path) for f in eachrow(df_fits)];
+
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = load(first(df_fits).path)
+img = imgs[6] #load(first(df_fits).path)
 
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
 header(img)
@@ -82,14 +90,6 @@ img_size, img_eltype = size(img), eltype(img);
 md"""
 This image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel is stored as a $(img_eltype).
 """
-
-# ╔═╡ dc988a40-da50-4f05-88b8-12abe8915208
-md"""
-Movie
-"""
-
-# ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
-imgs = [load(f.path) for f in eachrow(df_fits)];
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for i in imgs
@@ -130,17 +130,28 @@ sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
 sources = filter(sources_all) do source
-	20_000 ≤ source.value ≤ 60_000 &&
+	# 20_000 ≤ source.value ≤ 60_000 &&
 	700 ≤ source.y ≤ 1_200
 end
+
+# ╔═╡ 6c9d7855-3774-4b02-984a-d29a88cc3ab0
+sources
+
+# ╔═╡ beca82ee-5549-476b-9f3e-62571635872b
+@which minimum(sources)
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
 aps = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
-	implot(img; colorbar=false)
+	implot(img; title=header(img)["DATE-OBS"], colorbar=false)
 	plot!(aps; color=:lightgreen)
+end
+
+# ╔═╡ fbbc9a36-5a89-4721-abb3-ba8f44033366
+y = filter([(1, :a), (4, :b), (13, :c)]) do x
+	first(x) < 5
 end
 
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
@@ -154,7 +165,7 @@ function get_aps(img)
 	subt = img .- bkg_f[axes(img)...]
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
 	sources = filter(sources_all) do source
-		20_000 ≤ source.value ≤ 60_000 &&
+		# 20_000 ≤ source.value ≤ 60_000 &&
 		700 ≤ source.y ≤ 1_200
 	end
 	aps = CircularAperture.(sources.y, sources.x, 24);
@@ -2286,7 +2297,10 @@ version = "1.4.1+1"
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
+# ╠═6c9d7855-3774-4b02-984a-d29a88cc3ab0
+# ╠═beca82ee-5549-476b-9f3e-62571635872b
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
+# ╠═fbbc9a36-5a89-4721-abb3-ba8f44033366
 # ╠═19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
