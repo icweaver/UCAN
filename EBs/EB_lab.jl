@@ -16,11 +16,7 @@ begin
 	using AstroImages, Plots
 	using Photometry
 	AstroImages.set_cmap!(:cividis)
-
-	# CondaPkg.add("photutils")
-	# CondaPkg.add("pandas") # For converting from QTables
-	# CondaPkg.resolve()
-end
+end;
 
 # ╔═╡ b4ef12ad-d389-4c11-8932-a16e8e0a0254
 md"""
@@ -182,6 +178,16 @@ aps_list = [get_aps(img)
 	plot!(ap; color=:lightgreen)
 end fps=2
 
+# ╔═╡ 050b8516-b375-4f1f-906f-6362034b6564
+
+
+# ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
+md"""
+## Extensions
+
+* Comparison stars
+"""
+
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
 ---
@@ -190,14 +196,6 @@ md"""
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents()
-
-# ╔═╡ bf68ae0b-6694-4e14-b9a0-9dfaaddfff84
-# @py begin
-# 	import photutils.detection: DAOStarFinder
-# 	import photutils.aperture: aperture_photometry, CircularAperture
-# 	import numpy as np
-# 	import pandas as pd
-# end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2293,9 +2291,10 @@ version = "1.4.1+1"
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
 # ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+# ╠═050b8516-b375-4f1f-906f-6362034b6564
+# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
 # ╠═7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
-# ╠═bf68ae0b-6694-4e14-b9a0-9dfaaddfff84
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
