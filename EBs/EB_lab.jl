@@ -49,6 +49,10 @@ In this visualization, we see how the observed brightness of an eclipsing binary
 # ╔═╡ aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
 md"""
 ## Introduction
+
+W UMa is an eclipsing binary system located in the [Ursa Major](https://en.wikipedia.org/wiki/Ursa_Major) constellation, which can be seen being chased across the sky by the Big Dipper throughout the night:
+
+
 """
 
 # ╔═╡ abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
