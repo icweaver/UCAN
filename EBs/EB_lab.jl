@@ -102,6 +102,8 @@ Field rotation. Need to deal with
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
 md"""
 ## Aperture photometry 🔾
+
+Put a little hoop around it!
 """
 
 # ╔═╡ 89e9d984-60df-4a51-bd1d-1037a0356a61
@@ -1746,7 +1748,7 @@ version = "1.4.1+1"
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╠═7d54fd96-b268-4964-929c-d62c7d89b4b2
-# ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
+# ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═89e9d984-60df-4a51-bd1d-1037a0356a61
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
