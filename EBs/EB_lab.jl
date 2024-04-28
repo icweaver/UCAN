@@ -4,9 +4,6 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 58ef21d0-f91b-4412-8445-0ece215ca36c
-using CommonMark
-
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -21,7 +18,7 @@ end
 
 # ╔═╡ b4ef12ad-d389-4c11-8932-a16e8e0a0254
 md"""
-# Eclipsing binary lab ⚪ ⚫
+# ⚪ ⚫ Eclipsing binary lab
 
 In this lab we will observe an eclipsing binary in real time and produce a light curve for it.
 """
@@ -74,13 +71,13 @@ imgs = [load(f.path) for f in eachrow(df_fits)];
 # ╔═╡ 13f47111-88a7-42a8-8cf2-97a218b2154d
 typeof(imgs[end])
 
+# ╔═╡ 5b8d79a0-5b92-4e88-b595-2105989521aa
+img_size, img_eltype = size(img), eltype(img);
+
 # ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 md"""
-This image is ``$(first(img_size))``
+This image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel is stored as a $(img_eltype).
 """
-
-# ╔═╡ 5b8d79a0-5b92-4e88-b595-2105989521aa
-img_size, img_eltype = size(img), eltype(img)
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for i in imgs
@@ -93,7 +90,9 @@ img_size, img_eltype = size(img), eltype(img)
 end fps=2
 
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
-
+md"""
+## Aperture photometry 🔾
+"""
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -109,7 +108,6 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
-CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
@@ -118,7 +116,6 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 [compat]
 AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
-CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.2"
 Plots = "~1.40.4"
 PlutoPlotly = "~0.4.6"
@@ -131,7 +128,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "e4acffe77d0c9b35b595ebefff32d520b65d964c"
+project_hash = "4dabee6b49ccbe2bed958edec6d30e3afb3569c7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -306,12 +303,6 @@ deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
 git-tree-sha1 = "fc08e5930ee9a4e03f84bfb5211cb54e7769758a"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.10"
-
-[[deps.CommonMark]]
-deps = ["Crayons", "JSON", "PrecompileTools", "URIs"]
-git-tree-sha1 = "532c4185d3c9037c0237546d817858b23cf9e071"
-uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-version = "0.8.12"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
@@ -1738,7 +1729,6 @@ version = "1.4.1+1"
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═13f47111-88a7-42a8-8cf2-97a218b2154d
 # ╠═5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
-# ╠═58ef21d0-f91b-4412-8445-0ece215ca36c
 # ╠═5b8d79a0-5b92-4e88-b595-2105989521aa
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
