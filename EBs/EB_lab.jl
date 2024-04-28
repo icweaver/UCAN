@@ -129,9 +129,9 @@ subt = img .- bkg_f[axes(img)...]
 sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
-sources = filter(sources_all) do src
-	20_000 ≤ src.value ≤ 60_000 &&
-	800 ≤ src.y ≤ 1_200
+sources = filter(sources_all) do source
+	20_000 ≤ source.value ≤ 60_000 &&
+	700 ≤ source.y ≤ 1_200
 end
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
@@ -155,7 +155,7 @@ function get_aps(img)
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
 	sources = filter(sources_all) do source
 		20_000 ≤ source.value ≤ 60_000 &&
-		800 ≤ source.y ≤ 1_200
+		700 ≤ source.y ≤ 1_200
 	end
 	aps = CircularAperture.(sources.y, sources.x, 24);
 end
