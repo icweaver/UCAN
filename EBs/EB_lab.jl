@@ -229,11 +229,24 @@ Now that we have some science frames to work with, the next step is to begin cou
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
 """
 
+# ╔═╡ e20e02e7-f744-4694-9499-1866ebd617fc
+md"""
+First, we estimate the background flux using a [standard estimator algorithm](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals:
+"""
+
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 box_size = gcd(size(img)...)
 
 # ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-bkg_f, bkg_rms_f = estimate_background(img, box_size * 2)
+bkg_f, bkg_rms_f = estimate_background(img, box_size)
+
+# ╔═╡ 7f4768c7-f697-4673-a6fc-549de98c7e4d
+size(img)
+
+# ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
+md"""
+Here we have decided to use a mesh size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
+"""
 
 # ╔═╡ 72f5872a-dade-4655-a3cb-ec5093ba96e6
 subt = img .- bkg_f[axes(img)...]
@@ -340,6 +353,7 @@ md"""
 ## Extensions
 
 * Comparison stars
+* Dark frame correction
 """
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
@@ -2485,9 +2499,12 @@ version = "1.4.1+1"
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
-# ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
+# ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
+# ╠═e20e02e7-f744-4694-9499-1866ebd617fc
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
+# ╠═7f4768c7-f697-4673-a6fc-549de98c7e4d
+# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
 # ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
@@ -2500,7 +2517,7 @@ version = "1.4.1+1"
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
-# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
+# ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╠═7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
