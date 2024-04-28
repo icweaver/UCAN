@@ -223,7 +223,7 @@ Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.c
 md"""
 ## Aperture photometry 🔾
 
-Now that we have some science frames to work with, the next step is to begin counting the flux coming from our target system so that we can measure it over time.
+Now that we have some science frames to work with, the next step is to begin counting the flux coming from our target system so that we can measure it over time. We will use the [Photomtery.jl](https://github.com/JuliaAstro/Photometry.jl) package which is inspired by other tools like astropy's [`photutils`](https://github.com/astropy/photutils) and C's [`SEP`](https://github.com/kbarbary/sep) library to perform source extraction and photometry. 
 
 !!! note
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
