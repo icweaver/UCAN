@@ -139,11 +139,35 @@ df_fits = fitscollection("./data/TRANSIT"; abspath=false)
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
-We see that we have $(nrow(df_fits)) fits files with the following header keys:
+We see that we have $(nrow(df_fits)) fits files taken over the following period in UTC:
+"""
+
+# ╔═╡ 335a1a12-379a-4e0d-a3de-788369ae3818
+df_fits[:, "DATE-OBS"] |> extrema
+
+# ╔═╡ a04886d9-471a-40ec-9f0b-65ffe89932cf
+md"""
+and with the following header keys:
 """
 
 # ╔═╡ 8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
 df_fits |> names |> print
+
+# ╔═╡ cdf14fe8-6b27-44eb-b789-6cf072f4d184
+md"""
+!!! note "What does |> do?"
+	Known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to another. For example,
+
+	```julia
+	sqrt(sum([1, 4, 5, 6])) # 4.0
+	```
+
+	is equivalent to:
+
+	```julia
+	[1, 4, 5, 6] |> sum |> sqrt # 4.0
+	```
+""" |> msg
 
 # ╔═╡ a38466b5-c7fb-4600-904b-b7ddd7afd272
 md"""
@@ -2427,7 +2451,10 @@ version = "1.4.1+1"
 # ╟─b360ad74-58b7-47b5-a8b0-437ef1119303
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
 # ╟─06d26240-81b6-401b-8eda-eab3a9a0fb20
+# ╠═335a1a12-379a-4e0d-a3de-788369ae3818
+# ╟─a04886d9-471a-40ec-9f0b-65ffe89932cf
 # ╠═8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
+# ╟─cdf14fe8-6b27-44eb-b789-6cf072f4d184
 # ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
 # ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
