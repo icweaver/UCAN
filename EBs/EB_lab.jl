@@ -129,16 +129,14 @@ subt = img .- bkg_f[axes(img)...]
 sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
-sources = filter(sources_all) do source
-	# 20_000 ≤ source.value ≤ 60_000 &&
-	700 ≤ source.y ≤ 1_200
+sources = let
+	candidates = filter(sources_all) do source
+		# 20_000 ≤ source.value ≤ 60_000 &&
+		700 ≤ source.y ≤ 1_200
+	end
+
+	filter(x -> x.value == maximum(candidates.value), candidates)
 end
-
-# ╔═╡ 6c9d7855-3774-4b02-984a-d29a88cc3ab0
-sources
-
-# ╔═╡ beca82ee-5549-476b-9f3e-62571635872b
-@which minimum(sources)
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
 aps = CircularAperture.(sources.y, sources.x, 24);
@@ -147,11 +145,6 @@ aps = CircularAperture.(sources.y, sources.x, 24);
 let
 	implot(img; title=header(img)["DATE-OBS"], colorbar=false)
 	plot!(aps; color=:lightgreen)
-end
-
-# ╔═╡ fbbc9a36-5a89-4721-abb3-ba8f44033366
-y = filter([(1, :a), (4, :b), (13, :c)]) do x
-	first(x) < 5
 end
 
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
@@ -164,10 +157,11 @@ function get_aps(img)
 	bkg_f, bkg_rms_f = estimate_background(img, 48)
 	subt = img .- bkg_f[axes(img)...]
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
-	sources = filter(sources_all) do source
+	candidates = filter(sources_all) do source
 		# 20_000 ≤ source.value ≤ 60_000 &&
 		700 ≤ source.y ≤ 1_200
 	end
+	sources = filter(x -> x.value == maximum(candidates.value), candidates)
 	aps = CircularAperture.(sources.y, sources.x, 24);
 end
 
@@ -187,9 +181,6 @@ aps_list = [get_aps(img)
 
 	plot!(ap; color=:lightgreen)
 end fps=2
-
-# ╔═╡ 15736864-b940-4a20-abbe-dbc5998480cf
-
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -2297,15 +2288,11 @@ version = "1.4.1+1"
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
-# ╠═6c9d7855-3774-4b02-984a-d29a88cc3ab0
-# ╠═beca82ee-5549-476b-9f3e-62571635872b
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
-# ╠═fbbc9a36-5a89-4721-abb3-ba8f44033366
 # ╠═19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
 # ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-# ╠═15736864-b940-4a20-abbe-dbc5998480cf
 # ╠═7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
