@@ -34,7 +34,16 @@ md"""
 
 It turns out that the alien world described in the [3 Body Problem](https://www.netflix.com/tudum/articles/3-body-problem-teaser-release-date) is not too far off from what we see in reality. Star systems can be made up of just one star like in our system, three as in the tv show and book series from which the 3 Body Problem [draws its inspiration](https://en.wikipedia.org/wiki/Alpha_Centauri), or even as many as six different stars as in this [recently discovered system](https://science.nasa.gov/universe/exoplanets/discovery-alert-first-six-star-system-where-all-six-stars-undergo-eclipses/)! While these would make for some quite interesting sunsets, their stability decreases as more bodies are added. This is partly why the most common star systems we happen to see are singular star systems, followed closely behind by binary star systems, which account for [nearly two-thirds of all star systems in the Milky Way](https://pweb.cfa.harvard.edu/news/most-milky-way-stars-are-single).
 
-A sub-class of this binary star case, known as eclipsing binaries, has proved to be an invaluable tool for helping us learn more about [orbital mechanics and stellar evolution](https://www.aavso.org/introduction-why-are-eclipsing-binary-stars-important). In these types of systems, not only do these two star orbit about their common center-of-mass, but they do so along our line of sight. In other words, eclisping binaries are star systems where each star passes in front of the other from our vantage point. In this lab, we will capture this dance in real time in a fairly common constellation.
+A sub-class of this binary star case, known as eclipsing binaries, has proved to be an invaluable tool for helping us learn more about [orbital mechanics and stellar evolution](https://www.aavso.org/introduction-why-are-eclipsing-binary-stars-important). In these types of systems, not only do these two star orbit about their common center-of-mass, but they do so along our line of sight. In other words, eclisping binaries are star systems where each star passes in front of the other from our vantage point. As they do so, the combined light that we receive from both objects will vary in time.
+"""
+
+# ╔═╡ 4266575e-e19f-48e4-8b21-6f296c6d3f33
+md"""
+$(Resource("https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7e/Artist%E2%80%99s_impression_of_eclipsing_binary.ogv/Artist%E2%80%99s_impression_of_eclipsing_binary.ogv.720p.vp9.webm"))
+
+*ESO/L. Calçada*
+
+In this visualization, we see how the change in observed brightness of an eclipsing binary system changes based on how much of each star is visible at a given point in time. When they are both unobstructed the measured brightness is maximum, and when one is partially covered by the other, the combined brightness decreases periodically over time. In this lab, we will capture this dance going on in real time in a fairly common constellation.
 """
 
 # ╔═╡ aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
@@ -2318,7 +2327,8 @@ version = "1.4.1+1"
 
 # ╔═╡ Cell order:
 # ╠═b4ef12ad-d389-4c11-8932-a16e8e0a0254
-# ╠═aa005b55-626e-41e0-8fe1-137bd7dd5599
+# ╟─aa005b55-626e-41e0-8fe1-137bd7dd5599
+# ╟─4266575e-e19f-48e4-8b21-6f296c6d3f33
 # ╠═aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
 # ╠═abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
