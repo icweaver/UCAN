@@ -43,7 +43,7 @@ $(Resource("https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7e/Artis
 
 *ESO/L. Calçada*
 
-In this visualization, we see how the change in observed brightness of an eclipsing binary system changes based on how much of each star is visible at a given point in time. When they are both unobstructed the measured brightness is maximum, and when one is partially covered by the other, the combined brightness decreases periodically over time. In this lab, we will capture this dance going on in real time in a fairly common constellation.
+In this visualization, we see how the observed brightness of an eclipsing binary system changes based on how much of each star is visible at a given point in time from our perspective. When they are both unobstructed the measured brightness is maximum, and when one is partially covered by the other, the combined brightness decreases periodically over time. In this lab, we will capture this dance going on in real time in a fairly popular constellation.
 """
 
 # ╔═╡ aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
