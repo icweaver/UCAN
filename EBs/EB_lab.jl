@@ -34,6 +34,11 @@ In this lab we will observe an eclipsing binary in real time and explore how to 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level.
 """
 
+# ╔═╡ f0678404-72db-4bfd-9a44-ef0b66f3a64f
+md"""
+With this requisite information out of the way, let's get started!
+"""
+
 # ╔═╡ 49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
 msg_adding_colors = md"""
 #### Adding colors in Julia 🎨
@@ -2400,6 +2405,7 @@ version = "1.4.1+1"
 # ╔═╡ Cell order:
 # ╟─3d8a4c43-1a17-4a36-84e8-47a98493ca99
 # ╟─14e0627f-ada1-4689-9bc6-c877b81aa582
+# ╟─f0678404-72db-4bfd-9a44-ef0b66f3a64f
 # ╟─792d4e36-336a-4a90-b530-53bbeb428097
 # ╟─49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
 # ╟─84d9ed94-11cb-4272-8bd3-d420c50f990d
