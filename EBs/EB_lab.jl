@@ -25,12 +25,12 @@ end;
 md"""
 # ⚪ ⚫ Eclipsing binary lab
 
-In this lab we will observe an eclipsing binary in real time and produce a light curve for it.
+In this lab we will observe an eclipsing binary in real time and explore how to produce a light curve for it.
 """
 
 # ╔═╡ aa005b55-626e-41e0-8fe1-137bd7dd5599
 md"""
-## Introduction
+## Background
 
 EB intro here
 
@@ -39,6 +39,11 @@ But why EBs?
 <https://www.aavso.org/introduction-why-are-eclipsing-binary-stars-important>
 
 <https://www.aavso.org/general-notes>
+"""
+
+# ╔═╡ aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
+md"""
+## Introduction
 """
 
 # ╔═╡ abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
@@ -2316,8 +2321,9 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─b4ef12ad-d389-4c11-8932-a16e8e0a0254
-# ╟─aa005b55-626e-41e0-8fe1-137bd7dd5599
+# ╠═b4ef12ad-d389-4c11-8932-a16e8e0a0254
+# ╠═aa005b55-626e-41e0-8fe1-137bd7dd5599
+# ╠═aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
 # ╠═abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
 # ╟─06d26240-81b6-401b-8eda-eab3a9a0fb20

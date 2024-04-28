@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.38
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -39,6 +39,20 @@ This notebook provides a short methods introduction to the field of [spectroscop
 * Wavelength calibration
 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered above. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical spectra, as well as understand the principles behind other astronomical software at a broad level.
+"""
+
+# ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
+cm"""
+!!! note "Using this notebook"
+	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page.
+
+	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/spectroscopy/notebook.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
+
+	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
+
+	$(msg(msg_adding_colors))
+
+	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined.
 """
 
 # ╔═╡ 1e2dc809-1614-487e-b0fe-f058188555ee
@@ -95,6 +109,14 @@ cm"""
 We now have an image that we can analyze. For starters, let's display some key characteristics about this image:
 """
 
+# ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
+cm"""
+We see here that our image is $(nrows_dog) rows by $(ncols_dog) columns wide, and each cell (or pixel) of this image is represented by:
+"""
+
+# ╔═╡ 256f479b-7c90-4ad4-a893-e3e5c2266516
+@debug eltype_dog
+
 # ╔═╡ 9014873e-5b1b-4605-9dd6-efb9840e5732
 cm"""
 Even though this part is Julia specific, the underlying information is general enough to apply to most image processing libraries. Let's break down what each piece means: 
@@ -115,6 +137,11 @@ To summarize, our image is just a matrix of pixels, where each pixel value is re
 
 # ╔═╡ 9427d980-2420-4285-992e-099bc6d1aa55
 @bind resample Button("Resample")
+
+# ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
+cm"""
+We have $(N_sampled_pixels) pixels above sampled from our image. Based on how colorful and varied the image is, these pixels can have a range of different colors between them. Pull the slider to look at each of these pixels one by one and/or click the `Resample` button to select $(N_sampled_pixels) new pixels at random. For convenience, we also display the individual (R, G, B) values next to our slider.
+"""
 
 # ╔═╡ 6880b7a1-0a74-4879-bd85-90c8f8e947d2
 cm"""
@@ -181,10 +208,31 @@ Now that we are able to access the underlying structure of our data, let's explo
 Try using the sliders below to specify a region of interest where we would like to build a spectrum from. *Note that this will only work in the locally downladed version of this notebook.*
 """
 
+# ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
+cm"""
+`rows:` $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
+`columns`: $(@bind col_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
+"""
+
+# ╔═╡ fedb57fe-574c-4567-933a-052e9b8d50bd
+cm"""
+Based on our selections, the black rectangular region of interest extends from row $(first(row_range_dog)) to $(last(row_range_dog)), and from column $(first(col_range_dog)) to $(last(col_range_dog)) of our original image, resulting in a slice that is $(nrows_window_dog) rows by $(ncols_window_dog) columns. We selected this range by using the following array syntax:
+
+```julia
+array_slice = original_array[row_range, column_range]
+```
+"""
+
+# ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
+window_dog = @view gray_dog[row_range_dog, col_range_dog];
+
 # ╔═╡ 9e16a591-4d89-4d90-a96f-eed8f2078dad
 cm"""
 Calling the `gray` function again, we have the following array of pixel values to work with:
 """
+
+# ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
+window_dog_vals = gray.(window_dog)
 
 # ╔═╡ 14f83f54-f51c-4af4-b388-b76f188e7649
 cm"""
@@ -193,10 +241,50 @@ To build a spectrum of this selection across a given direction, we next perform 
 Many libraries have this operation built in, typically with a `dims` or `axis` keyword to specify the direction to sum in, as shown below:
 """
 
+# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
+prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
+
+# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
+cm"""
+!!! warning "Heads up"
+
+	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
+
+	```julia
+	eltype(prof_1D_dog_vals)
+	```
+
+ 	--> **$(eltype(prof_1D_dog_vals))**
+"""
+
 # ╔═╡ 2f5da861-2a83-4ed1-9b6b-f9081768ca05
 cm"""
 This returns a vector that should be as long as the number of columns in our original image. Plotting these value as a function of the column location then gives us our 1D spectrum!
 """
+
+# ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
+let
+	p = make_subplots(;
+		rows = 2,
+		shared_xaxes = true,
+		vertical_spacing = 0.02,
+		x_title = "pixel column",
+	)
+	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
+	add_trace!(p, heatmap(
+		x = col_range_dog,
+		y = reverse(row_range_dog),
+		z = window_dog_vals,
+		colorscale = :Greys,
+		showscale = false,
+	) ; row=2)
+	update!(p;
+		layout = Layout(
+			yaxis = attr(title="intensity"),
+			yaxis2 = attr(scaleanchor=:x, title="pixel row")
+		)
+	)
+end
 
 # ╔═╡ 7e3e9ccc-5ed8-4067-b944-aac86e3a2cb8
 cm"""
@@ -249,6 +337,18 @@ prof_1D_ev_live = sum(window_ev_live; dims=1) |> vec
 cm"""
 These steps to produce a 1D spectrum are common enough to wrap into a general function so that they can be re-used for other targets.
 """
+
+# ╔═╡ b4f43581-09e8-45f8-bdc1-766dd88bdfc3
+"""
+	compute_spec1D(arr, region_lims)
+
+Given a rectangular region specified by `region_lims` inside a 2D image array `arr`, return its 1D spectrum computed along the horizontal axis. Also return the horizontal range of the region for convenience when plotting the 1D spectrum with its corresponding image array.
+"""
+function compute_spec1D(arr, region_lims)
+	xrange, yrange = get_lims(arr, region_lims)
+	region = @view arr[yrange, xrange]
+	return vec(sum(region; dims=1)), xrange
+end
 
 # ╔═╡ 7e60b93f-b57f-48fe-a196-a36c3d1f8cb6
 cm"""
@@ -337,21 +437,19 @@ d &= \frac{\wavline - 0.0}{\pxline - \pxzero} = \frac{\wavline}{\pxline - \pxzer
 ```
 """
 
-# ╔═╡ 229088f2-922f-4b93-b6c1-63f683a4ae0f
-const ref_wavs = Dict(
-		:h_alpha => 6562.8,
-		:h_beta => 4861.4,
-		:h_gamma => 4340.5,
-		:h_delta => 4102.7,
-		:h_epsilon => 3970.1,
-	)
-
-# ╔═╡ 0b681466-bd74-4a4f-8c0f-6cb9186a3af8
-λ_line = ref_wavs[:h_beta];
+# ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
+λ(d, px) = d * (px - px_0);
 
 # ╔═╡ 307c7c22-5dbf-4134-beaf-815bcfeb2e65
 cm"""
 Try to identify the zero-point and H-β line and record their column pixel coordinates in the fields below. The H-β will typically be the deepest absorption feature in the A-type spectrum. To see how we did, select the `Show lines` option to overlay the rest of the Balmer series lines. They should coincide with the other absorption features present in our spectrum.
+"""
+
+# ╔═╡ f6ac23d4-e63d-4914-aff0-fb47edc02e7c
+cm"""
+$(@bind px_0 NumberField(xrange_ev_live)) Zero-point (px)
+
+$(@bind px_line NumberField(xrange_ev_live)) H-β (Å)
 """
 
 # ╔═╡ e3cc6aff-b777-4391-97b2-f24f288127c5
@@ -380,22 +478,11 @@ function img_info(img)
 	return nrows, ncols, eltype_img
 end
 
+# ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
+nrows_window_dog, ncols_window_dog, _ = img_info(window_dog);
+
 # ╔═╡ e1ae334d-548b-4259-af7c-e13b773f7b3e
 msg(x) = details("Details", x)
-
-# ╔═╡ 0968d0d2-7a53-47c5-be13-9c941c0fba0b
-cm"""
-!!! note "Using this notebook"
-	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page.
-
-	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/spectroscopy/notebook.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
-
-	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
-
-	$(msg(msg_adding_colors))
-
-	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined.
-"""
 
 # ╔═╡ bed3c1a0-aa13-4c61-a074-9b38f9a4d306
 cm"""
@@ -523,18 +610,6 @@ function get_lims(arr, limits)
 	return xlo:xhi, ylo:yhi
 end
 
-# ╔═╡ b4f43581-09e8-45f8-bdc1-766dd88bdfc3
-"""
-	compute_spec1D(arr, region_lims)
-
-Given a rectangular region specified by `region_lims` inside a 2D image array `arr`, return its 1D spectrum computed along the horizontal axis. Also return the horizontal range of the region for convenience when plotting the 1D spectrum with its corresponding image array.
-"""
-function compute_spec1D(arr, region_lims)
-	xrange, yrange = get_lims(arr, region_lims)
-	region = @view arr[yrange, xrange]
-	return vec(sum(region; dims=1)), xrange
-end
-
 # ╔═╡ 7d1caf58-d1db-4fcb-a62b-5c2a16b56732
 stake! = String ∘ take!
 
@@ -553,14 +628,6 @@ end
 
 # ╔═╡ f102cbeb-edde-4814-94cb-0f8a8b73f836
 nrows_dog, ncols_dog, eltype_dog = img_info(img_dog)
-
-# ╔═╡ 64a3d702-d229-4fd1-bd75-f351a4ee1172
-cm"""
-We see here that our image is $(nrows_dog) rows by $(ncols_dog) columns wide, and each cell (or pixel) of this image is represented by:
-"""
-
-# ╔═╡ 256f479b-7c90-4ad4-a893-e3e5c2266516
-@debug eltype_dog
 
 # ╔═╡ 0d260f11-abcd-404d-885a-ba02f2692e36
 begin
@@ -583,11 +650,6 @@ let
 	"""
 end
 
-# ╔═╡ cd2e384e-6f30-40b9-86f9-9a285a956b94
-cm"""
-We have $(N_sampled_pixels) pixels above sampled from our image. Based on how colorful and varied the image is, these pixels can have a range of different colors between them. Pull the slider to look at each of these pixels one by one and/or click the `Resample` button to select $(N_sampled_pixels) new pixels at random. For convenience, we also display the individual (R, G, B) values next to our slider.
-"""
-
 # ╔═╡ 9edd83bf-bcae-4f39-940d-4265bdcd2c34
 gray_dog = Gray.(img_dog)
 
@@ -597,75 +659,11 @@ img_info(gray_dog);
 # ╔═╡ c77bb96f-357e-4676-a504-ff93a5cd1711
 gray.(gray_dog)
 
-# ╔═╡ f5dfab17-a789-46dd-ae4f-d3707d0a4573
-cm"""
-`rows:` $(@bind row_range_dog RangeSlider(1:size(gray_dog, 1); default=1:1))
-`columns`: $(@bind col_range_dog RangeSlider(1:size(gray_dog, 2); default=1:1))
-"""
-
 # ╔═╡ bb008a9b-8538-418d-9e70-50d9983c2074
 let
 	tmp = copy(gray_dog)
 	tmp[row_range_dog, col_range_dog] .= RGB(0, 0, 0)
 	tmp
-end
-
-# ╔═╡ fcc96529-3b20-4a59-9d2d-48612f4c16f3
-window_dog = @view gray_dog[row_range_dog, col_range_dog];
-
-# ╔═╡ 096b8d1e-9092-4110-95a7-7cff9210ba43
-nrows_window_dog, ncols_window_dog, _ = img_info(window_dog);
-
-# ╔═╡ fedb57fe-574c-4567-933a-052e9b8d50bd
-cm"""
-Based on our selections, the black rectangular region of interest extends from row $(first(row_range_dog)) to $(last(row_range_dog)), and from column $(first(col_range_dog)) to $(last(col_range_dog)) of our original image, resulting in a slice that is $(nrows_window_dog) rows by $(ncols_window_dog) columns. We selected this range by using the following array syntax:
-
-```julia
-array_slice = original_array[row_range, column_range]
-```
-"""
-
-# ╔═╡ 12c0a504-856d-40b0-aa01-bbb992167943
-window_dog_vals = gray.(window_dog)
-
-# ╔═╡ d0203d68-6a55-46ec-ab8f-8fdfc5b1356d
-prof_1D_dog_vals = sum(window_dog_vals; dims=1) |> vec
-
-# ╔═╡ d4ca722f-ebc8-411d-a2f1-48fb83373e54
-cm"""
-!!! warning "Heads up"
-
-	Be aware of potential [arithmetic overflow](https://juliaimages.org/latest/tutorials/arrays_colors/#A-note-on-arithmetic-overflow) when performing operations on your data. In this case, the function `sum` already takes care of this for us by first converting our pixel values to a larger data type.
-
-	```julia
-	eltype(prof_1D_dog_vals)
-	```
-
- 	--> **$(eltype(prof_1D_dog_vals))**
-"""
-
-# ╔═╡ d3b6afc1-c29b-476a-90ed-721796af130f
-let
-	p = make_subplots(;
-		rows = 2,
-		shared_xaxes = true,
-		vertical_spacing = 0.02,
-		x_title = "pixel column",
-	)
-	add_trace!(p, scatter(; x=col_range_dog, y=prof_1D_dog_vals); row=1)
-	add_trace!(p, heatmap(
-		x = col_range_dog,
-		y = reverse(row_range_dog),
-		z = window_dog_vals,
-		colorscale = :Greys,
-		showscale = false,
-	) ; row=2)
-	update!(p;
-		layout = Layout(
-			yaxis = attr(title="intensity"),
-			yaxis2 = attr(scaleanchor=:x, title="pixel row")
-		)
-	)
 end
 
 # ╔═╡ baa00c8f-9fd4-44b7-bc79-669d17908c2d
@@ -728,59 +726,6 @@ p_spec1D_ev_live = plot(xrange_ev_live, prof_1D_ev_live, Layout(
 # ╔═╡ c6617828-9ab4-4a60-bac2-78ec9b5f8fac
 p_spec1D_ev_live
 
-# ╔═╡ f6ac23d4-e63d-4914-aff0-fb47edc02e7c
-cm"""
-$(@bind px_0 NumberField(xrange_ev_live)) Zero-point (px)
-
-$(@bind px_line NumberField(xrange_ev_live)) H-β (Å)
-"""
-
-# ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
-d = λ_line / (px_line - px_0);
-
-# ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
-if 8.4 ≤ d ≤ 8.79
-	cm"""
-	!!! tip "Success 🎉"
-		Congratulations, you have successfully calibrated your 1D spectrum!
-	
-		We hope that this brief introduction to analyzing spectra has provided you with some general tools for tackling your own datasets, and inspiration to explore further interesting topics in this field. Below are a few potential items that may be of interest for extending the techniques developed here.
-	
-		!!! note "Extension ideas"
-			* Pixel binning
-			* Image stacking
-			* Background subtraction
-			* Non-linear wavelength calibration
-	
-	"""
-else
-	cm"""
-	!!! warning "Not quite"
-		Try double checking which line is the H-β feature. A reference calibration sheet like [this one](https://www.aavso.org/sites/default/files/Calibration_Cheat_Sheet.png) may be helpful.
-	"""
-end
-
-# ╔═╡ 447de825-9442-48ba-b373-2adc158799e3
-λ(d, px) = d * (px - px_0);
-
-# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
-λ_ev_live = λ.(d, xrange_ev_live);
-
-# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
-let
-	p = plot(λ_ev_live, prof_1D_ev_live, Layout(
-		xaxis = attr(title="wavelength (Å)"),
-		yaxis = attr(title="intensity"),
-		title = "Dispersion: $(round(d; digits=2)) Å/pixel",
-	))
-
-	# Overlay reference lines
-	show_lines && for (name, wav) ∈ ref_wavs
-		add_vline!(p, wav; line_color=:darkgrey, line_width=1)
-	end
-	p
-end
-
 # ╔═╡ b9bd59c7-f731-4d8b-a5f9-c96cea8d0b74
 # Load FITS file
 img_fits = load(download(joinpath(DPATH, "HD123657.fits")));
@@ -817,6 +762,61 @@ plot(xrange_ev_fits, prof_1D_fits, Layout(
 	xaxis = attr(title="column"),
 	yaxis = attr(title="intensity"),
 ))
+
+# ╔═╡ 229088f2-922f-4b93-b6c1-63f683a4ae0f
+const ref_wavs = Dict(
+		:h_alpha => 6562.8,
+		:h_beta => 4861.4,
+		:h_gamma => 4340.5,
+		:h_delta => 4102.7,
+		:h_epsilon => 3970.1,
+	)
+
+# ╔═╡ 0b681466-bd74-4a4f-8c0f-6cb9186a3af8
+λ_line = ref_wavs[:h_beta];
+
+# ╔═╡ f6fcc525-e1ef-48b1-9a28-7caa5e68b334
+d = λ_line / (px_line - px_0);
+
+# ╔═╡ 71c3f396-600b-40fc-b6a6-a796bd634a76
+λ_ev_live = λ.(d, xrange_ev_live);
+
+# ╔═╡ 3527ba04-3ea7-42ed-910e-ec72939a4c96
+if 8.4 ≤ d ≤ 8.79
+	cm"""
+	!!! tip "Success 🎉"
+		Congratulations, you have successfully calibrated your 1D spectrum!
+	
+		We hope that this brief introduction to analyzing spectra has provided you with some general tools for tackling your own datasets, and inspiration to explore further interesting topics in this field. Below are a few potential items that may be of interest for extending the techniques developed here.
+	
+		!!! note "Extension ideas"
+			* Pixel binning
+			* Image stacking
+			* Background subtraction
+			* Non-linear wavelength calibration
+	
+	"""
+else
+	cm"""
+	!!! warning "Not quite"
+		Try double checking which line is the H-β feature. A reference calibration sheet like [this one](https://www.aavso.org/sites/default/files/Calibration_Cheat_Sheet.png) may be helpful.
+	"""
+end
+
+# ╔═╡ 272654a7-665f-48ee-beb5-13944c803e7e
+let
+	p = plot(λ_ev_live, prof_1D_ev_live, Layout(
+		xaxis = attr(title="wavelength (Å)"),
+		yaxis = attr(title="intensity"),
+		title = "Dispersion: $(round(d; digits=2)) Å/pixel",
+	))
+
+	# Overlay reference lines
+	show_lines && for (name, wav) ∈ ref_wavs
+		add_vline!(p, wav; line_color=:darkgrey, line_width=1)
+	end
+	p
+end
 
 # ╔═╡ fcdedf52-2601-48c7-ad3b-7e74ca9aa1e6
 md"""
