@@ -13,7 +13,9 @@ begin
 	using CCDReduction, DataFramesMeta
 	
 	# Visualization
-	using AstroImages, PlutoPlotly, Plots
+	using AstroImages, PlutoPlotly
+	using Plots: @gif, Plots
+	AstroImages.set_cmap!(:viridis)
 end
 
 # ╔═╡ b4ef12ad-d389-4c11-8932-a16e8e0a0254
@@ -41,6 +43,10 @@ md"""
 ## Data inspection 🔎
 
 Reading fits files and such
+
+!!! note
+
+	Sample data can be downloaded [from here](https://drive.google.com/drive/folders/1P7PTtx9LUnR-QF_SWjszTBjCwpJHZ7AN?usp=sharing).
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
@@ -64,9 +70,6 @@ img = load(first(df_fits).path)
 
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
 header(img)
-
-# ╔═╡ 13f47111-88a7-42a8-8cf2-97a218b2154d
-typeof(img)
 
 # ╔═╡ 5b8d79a0-5b92-4e88-b595-2105989521aa
 img_size, img_eltype = size(img), eltype(img);
@@ -107,7 +110,44 @@ Put a little hoop around it!
 """
 
 # ╔═╡ 89e9d984-60df-4a51-bd1d-1037a0356a61
+let
+	layout = Layout(
+		# xaxis = attr(range=(600, 1_000), title=:row),
+		# axis = attr(range=(800, 1_200), title=:column, scaleanchor=:x),
+		yaxis = attr(scaleanchor=:x),
+		title = img["DATE-AVG"],
+	)
+	
+	hm = heatmap(;
+		z = Matrix(img),
+		zmin = 2_550.0,
+		zmax = 3_050.0,
+		colorscale = :Viridis,
+		showscale = false,
+	)
 
+	p = plot(hm, layout)
+	# r = first(aps).r
+	# for ap ∈ counts
+	# 	x, y = ap.xcenter, ap.ycenter
+	# 	circs = circle(
+	# 		x0=x-r, y0=y-r, x1=x+r, y1=y+r, line_color=:lightgreen,
+	# 	)
+	# 	add_shape!(p, circs)
+	# end
+
+	# scatters = scatter(; x=counts.xcenter, y=counts.ycenter, mode=:markers,
+	# 	marker = attr(
+	# 		symbol="cross",
+	# 		# color="rgba(135, 206, 250, 0.0)",
+	# 	),
+	# 	customdata = counts.aperture_sum,
+	# 	hovertemplate = "%{customdata}",
+	# )
+	# add_trace!(p, scatters)
+	
+	p
+end
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -1734,14 +1774,13 @@ version = "1.4.1+1"
 # ╔═╡ Cell order:
 # ╟─b4ef12ad-d389-4c11-8932-a16e8e0a0254
 # ╟─aa005b55-626e-41e0-8fe1-137bd7dd5599
-# ╟─abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
+# ╠═abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
 # ╟─06d26240-81b6-401b-8eda-eab3a9a0fb20
 # ╠═8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
 # ╠═a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
-# ╠═13f47111-88a7-42a8-8cf2-97a218b2154d
 # ╠═5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 # ╠═5b8d79a0-5b92-4e88-b595-2105989521aa
 # ╠═dc988a40-da50-4f05-88b8-12abe8915208
