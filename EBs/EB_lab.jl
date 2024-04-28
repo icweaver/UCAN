@@ -4,41 +4,63 @@
 using Markdown
 using InteractiveUtils
 
+# ╔═╡ 792d4e36-336a-4a90-b530-53bbeb428097
+using Colors
+
 # ╔═╡ 076f7569-86d3-4434-9bfd-27f8e4dc8ff7
 using PlutoPlotly: scatter, plot, attr, Layout
 
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
-	using PlutoUI
+	using PlutoUI, CommonMark
 	
 	# Data wrangling
 	using CCDReduction, DataFramesMeta
 	
 	# Visualization and analysis
-	using AstroImages, Plots
+	using AstroImages
+	import Plots
 	using Photometry
 	AstroImages.set_cmap!(:cividis)
 end;
 
-# ╔═╡ b4ef12ad-d389-4c11-8932-a16e8e0a0254
+# ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
 md"""
 # ⚪ ⚫ Eclipsing binary lab
 
 In this lab we will observe an eclipsing binary in real time and explore how to produce a light curve for it.
 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level.
+"""
 
+# ╔═╡ 49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
+msg_adding_colors = md"""
+#### Adding colors in Julia 🎨
+This makes magenta!
+
+```julia
+RGB(1, 0, 0) + RGB(0, 0, 1)
+```
+
+$(RGB(1, 0, 0) + RGB(0, 0, 1))
+""";
+
+# ╔═╡ 84d9ed94-11cb-4272-8bd3-d420c50f990d
+msg(x) = details("Details", x);
+
+# ╔═╡ 14e0627f-ada1-4689-9bc6-c877b81aa582
+cm"""
 !!! note "Using this notebook"
 	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page.
 
-	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/spectroscopy/notebook.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
+	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/EBs/EB_lab.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
 
 	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
 
 	$(msg(msg_adding_colors))
 
-	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined.
+	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined. For more examples of using these notebooks for Unistellar science, check out our recent [Spectroscopy Lab](https://icweaver.github.io/UCAN/spectroscopy/notebook.html)!
 """
 
 # ╔═╡ aa005b55-626e-41e0-8fe1-137bd7dd5599
@@ -76,11 +98,6 @@ Discoverd in the early 1900s, this system is composed of two main-sequence F-typ
 
 !!! tip
 	For more on reading eclipsing binary ephemerides, please see this [AAVSO resource](https://www.aavso.org/how-use-eb-ephemeris).
-"""
-
-# ╔═╡ 89a9ace9-bc64-4ba8-a0da-4edca26cc8b7
-md"""
-#
 """
 
 # ╔═╡ abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
@@ -282,6 +299,8 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
+Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -291,6 +310,8 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 [compat]
 AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
+Colors = "~0.12.10"
+CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.2"
 Photometry = "~0.9.0"
 Plots = "~1.40.4"
@@ -304,7 +325,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "d5f61fd9c7bdecda30b2f79589f4dee891b495c5"
+project_hash = "083c31caf9505cff492e814b2ec9373609bcd6fd"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -560,6 +581,12 @@ deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
 git-tree-sha1 = "fc08e5930ee9a4e03f84bfb5211cb54e7769758a"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.12.10"
+
+[[deps.CommonMark]]
+deps = ["Crayons", "JSON", "PrecompileTools", "URIs"]
+git-tree-sha1 = "532c4185d3c9037c0237546d817858b23cf9e071"
+uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
+version = "0.8.12"
 
 [[deps.CommonSubexpressions]]
 deps = ["MacroTools", "Test"]
@@ -2371,13 +2398,16 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═b4ef12ad-d389-4c11-8932-a16e8e0a0254
+# ╟─3d8a4c43-1a17-4a36-84e8-47a98493ca99
+# ╟─14e0627f-ada1-4689-9bc6-c877b81aa582
+# ╟─792d4e36-336a-4a90-b530-53bbeb428097
+# ╟─49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
+# ╟─84d9ed94-11cb-4272-8bd3-d420c50f990d
 # ╟─aa005b55-626e-41e0-8fe1-137bd7dd5599
 # ╟─4266575e-e19f-48e4-8b21-6f296c6d3f33
 # ╟─aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
 # ╟─c1bbb6a2-6996-4fee-a642-a0212b473474
-# ╠═89a9ace9-bc64-4ba8-a0da-4edca26cc8b7
-# ╠═abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
+# ╟─abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
 # ╟─06d26240-81b6-401b-8eda-eab3a9a0fb20
 # ╠═8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
