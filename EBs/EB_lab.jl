@@ -59,7 +59,7 @@ $(Resource("https://github.com/icweaver/UCAN/blob/main/EBs/data/constellation_WU
 
 # ╔═╡ c1bbb6a2-6996-4fee-a642-a0212b473474
 md"""
-Discoverd in the early 1900s, this system is composed of two main-sequence F-type stars orbiting so closely together that they are expected to be [contact binaries](https://en.wikipedia.org/wiki/Contact_binary) sharing a common envelope. Their proximity to each other also gives this system an astonishingly short orbital period of just over 8 hours. Because of how neatly this fits into an Earth day, eclipse events occur at almost the same time every night, making them the ideal target for regular follow-up study. According to the [AAVSO ephemeris](https://www.aavso.org/sites/default/files/AAVSO_%20EB_Ephemeris_%202024.pdf) for this system, primary and secondary eclipse are predicted to occur around 3:00 and 7:00 UTC, respectively. Due to the similar sizes and spectral types of each star, the eclipse depths for both are fairly similar and can be almost a whole apparent magnitude in the drop in brightness! With a total duration of about three hours, the entire lihgt curve for a given eclipse can be captured in a single night.
+Discoverd in the early 1900s, this system is composed of two main-sequence F-type stars orbiting so closely together that they are expected to be [contact binaries](https://en.wikipedia.org/wiki/Contact_binary) sharing a common envelope. Their proximity to each other also gives this system an astonishingly short orbital period of just over 8 hours. Because of how neatly this fits into an Earth day, eclipse events occur at almost the same time every night, making them the ideal target for regular follow-up study. According to the [AAVSO ephemeris](https://www.aavso.org/sites/default/files/AAVSO_%20EB_Ephemeris_%202024.pdf) for this system, primary and secondary eclipse are predicted to occur around **3:00 and 7:00 UTC**, respectively. Due to the similar sizes and spectral types of each star, the eclipse depths for both are fairly similar and can be almost a whole apparent magnitude in the drop in brightness! With a total duration of about three hours, the entire light curve for a given eclipse can be captured in a single night.
 
 !!! tip
 
@@ -70,11 +70,25 @@ Discoverd in the early 1900s, this system is composed of two main-sequence F-typ
 md"""
 ## Data inspection 🔎
 
-Reading fits files and such
+For this lab, we will be using eVscope 2 data collected for this target on the night of March 25th, 2024. Observations were taken in the [exoplanet science mode](https://science.unistellar.com/exoplanets/tutorial/) with the following observation parameters:
+
+```
+Observing mode: Exoplanets
+Eclipse mid-point: 23:00 PT
+Eclipse duration: 3 hrs
+Ra: 09h 43m 45.47s
+Dec: +55° 57' 09.07"   
+Duration: 3 hrs
+Exposure time (ms): 1400
+Cadence (ms): 4000
+Recommended Gain (dB): 0
+Max Gain (dB): 1.78
+```
+
 
 !!! note
 
-	Sample data can be downloaded [from here](https://drive.google.com/drive/folders/1P7PTtx9LUnR-QF_SWjszTBjCwpJHZ7AN?usp=sharing).
+	The sample data for this lab can be downloaded [here](https://drive.google.com/drive/folders/1P7PTtx9LUnR-QF_SWjszTBjCwpJHZ7AN?usp=sharing).
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
@@ -2341,11 +2355,11 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╠═b4ef12ad-d389-4c11-8932-a16e8e0a0254
+# ╟─b4ef12ad-d389-4c11-8932-a16e8e0a0254
 # ╟─aa005b55-626e-41e0-8fe1-137bd7dd5599
 # ╟─4266575e-e19f-48e4-8b21-6f296c6d3f33
 # ╟─aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
-# ╠═c1bbb6a2-6996-4fee-a642-a0212b473474
+# ╟─c1bbb6a2-6996-4fee-a642-a0212b473474
 # ╠═abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
 # ╟─06d26240-81b6-401b-8eda-eab3a9a0fb20
