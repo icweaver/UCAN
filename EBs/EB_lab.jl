@@ -7,9 +7,6 @@ using InteractiveUtils
 # ╔═╡ 792d4e36-336a-4a90-b530-53bbeb428097
 using Colors
 
-# ╔═╡ 076f7569-86d3-4434-9bfd-27f8e4dc8ff7
-using PlutoPlotly: scatter, plot, attr, Layout
-
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -19,8 +16,8 @@ begin
 	using CCDReduction, DataFramesMeta
 	
 	# Visualization and analysis
-	using AstroImages
-	import Plots
+	using AstroImages, Plots
+	import PlutoPlotly
 	using Photometry
 	AstroImages.set_cmap!(:cividis)
 end;
@@ -175,7 +172,7 @@ Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a 
 """
 
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = load(first(df_fits).path)
+img = load(first(df_fits).path) |> reverse
 
 # ╔═╡ a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 md"""
@@ -211,6 +208,9 @@ imgs = [load(f.path) for f in eachrow(df_fits)];
 	)
 end fps=2
 
+# ╔═╡ c77351bd-ad2a-4df3-8c41-fbd7ce70b6f1
+@which @gif
+
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
@@ -220,7 +220,7 @@ Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.c
 md"""
 ## Aperture photometry 🔾
 
-Put a little hoop around it!
+Now that we have some science frames to work with, the next step is to begin counting the flux coming from our target system so that we can measure it over time.
 
 !!! note
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
@@ -306,16 +306,31 @@ end
 
 # ╔═╡ 6470b357-4dc6-4b2b-9760-93d64bab13e9
 let
-	layout = Layout(
-		xaxis = attr(title="Date (UTC)"),
-		yaxis = attr(title="Aperture sum"),
+	layout = PlutoPlotly.Layout(
+		xaxis = PlutoPlotly.attr(title="Date (UTC)"),
+		yaxis = PlutoPlotly.attr(title="Aperture sum"),
 		title = "W UMa light curve",
 	)
 
-	sc = scatter(; x=times, y=fluxes, mode=:markers)
+	sc = PlutoPlotly.scatter(; x=times, y=fluxes, mode=:markers)
 	
-	plot(sc, layout)
+	PlutoPlotly.plot(sc, layout)
 end
+
+# ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
+md"""
+The cumbersome PlutoPlotly qualifiers are being used here because we are using multiple plotting packages in this notebook for demonstration purposes. They can be dropped for convenience if just using one package by doing
+
+```julia
+using PlutoPlotly
+```
+
+instead of
+
+```julia
+import PlutoPlotly
+```
+""" |> msg
 
 # ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
 md"""
@@ -2464,6 +2479,7 @@ version = "1.4.1+1"
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
+# ╠═c77351bd-ad2a-4df3-8c41-fbd7ce70b6f1
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
@@ -2479,7 +2495,7 @@ version = "1.4.1+1"
 # ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
-# ╠═076f7569-86d3-4434-9bfd-27f8e4dc8ff7
+# ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╠═276ff16f-95f1-44eb-971d-db65e8821e59
 # ╠═7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
