@@ -149,6 +149,35 @@ md"""
 """
 
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
+function get_aps(img)
+	bkg_f, bkg_rms_f = estimate_background(img, 48)
+	subt = img .- bkg_f[axes(img)...]
+	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
+	sources = filter(sources_all) do source
+		20_000 ≤ source.value ≤ 60_000 &&
+		800 ≤ source.y ≤ 1_200
+	end
+	aps = CircularAperture.(sources.y, sources.x, 24);
+end
+
+# ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
+aps_list = [get_aps(img)
+	for img in imgs
+]
+
+# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+@gif for (i, ap) in zip(imgs, aps_list)
+	implot(i;
+		xlabel = "X",
+		ylabel = "Y",
+		title = header(i)["DATE-OBS"],
+		clims = (2550, 3050),
+	)
+
+	plot!(ap; color=:lightgreen)
+end fps=2
+
+# ╔═╡ 15736864-b940-4a20-abbe-dbc5998480cf
 
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
@@ -2260,7 +2289,10 @@ version = "1.4.1+1"
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
-# ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
+# ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
+# ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+# ╠═15736864-b940-4a20-abbe-dbc5998480cf
+# ╠═7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╠═bf68ae0b-6694-4e14-b9a0-9dfaaddfff84
