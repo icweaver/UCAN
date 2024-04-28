@@ -13,9 +13,14 @@ begin
 	using CCDReduction, DataFramesMeta
 	
 	# Visualization and analysis
-	using AstroImages, Plots, Photometry
+	using AstroImages, Plots, PythonCall, CondaPkg
+	import Photometry.CircularAperture as CA
 	AstroImages.set_cmap!(:cividis)
-end;
+
+	CondaPkg.add("photutils")
+	CondaPkg.add("pandas") # For converting from QTables
+	CondaPkg.resolve()
+end
 
 # ╔═╡ b4ef12ad-d389-4c11-8932-a16e8e0a0254
 md"""
@@ -111,25 +116,24 @@ Put a little hoop around it!
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
 """
 
-# ╔═╡ 9bc4eb37-22ba-44cc-9999-8ecd62f39f6e
-err= 2500 * ones(axes(img))
+# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
+# daofind = DAOStarFinder(fwhm=5.0, threshold=2_000.0)
 
-# ╔═╡ 929a1137-b2e4-401a-9c90-61b5c8618b60
-sources_all = extract_sources(PeakMesh(nsigma=5.0), img, err)
-
-# ╔═╡ ebcd088c-c771-49d3-8c5e-f968b19e7a13
-sources = filter(sources_all) do s
-	800 ≤ s.y ≤ 1200
+# ╔═╡ c89bd7dd-2264-45c3-ab80-d90b4a1708b6
+df_sources = let
+	sources = extract_sources(PeakMesh(box_size=49, nsigma=5.0), img)
+	filter(sources) do source
+		18_000 ≤ source.value ≤ 50_000
+	end
 end
 
-# ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
-aps = CircularAperture.(sources.x, sources.y, 35)
-
-# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
-let
-	implot(permutedims(img))
-	plot!(aps)
-end
+# ╔═╡ f8f33f4d-6322-4bf1-a454-19fe81da1f26
+# df_sources = let
+# 	qt = daofind(np.array(img))
+# 	df = qt.to_pandas() |> PyPandasDataFrame |> DataFrame
+# 	sort!(df, :flux; rev=true)
+# 	first(df, 4)
+# end
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -140,23 +144,47 @@ md"""
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents()
 
+# ╔═╡ bf68ae0b-6694-4e14-b9a0-9dfaaddfff84
+@py begin
+	import photutils.detection: DAOStarFinder
+	import photutils.aperture: aperture_photometry, CircularAperture
+	import numpy as np
+	import pandas as pd
+end
+
+# ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
+aps = CircularAperture.(df_sources.y, df_sources.x, 24)
+
+# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+let
+	implot(img; colorbar=false)
+	plot!(aps; color=:lightgreen)
+end
+
+# ╔═╡ 1ff85e71-a242-4272-9c83-ab8f37c2d240
+aperture_photometry(np.array(img), aps)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
+CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 
 [compat]
 AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
+CondaPkg = "~0.2.22"
 DataFramesMeta = "~0.15.2"
 Photometry = "~0.9.0"
 Plots = "~1.40.4"
 PlutoUI = "~0.7.59"
+PythonCall = "~0.9.19"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -165,7 +193,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "b8e336c164ba9b90a5c8f3458713a6982c99e4ab"
+project_hash = "2de845fbbdf36408e80ba40b305c34068e0af838"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -457,6 +485,12 @@ deps = ["Serialization", "Sockets"]
 git-tree-sha1 = "6cbbd4d241d7e6579ab354737f4dd95ca43946e1"
 uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
 version = "2.4.1"
+
+[[deps.CondaPkg]]
+deps = ["JSON3", "Markdown", "MicroMamba", "Pidfile", "Pkg", "Preferences", "TOML"]
+git-tree-sha1 = "e81c4263c7ef4eca4d645ef612814d72e9255b41"
+uuid = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
+version = "0.2.22"
 
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
@@ -981,6 +1015,18 @@ git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.4"
 
+[[deps.JSON3]]
+deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
+git-tree-sha1 = "eb3edce0ed4fa32f75a0a11217433c31d56bd48b"
+uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+version = "1.14.0"
+
+    [deps.JSON3.extensions]
+    JSON3ArrowExt = ["ArrowTypes"]
+
+    [deps.JSON3.weakdeps]
+    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
+
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
 git-tree-sha1 = "fa6d0bcff8583bac20f1ffa708c3913ca605c611"
@@ -1225,6 +1271,12 @@ git-tree-sha1 = "44d32db644e84c75dab479f1bc15ee76a1a3618f"
 uuid = "128add7d-3638-4c79-886c-908ea0c25c34"
 version = "0.2.0"
 
+[[deps.MicroMamba]]
+deps = ["Pkg", "Scratch", "micromamba_jll"]
+git-tree-sha1 = "011cab361eae7bcd7d278f0a7a00ff9c69000c51"
+uuid = "0b3b1443-0f03-428d-bdfb-f27f9c1191ea"
+version = "0.1.14"
+
 [[deps.Missings]]
 deps = ["DataAPI"]
 git-tree-sha1 = "ec4f7fbeab05d7747bdf98eb74d130a2a2ed298d"
@@ -1379,6 +1431,12 @@ git-tree-sha1 = "47b496ddd23ef2c2a064a8a344025c264492f94a"
 uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 version = "0.9.0"
 
+[[deps.Pidfile]]
+deps = ["FileWatching", "Test"]
+git-tree-sha1 = "2d8aaf8ee10df53d0dfb9b8ee44ae7c04ced2b03"
+uuid = "fa939f87-e72e-5be4-a000-7fc836dbe307"
+version = "1.3.0"
+
 [[deps.Pipe]]
 git-tree-sha1 = "6842804e7867b115ca9de748a0cf6b364523c16d"
 uuid = "b98c9c47-44ae-5843-9183-064241ee97a0"
@@ -1476,6 +1534,12 @@ deps = ["Distributed", "Printf"]
 git-tree-sha1 = "763a8ceb07833dd51bb9e3bbca372de32c0605ad"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.0"
+
+[[deps.PythonCall]]
+deps = ["CondaPkg", "Dates", "Libdl", "MacroTools", "Markdown", "Pkg", "REPL", "Requires", "Serialization", "Tables", "UnsafePointers"]
+git-tree-sha1 = "0fe6664f742903eab8929586af78e10a51b33577"
+uuid = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+version = "0.9.19"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -1735,6 +1799,12 @@ git-tree-sha1 = "a04cabe79c5f01f4d723cc6704070ada0b9d46d5"
 uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
 version = "0.3.4"
 
+[[deps.StructTypes]]
+deps = ["Dates", "UUIDs"]
+git-tree-sha1 = "ca4bccb03acf9faaf4137a9abc1881ed1841aa70"
+uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+version = "1.10.0"
+
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
@@ -1873,6 +1943,11 @@ deps = ["LaTeXStrings", "Latexify", "Unitful"]
 git-tree-sha1 = "e2d817cc500e960fdbafcf988ac8436ba3208bfd"
 uuid = "45397f5d-5981-4c77-b2b3-fc36d6e9b728"
 version = "1.6.3"
+
+[[deps.UnsafePointers]]
+git-tree-sha1 = "c81331b3b2e60a982be57c046ec91f599ede674a"
+uuid = "e17b2a0c-0bdf-430a-bd0c-3a23cae4ff39"
+version = "1.0.0"
 
 [[deps.Unzip]]
 git-tree-sha1 = "ca0969166a028236229f63514992fc073799bb78"
@@ -2165,6 +2240,12 @@ git-tree-sha1 = "b910cb81ef3fe6e78bf6acee440bda86fd6ae00c"
 uuid = "f27f6e37-5d2b-51aa-960f-b287f2bc3b7a"
 version = "1.3.7+1"
 
+[[deps.micromamba_jll]]
+deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
+git-tree-sha1 = "b4a5a3943078f9fd11ae0b5ab1bdbf7718617945"
+uuid = "f8abcde7-e9b7-5caa-b8af-a437887ae8e4"
+version = "1.5.8+0"
+
 [[deps.mtdev_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "814e154bdb7be91d78b6802843f76b6ece642f11"
@@ -2223,13 +2304,15 @@ version = "1.4.1+1"
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╠═7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
-# ╠═929a1137-b2e4-401a-9c90-61b5c8618b60
-# ╠═9bc4eb37-22ba-44cc-9999-8ecd62f39f6e
-# ╠═ebcd088c-c771-49d3-8c5e-f968b19e7a13
+# ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
+# ╠═c89bd7dd-2264-45c3-ab80-d90b4a1708b6
+# ╠═f8f33f4d-6322-4bf1-a454-19fe81da1f26
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╠═1ff85e71-a242-4272-9c83-ab8f37c2d240
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
+# ╠═bf68ae0b-6694-4e14-b9a0-9dfaaddfff84
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

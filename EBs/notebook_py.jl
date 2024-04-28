@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.40
+# v0.19.41
 
 using Markdown
 using InteractiveUtils
@@ -19,7 +19,7 @@ end
 
 # ╔═╡ 82646318-967d-4ba9-b32c-b3324faad977
 begin
-	hdul = fits.open("./data/mgcc3f/mgcc3f_2024-03-25T04-51-29.429_TRANSIT/TRANSIT/mgcc3f_2024-03-25T05-02-21.905_TRANSIT.fits")
+	hdul = fits.open("data/TRANSIT/ut20240325/mgcc3f_2024-03-25T05-36-57.945_TRANSIT.fits")
 
 	data = hdul[0].data
 
@@ -27,7 +27,7 @@ begin
 end;
 
 # ╔═╡ c690f8ca-2d8b-4a0d-90cf-2ac5b56e64fc
-daofind = DAOStarFinder(fwhm=3.0, threshold=2_500.0)
+daofind = DAOStarFinder(fwhm=5.0, threshold=2_700.0)
 
 # ╔═╡ e6827445-c7b7-47b5-98a7-b59bdbbcb074
 sources = daofind(data)
@@ -42,9 +42,9 @@ apertures = CircularAperture(positions, r=35.0);
 let
 	plt.imshow(data;
 		origin = "lower",
-		vmin = 2_000,
-		vmax = 5_000,
-		cmap = "viridis",
+		vmin = 2_550,
+		vmax = 3_050,
+		cmap = "cividis",
 	)
 
 	apertures.plot(color="lightgreen")
