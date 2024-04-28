@@ -231,7 +231,7 @@ Now that we have some science frames to work with, the next step is to begin cou
 
 # ╔═╡ e20e02e7-f744-4694-9499-1866ebd617fc
 md"""
-First, we estimate the background flux using a [standard estimator algorithm](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals:
+First, we estimate the background flux (`bkg_f`) using one of Photometry.jl's [standard estimator algorithms](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals:
 """
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
@@ -245,33 +245,52 @@ size(img)
 
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
 md"""
-Here we have decided to use a mesh size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
+Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
 """
 
 # ╔═╡ 72f5872a-dade-4655-a3cb-ec5093ba96e6
-subt = img .- bkg_f[axes(img)...]
+subt = img .- bkg_f
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
+
+# ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
+pixel_left, pixel_right = 700, 1_200;
+
+# ╔═╡ 05b8c987-0b0c-4a18-9d07-fc9faf1abda0
+md"""
+Next we apply our extraction routine and only select the brightest sources that falls near our target. Based on the GIF of our targets motion earlier, this looks to range from about pixel $(pixel_left) to $(pixel_right) in the X direction.
+"""
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
 sources = let
 	candidates = filter(sources_all) do source
 		# 20_000 ≤ source.value ≤ 60_000 &&
-		700 ≤ source.y ≤ 1_200
+		pixel_left ≤ source.y ≤ pixel_right
 	end
 
 	filter(x -> x.value == maximum(candidates.value), candidates)
 end
 
+# ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
+md"""
+We next place an aperture `ap` at this location to see how we did:
+"""
+
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
-aps = CircularAperture.(sources.y, sources.x, 24);
+# Place an aperture with radius 24 px at the source extracted location
+ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
 	implot(img; title=header(img)["DATE-OBS"], colorbar=false)
-	plot!(aps; color=:lightgreen)
+	plot!(ap; color=:lightgreen)
 end
+
+# ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
+md"""
+Alright, it looks like this approach successfully identified our target star! We look next at applying this to all of our frames. 
+"""
 
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 md"""
@@ -279,29 +298,34 @@ md"""
 """
 
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
-function get_aps(img)
-	bkg_f, bkg_rms_f = estimate_background(img, 48)
+function get_aps(img, pixel_left, pixel_right, aperture_size)
+	# Subtract background
+	bkg_f, bkg_rms_f = estimate_background(img, aperture_size)
 	subt = img .- bkg_f[axes(img)...]
+	
+	# Extract target source
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
 	candidates = filter(sources_all) do source
 		# 20_000 ≤ source.value ≤ 60_000 &&
-		700 ≤ source.y ≤ 1_200
+		pixel_left ≤ source.y ≤ pixel_right
 	end
 	sources = filter(x -> x.value == maximum(candidates.value), candidates)
-	aps = CircularAperture.(sources.y, sources.x, 24);
+	
+	# Place aperture
+	aps = CircularAperture.(sources.y, sources.x, aperture_size);
 end
 
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
-aps_list = [get_aps(img)
+aps = [get_aps(img, pixel_left, pixel_right, 24)
 	for img in imgs
-]
+];
 
 # ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-@gif for (i, ap) in zip(imgs, aps_list)
-	implot(i;
+@gif for (ap, img) in zip(aps, imgs)
+	implot(img;
 		xlabel = "X",
 		ylabel = "Y",
-		title = header(i)["DATE-OBS"],
+		title = header(img)["DATE-OBS"],
 		clims = (2550, 3050),
 	)
 
@@ -2500,16 +2524,20 @@ version = "1.4.1+1"
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
-# ╠═e20e02e7-f744-4694-9499-1866ebd617fc
+# ╟─e20e02e7-f744-4694-9499-1866ebd617fc
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═7f4768c7-f697-4673-a6fc-549de98c7e4d
 # ╟─fbc0be60-2a3b-4938-b262-7df938e59333
 # ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
-# ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
+# ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
+# ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
+# ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╠═19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
