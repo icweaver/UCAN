@@ -4,6 +4,9 @@
 using Markdown
 using InteractiveUtils
 
+# ╔═╡ 076f7569-86d3-4434-9bfd-27f8e4dc8ff7
+using PlutoPlotly: scatter, plot, attr, Layout
+
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -179,7 +182,29 @@ aps_list = [get_aps(img)
 end fps=2
 
 # ╔═╡ 050b8516-b375-4f1f-906f-6362034b6564
+begin
+	times = []
+	fluxes = []
+	
+	for (ap, img) in zip(aps_list, imgs)
+		phot = first(photometry(ap, img))
+		push!(times, header(img)["DATE-OBS"])
+		push!(fluxes, phot.aperture_sum)
+	end
+end
 
+# ╔═╡ 6470b357-4dc6-4b2b-9760-93d64bab13e9
+let
+	layout = Layout(
+		xaxis = attr(title="Date (UTC)"),
+		yaxis = attr(title="Aperture sum"),
+		title = "W UMa light curve",
+	)
+
+	sc = scatter(; x=times, y=fluxes, mode=:markers)
+	
+	plot(sc, layout)
+end
 
 # ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
 md"""
@@ -205,6 +230,7 @@ CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
@@ -213,6 +239,7 @@ CCDReduction = "~0.2.2"
 DataFramesMeta = "~0.15.2"
 Photometry = "~0.9.0"
 Plots = "~1.40.4"
+PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.59"
 """
 
@@ -222,7 +249,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "b8e336c164ba9b90a5c8f3458713a6982c99e4ab"
+project_hash = "d5f61fd9c7bdecda30b2f79589f4dee891b495c5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -353,6 +380,11 @@ version = "0.4.2"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.BaseDirs]]
+git-tree-sha1 = "3e93fcd95fe8db4704e98dbda14453a0bfc6f6c3"
+uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
+version = "1.2.3"
 
 [[deps.Baselet]]
 git-tree-sha1 = "aebf55e6d7795e02ca500a689d326ac979aaf89e"
@@ -1470,6 +1502,12 @@ git-tree-sha1 = "7b1a9df27f072ac4c9c7cbe5efb198489258d1f5"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.1"
 
+[[deps.PlotlyBase]]
+deps = ["ColorSchemes", "Dates", "DelimitedFiles", "DocStringExtensions", "JSON", "LaTeXStrings", "Logging", "Parameters", "Pkg", "REPL", "Requires", "Statistics", "UUIDs"]
+git-tree-sha1 = "56baf69781fc5e61607c3e46227ab17f7040ffa2"
+uuid = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
+version = "0.8.19"
+
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "UnitfulLatexify", "Unzip"]
 git-tree-sha1 = "442e1e7ac27dd5ff8825c3fa62fbd1e86397974b"
@@ -1488,6 +1526,20 @@ version = "1.40.4"
     GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
     IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
     ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
+[[deps.PlutoPlotly]]
+deps = ["AbstractPlutoDingetjes", "BaseDirs", "Colors", "Dates", "Downloads", "HypertextLiteral", "InteractiveUtils", "LaTeXStrings", "Markdown", "Pkg", "PlotlyBase", "Reexport", "TOML"]
+git-tree-sha1 = "1ae939782a5ce9a004484eab5416411c7190d3ce"
+uuid = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
+version = "0.4.6"
+
+    [deps.PlutoPlotly.extensions]
+    PlotlyKaleidoExt = "PlotlyKaleido"
+    UnitfulExt = "Unitful"
+
+    [deps.PlutoPlotly.weakdeps]
+    PlotlyKaleido = "f2990250-8cf9-495f-b13a-cce12b45703c"
     Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.PlutoUI]]
@@ -2292,6 +2344,8 @@ version = "1.4.1+1"
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
 # ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
+# ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
+# ╠═076f7569-86d3-4434-9bfd-27f8e4dc8ff7
 # ╠═276ff16f-95f1-44eb-971d-db65e8821e59
 # ╠═7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
