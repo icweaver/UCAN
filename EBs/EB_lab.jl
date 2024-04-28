@@ -172,11 +172,17 @@ Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a 
 """
 
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = load(first(df_fits).path) |> reverse
+img = load(first(df_fits).path);
+
+# ╔═╡ dbe812e2-a795-4caa-842d-07da5eabcade
+reverse(img)
+
+# ╔═╡ 74197e45-3b80-44ad-b940-f2544f2f9b54
+Resource("https://github.com/icweaver/UCAN/blob/main/EBs/data/finder_WUMa.jpg?raw=true")
 
 # ╔═╡ a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 md"""
-Ok, we have some stars! And here is its associated header file:
+Ok, we have some stars! We've also reversed the image to make comparing it to its [finder chart](https://astro.swarthmore.edu/transits/finding_charts.cgi) a bit easier. Here is the associated header information for this file:
 """
 
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
@@ -192,7 +198,7 @@ It looks like this image is $(first(img_size)) x $(last(img_size)) pixels, with 
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
-Let's use [Plots.jl](https://github.com/JuliaPlots/Plots.jl) next to make a quick gif of all 34 frames:
+Let's use [Plots.jl](https://github.com/JuliaPlots/Plots.jl) next to make a quick gif of all 34 frames (note for the rest of this notebook that we will be using the default image orientation in the plotting software):
 """
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
@@ -207,9 +213,6 @@ imgs = [load(f.path) for f in eachrow(df_fits)];
 		clims = (2550, 3050),
 	)
 end fps=2
-
-# ╔═╡ c77351bd-ad2a-4df3-8c41-fbd7ce70b6f1
-@which @gif
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
@@ -2472,6 +2475,8 @@ version = "1.4.1+1"
 # ╟─cdf14fe8-6b27-44eb-b789-6cf072f4d184
 # ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
+# ╠═dbe812e2-a795-4caa-842d-07da5eabcade
+# ╟─74197e45-3b80-44ad-b940-f2544f2f9b54
 # ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
 # ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
@@ -2479,7 +2484,6 @@ version = "1.4.1+1"
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
-# ╠═c77351bd-ad2a-4df3-8c41-fbd7ce70b6f1
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
