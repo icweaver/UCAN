@@ -190,7 +190,7 @@ img_size, img_eltype = size(img), eltype(img);
 
 # ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 md"""
-It looks like this image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel stored as a $(img_eltype) to reduce memory useage, neat!
+It looks like this image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel stored as a $(img_eltype) to reduce memory useage.
 """
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
@@ -213,7 +213,7 @@ end fps=2
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
-Field rotation. Need to deal with
+Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
 """
 
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
@@ -2464,7 +2464,7 @@ version = "1.4.1+1"
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
-# ╠═7d54fd96-b268-4964-929c-d62c7d89b4b2
+# ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╠═d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
