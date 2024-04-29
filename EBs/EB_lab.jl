@@ -14,6 +14,9 @@ begin
 	
 	# Data wrangling
 	using CCDReduction, DataFramesMeta
+
+	# Web
+	using HTTP, JSONTables
 	
 	# Visualization and analysis
 	using AstroImages, Plots
@@ -371,7 +374,9 @@ end
 
 # ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
 md"""
-The cumbersome PlutoPlotly qualifiers are being used here because we are using multiple plotting packages in this notebook for demonstration purposes. They can be dropped for convenience if just using one package by doing
+We use the package [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) here instead of Plots.jl so that we can create a nice interactive plot of our light curve
+
+The cumbersome PlutoPlotly qualifiers are being used because we are using multiple plotting packages in this notebook for demonstration purposes. They can be dropped for convenience if just using one package by doing
 
 ```julia
 using PlutoPlotly
@@ -384,13 +389,48 @@ import PlutoPlotly
 ```
 """ |> msg
 
+# ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
+md"""
+We now have a light curve of an eclipsing binary captured at the predicted time! By eye, totality looks to have lasted for about half an hour, and the total eclipse duration looks to be close to the three hours estimated by the ephemeris. Not to bad for a quick observation taken from a backyard in the middle of a light polluted city.
+"""
+
 # ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
 md"""
 ## Extensions
 
-* Comparison stars
-* Dark frame correction
+### Comparison stars
+### Dark frame correction
+### Other eclipsing binary systems
+
+The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding other potential eclipsing binary targets. Below, we briefly show how this could be accessed in programmatic fashion using their API.
 """
+
+# ╔═╡ e2b8a7ae-cd74-4a9b-a853-f436262676b6
+username = open("data/.aavso_api") do f
+	readline(f)
+end;
+
+# ╔═╡ 399f53c5-b654-4330-9ead-4d795917b03b
+if !isempty(username)
+	r = let
+		passwd = "api_token"
+		api = "targettool.aavso.org/TargetTool/api/v1/targets"
+		url = "https://$(username):$(passwd)@$(api)"
+		query = (
+			:obs_section => "eb",
+			:observable => true,
+			:orderby => "period",
+		)
+		HTTP.get(url; query)
+	end
+
+	# The table under the `target` field of the JSONTable does not
+	# seem to convert nulls to missings, so using the raw string directly instead
+	df = DataFrame(jsontable(chop(String(r.body); head=12)))
+end;
+
+# ╔═╡ 848b5a48-c6e6-441f-90e9-133fca81b528
+
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -409,6 +449,8 @@ CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
@@ -420,6 +462,8 @@ CCDReduction = "~0.2.2"
 Colors = "~0.12.10"
 CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.2"
+HTTP = "~1.10.6"
+JSONTables = "~1.0.3"
 Photometry = "~0.9.0"
 Plots = "~1.40.4"
 PlutoPlotly = "~0.4.6"
@@ -432,7 +476,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "083c31caf9505cff492e814b2ec9373609bcd6fd"
+project_hash = "5c7ea5a2f97652717110b57ec098d2fd0c1395f9"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1259,6 +1303,24 @@ git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.4"
 
+[[deps.JSON3]]
+deps = ["Dates", "Mmap", "Parsers", "PrecompileTools", "StructTypes", "UUIDs"]
+git-tree-sha1 = "eb3edce0ed4fa32f75a0a11217433c31d56bd48b"
+uuid = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+version = "1.14.0"
+
+    [deps.JSON3.extensions]
+    JSON3ArrowExt = ["ArrowTypes"]
+
+    [deps.JSON3.weakdeps]
+    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
+
+[[deps.JSONTables]]
+deps = ["JSON3", "StructTypes", "Tables"]
+git-tree-sha1 = "13f7485bb0b4438bb5e83e62fcadc65c5de1d1bb"
+uuid = "b9914132-a727-11e9-1322-f18e41205b0b"
+version = "1.0.3"
+
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
 git-tree-sha1 = "fa6d0bcff8583bac20f1ffa708c3913ca605c611"
@@ -2033,6 +2095,12 @@ git-tree-sha1 = "a04cabe79c5f01f4d723cc6704070ada0b9d46d5"
 uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
 version = "0.3.4"
 
+[[deps.StructTypes]]
+deps = ["Dates", "UUIDs"]
+git-tree-sha1 = "ca4bccb03acf9faaf4137a9abc1881ed1841aa70"
+uuid = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+version = "1.10.0"
+
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
@@ -2559,8 +2627,12 @@ version = "1.4.1+1"
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
-# ╟─276ff16f-95f1-44eb-971d-db65e8821e59
-# ╠═7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
+# ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
+# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
+# ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
+# ╠═399f53c5-b654-4330-9ead-4d795917b03b
+# ╠═848b5a48-c6e6-441f-90e9-133fca81b528
+# ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
