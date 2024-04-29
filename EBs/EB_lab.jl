@@ -398,6 +398,9 @@ We now have a light curve of an eclipsing binary captured at the predicted time!
 md"""
 ## Extensions
 
+!!! warning "TODO"
+	Stopped here. Will add more
+
 ### Comparison stars
 ### Dark frame correction
 ### Other eclipsing binary systems
@@ -430,7 +433,52 @@ if !isempty(username)
 end;
 
 # ╔═╡ 848b5a48-c6e6-441f-90e9-133fca81b528
+df
 
+# ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
+function get_url(s)
+	url = @chain s begin
+		split("Ephemeris info ")
+		last
+		split("]]")
+		first
+	end
+	
+	cm"""[link]($(url))"""
+end
+
+# ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
+df_selected = @chain df begin
+	dropmissing
+	@rsubset begin
+		# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
+		:min_mag - :max_mag ≥ 0.5 &&
+		:min_mag_band == "V" && :max_mag_band == "V" &&
+		:period ≤ 3.0 &&
+		startswith(:other_info, "[[Ephemeris")
+	end
+		
+	@rtransform begin
+		:ephem = get_url(:other_info)
+		:V_mag = (:min_mag + :max_mag) / 2.0
+	end
+
+	@select begin
+		:star_name
+		:ra
+		:dec
+		:min_mag
+		# :min_mag_band
+		:V_mag
+		:max_mag
+		# :max_mag_band
+		:period
+		:var_type
+		# :min_mag
+		# :max_mag
+		:ephem
+	end
+end
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -2628,10 +2676,12 @@ version = "1.4.1+1"
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
-# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
+# ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╠═848b5a48-c6e6-441f-90e9-133fca81b528
+# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
