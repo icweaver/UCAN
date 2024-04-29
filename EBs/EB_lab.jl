@@ -391,7 +391,7 @@ import PlutoPlotly
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 md"""
-We now have a light curve of an eclipsing binary captured at the predicted time! By eye, totality looks to have lasted for about half an hour, and the total eclipse duration looks to be close to the three hours estimated by the ephemeris. Not to bad for a quick observation taken from a backyard in the middle of a light polluted city.
+We now have a light curve of an eclipsing binary captured at the predicted time! By eye, totality looks to have lasted for about half an hour, and the total eclipse duration looks to be close to the three hours estimated by the ephemeris. Not too bad for a quick observation taken from a backyard in the middle of a light polluted city.
 """
 
 # ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
