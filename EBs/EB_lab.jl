@@ -41,10 +41,12 @@ With this requisite information out of the way, let's get started!
 
 # ╔═╡ 49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
 msg_adding_colors = md"""
-#### Adding colors in Julia 🎨
+##### Adding colors in Julia 🎨
 This makes magenta!
 
 ```julia
+using Colors
+
 RGB(1, 0, 0) + RGB(0, 0, 1)
 ```
 
@@ -70,7 +72,7 @@ cm"""
 
 # ╔═╡ aa005b55-626e-41e0-8fe1-137bd7dd5599
 md"""
-## Background
+## Background 📖
 
 It turns out that the alien world described in the [3 Body Problem](https://www.netflix.com/tudum/articles/3-body-problem-teaser-release-date) is not too far off from what we see in reality. Star systems can be made up of just one star like in our system, three as in the tv show and book series from which the 3 Body Problem [draws its inspiration](https://en.wikipedia.org/wiki/Alpha_Centauri), or even as many as six different stars as in this [recently discovered system](https://science.nasa.gov/universe/exoplanets/discovery-alert-first-six-star-system-where-all-six-stars-undergo-eclipses/)! While these would make for some quite interesting sunsets, their stability decreases as more bodies are added. This is partly why the most common star systems we happen to see are singular star systems, followed closely behind by binary star systems, which account for [nearly two-thirds of all star systems in the Milky Way](https://pweb.cfa.harvard.edu/news/most-milky-way-stars-are-single).
 
@@ -88,7 +90,7 @@ In this visualization, we see how the observed brightness of an eclipsing binary
 
 # ╔═╡ aaaaa4d6-737b-4e53-a3a4-fcac09789d4e
 md"""
-## Introduction
+## Introduction 🤝
 
 [W Ursae Majoris (W UMa)](https://www.aavso.org/vsots_wuma) is an eclipsing binary system located in the [Ursa Major](https://en.wikipedia.org/wiki/Ursa_Major) constellation, and can be seen being chased across the sky by the Big Dipper throughout the night:
 
@@ -297,7 +299,7 @@ Alright, it looks like this approach successfully identified our target star! We
 
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 md"""
-## Putting it all together
+## Putting it all together 🏗️
 
 Now that we have the building blocks for identifying our source target in place, we wrap them into a function that we can call on each of our frames:
 """
@@ -372,20 +374,6 @@ let
 	PlutoPlotly.plot(sc, layout)
 end
 
-# ╔═╡ 31dabb68-a8ce-46dd-be13-0ddc2db9f516
-# @gif for (i, (ap, img, t, f)) in enumerate(zip(aps, imgs, times, fluxes))
-# 	ap = first(ap)
-# 	xlims = ap.x - 5*ap.r, ap.x + 5*ap.r
-# 	ylims = ap.y - 5*ap.r, ap.y + 5*ap.r
-	
-# 	im = implot(img; xlims, ylims, clims = (2550, 3050), colorbar=false)
-# 	p1 = plot!(im, ap)
-
-# 	p2 = scatter(times[begin:i], fluxes[begin:i])
-
-# 	plot(p1, p2)
-# end fps=2
-
 # ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
 md"""
 We use the package [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) here instead of Plots.jl so that we can create a nice interactive plot of our light curve
@@ -410,17 +398,56 @@ We now have a light curve of an eclipsing binary captured at the predicted time!
 
 # ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
 md"""
-## Extensions
+## Extensions 🌱
 
 !!! warning "TODO"
-	Stopped here. Will add more
+	Stopped here. Will add more below, just laying out for now
+"""
 
-### Comparison stars
-### Dark frame correction
+# ╔═╡ 2d9326b5-1c46-4301-8cce-2018ebd35799
+md"""
 ### Visualizing the change in brightness
-### Other eclipsing binary systems
 
-The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding other potential eclipsing binary targets. Below, we briefly show how this could be accessed in programmatic fashion using their API.
+Would be cool to have a side-by-side movie of the image of the target star and its light curve over time
+"""
+
+# ╔═╡ 31dabb68-a8ce-46dd-be13-0ddc2db9f516
+# @gif for (i, (ap, img, t, f)) in enumerate(zip(aps, imgs, times, fluxes))
+# 	ap = first(ap)
+# 	xlims = ap.x - 5*ap.r, ap.x + 5*ap.r
+# 	ylims = ap.y - 5*ap.r, ap.y + 5*ap.r
+	
+# 	im = implot(img; xlims, ylims, clims = (2550, 3050), colorbar=false)
+# 	p1 = plot!(im, ap)
+
+# 	p2 = scatter(times[begin:i], fluxes[begin:i])
+
+# 	plot(p1, p2)
+# end fps=2
+
+# ╔═╡ 934b1888-0e5c-4dcb-a637-5c2f813161d4
+md"""
+### Correcting systematics
+"""
+
+# ╔═╡ 469f4c4a-4f4b-4a48-9811-4fb123c69ef7
+md"""
+#### Comparison stars
+"""
+
+# ╔═╡ e822d9e1-f511-4284-b303-4c5f842c3e13
+md"""
+#### Dark frames
+"""
+
+# ╔═╡ c5286692-2610-414d-97b7-ffab0bd485a7
+md"""
+### Observing other eclipsing binary systems
+
+The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding other potential eclipsing binary targets. Below, we briefly show how this could be accessed in a programmatic fashion using [their API](https://targettool.aavso.org/TargetTool/api).
+
+!!! note
+	The username is your [AAVSO API key](https://targettool.aavso.org/TargetTool/api/index). Do not share this with others.
 """
 
 # ╔═╡ e2b8a7ae-cd74-4a9b-a853-f436262676b6
@@ -495,6 +522,49 @@ df_selected = @chain df begin
 	end
 end
 
+# ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
+md"""
+#### Determining observation parameters
+
+Once a target has been found, we need to figure out a good observing scheme for it. Cadence, exposure time, and friends
+"""
+
+# ╔═╡ 77a2953f-2af2-45f6-b01d-61134e53f47c
+target = (
+	v_mag = 7.9,
+	t_exp = 1400,
+)
+
+# ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
+baseline = (
+	v_mag = 11.7, # V (mag)
+	t_exp = 3200.0, # Exptime (ms)
+	gain = 25.0, # Gain (dB)
+	peak_px = 3000, # Peak Pixel ADU
+)
+
+# ╔═╡ 3c601844-3bb9-422c-ab1e-b40f7e7cb0df
+function flux_factor(target, baseline)
+	f_mag = (target.v_mag - baseline.v_mag) / -2.5 |> exp10
+	f_exp = target.t_exp / baseline.t_exp
+	return f_mag * f_exp 
+end
+
+# ╔═╡ f26f890b-5924-497c-85a3-eff924d0470b
+max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
+
+# ╔═╡ 95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+rec_gain(g) = round(g, RoundDown) - 1.0
+
+# ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
+f = flux_factor(target, baseline)
+
+# ╔═╡ abaa38e1-fbeb-470f-8152-480f586c38aa
+g = max_gain(baseline, f)
+
+# ╔═╡ 8c5b8e36-11c4-45fb-94e9-d79e1c2df346
+rec_gain(g)
+
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
 ---
@@ -502,7 +572,7 @@ md"""
 """
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
-TableOfContents()
+TableOfContents(; depth=4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2689,15 +2759,29 @@ version = "1.4.1+1"
 # ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
-# ╠═31dabb68-a8ce-46dd-be13-0ddc2db9f516
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
-# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
+# ╟─276ff16f-95f1-44eb-971d-db65e8821e59
+# ╟─2d9326b5-1c46-4301-8cce-2018ebd35799
+# ╠═31dabb68-a8ce-46dd-be13-0ddc2db9f516
+# ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
+# ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
+# ╟─e822d9e1-f511-4284-b303-4c5f842c3e13
+# ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╠═848b5a48-c6e6-441f-90e9-133fca81b528
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
+# ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
+# ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
+# ╠═3c601844-3bb9-422c-ab1e-b40f7e7cb0df
+# ╠═f26f890b-5924-497c-85a3-eff924d0470b
+# ╠═95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+# ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
+# ╠═abaa38e1-fbeb-470f-8152-480f586c38aa
+# ╠═8c5b8e36-11c4-45fb-94e9-d79e1c2df346
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
