@@ -372,6 +372,20 @@ let
 	PlutoPlotly.plot(sc, layout)
 end
 
+# ╔═╡ 31dabb68-a8ce-46dd-be13-0ddc2db9f516
+# @gif for (i, (ap, img, t, f)) in enumerate(zip(aps, imgs, times, fluxes))
+# 	ap = first(ap)
+# 	xlims = ap.x - 5*ap.r, ap.x + 5*ap.r
+# 	ylims = ap.y - 5*ap.r, ap.y + 5*ap.r
+	
+# 	im = implot(img; xlims, ylims, clims = (2550, 3050), colorbar=false)
+# 	p1 = plot!(im, ap)
+
+# 	p2 = scatter(times[begin:i], fluxes[begin:i])
+
+# 	plot(p1, p2)
+# end fps=2
+
 # ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
 md"""
 We use the package [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) here instead of Plots.jl so that we can create a nice interactive plot of our light curve
@@ -403,6 +417,7 @@ md"""
 
 ### Comparison stars
 ### Dark frame correction
+### Visualizing the change in brightness
 ### Other eclipsing binary systems
 
 The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding other potential eclipsing binary targets. Below, we briefly show how this could be accessed in programmatic fashion using their API.
@@ -2674,9 +2689,10 @@ version = "1.4.1+1"
 # ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
+# ╠═31dabb68-a8ce-46dd-be13-0ddc2db9f516
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
-# ╟─276ff16f-95f1-44eb-971d-db65e8821e59
+# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╠═848b5a48-c6e6-441f-90e9-133fca81b528
