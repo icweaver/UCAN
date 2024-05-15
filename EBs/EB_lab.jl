@@ -254,17 +254,21 @@ Now that we have some science frames to work with, the next step is to begin cou
 
 # ╔═╡ e20e02e7-f744-4694-9499-1866ebd617fc
 md"""
-First, we estimate the background flux (`bkg_f`) using one of Photometry.jl's [standard estimator algorithms](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals:
+First, we estimate the background flux (`bkg_f`) using one of Photometry.jl's [standard estimator algorithms](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals.
+
+To broadly summarize this estimation process, we essentially create a smoothed out version of the background of our image
 """
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
+# The size of our mesh in pixels (a square with side length = `box_size`)
 box_size = gcd(size(img)...)
 
-# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-bkg_f, bkg_rms_f = estimate_background(img, box_size)
+# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
+clipped = sigma_clip(img, 1, fill=NaN)
 
-# ╔═╡ 7f4768c7-f697-4673-a6fc-549de98c7e4d
-size(img)
+# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
+# Estimated background, and its uncertainty
+bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
 
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
 md"""
@@ -272,7 +276,7 @@ Here we have decided to use a mesh (box) size equal to the greatest common denom
 """
 
 # ╔═╡ 72f5872a-dade-4655-a3cb-ec5093ba96e6
-subt = img #img .- bkg_f
+subt = img - bkg_f
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
@@ -282,7 +286,7 @@ pixel_left, pixel_right = 700, 1_200;
 
 # ╔═╡ 05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 md"""
-Next we apply our extraction routine and only select the brightest sources that falls near our target. Based on the GIF of our targets motion earlier, this looks to range from about pixel $(pixel_left) to $(pixel_right) in the X direction.
+Next we apply our extraction routine and only select the brightest sources that fall near our target. Based on the GIF of our target's motion earlier, this looks to range from about pixel $(pixel_left) to $(pixel_right) in the X direction.
 """
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
@@ -324,9 +328,12 @@ Now that we have the building blocks for identifying our source target in place,
 
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 function get_aps(img, pixel_left, pixel_right, aperture_size)
+	# Clip image
+	clipped = sigma_clip(img, 1, fill=NaN)
+	
 	# Subtract background
-	bkg_f, bkg_rms_f = estimate_background(img, aperture_size)
-	subt = img #img .- bkg_f[axes(img)...]
+	bkg_f, bkg_rms_f = estimate_background(clipped, aperture_size)
+	subt = img - bkg_f
 	
 	# Extract target source
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
@@ -456,11 +463,6 @@ md"""
 # ╔═╡ e822d9e1-f511-4284-b303-4c5f842c3e13
 md"""
 #### Dark frames
-"""
-
-# ╔═╡ f3a5c05c-d459-4d0d-96a5-860ff1c5d3f2
-md"""
-#### Background estimation
 """
 
 # ╔═╡ c5286692-2610-414d-97b7-ffab0bd485a7
@@ -2766,6 +2768,14 @@ version = "1.4.1+1"
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
+# ╠═e20e02e7-f744-4694-9499-1866ebd617fc
+# ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
+# ╠═c8b8ad4b-8445-408f-8245-d73284a85749
+# ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
+# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
+# ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
+# ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
+# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
@@ -2788,15 +2798,6 @@ version = "1.4.1+1"
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─e822d9e1-f511-4284-b303-4c5f842c3e13
-# ╟─f3a5c05c-d459-4d0d-96a5-860ff1c5d3f2
-# ╟─e20e02e7-f744-4694-9499-1866ebd617fc
-# ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
-# ╠═7f4768c7-f697-4673-a6fc-549de98c7e4d
-# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
-# ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
-# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
-# ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
