@@ -71,7 +71,9 @@ cm"""
 
 		```julia-repl
 		julia> using Pluto
+		
 		julia> Pluto.run(auto_reload_from_file=true)
+		
 		# This will be on by default in an upcoming release =]
 		```
 
@@ -237,7 +239,7 @@ end fps=2
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
-Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
+Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
 """
 
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
@@ -270,7 +272,7 @@ Here we have decided to use a mesh (box) size equal to the greatest common denom
 """
 
 # ╔═╡ 72f5872a-dade-4655-a3cb-ec5093ba96e6
-subt = img .- bkg_f
+subt = img #img .- bkg_f
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
@@ -324,7 +326,7 @@ Now that we have the building blocks for identifying our source target in place,
 function get_aps(img, pixel_left, pixel_right, aperture_size)
 	# Subtract background
 	bkg_f, bkg_rms_f = estimate_background(img, aperture_size)
-	subt = img .- bkg_f[axes(img)...]
+	subt = img #img .- bkg_f[axes(img)...]
 	
 	# Extract target source
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
@@ -454,6 +456,11 @@ md"""
 # ╔═╡ e822d9e1-f511-4284-b303-4c5f842c3e13
 md"""
 #### Dark frames
+"""
+
+# ╔═╡ f3a5c05c-d459-4d0d-96a5-860ff1c5d3f2
+md"""
+#### Background estimation
 """
 
 # ╔═╡ c5286692-2610-414d-97b7-ffab0bd485a7
@@ -2759,14 +2766,6 @@ version = "1.4.1+1"
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
-# ╟─e20e02e7-f744-4694-9499-1866ebd617fc
-# ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
-# ╠═7f4768c7-f697-4673-a6fc-549de98c7e4d
-# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
-# ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
-# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
-# ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
@@ -2789,6 +2788,15 @@ version = "1.4.1+1"
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─e822d9e1-f511-4284-b303-4c5f842c3e13
+# ╟─f3a5c05c-d459-4d0d-96a5-860ff1c5d3f2
+# ╟─e20e02e7-f744-4694-9499-1866ebd617fc
+# ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
+# ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
+# ╠═7f4768c7-f697-4673-a6fc-549de98c7e4d
+# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
+# ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
+# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
+# ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
