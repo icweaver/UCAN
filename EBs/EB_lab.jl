@@ -256,8 +256,24 @@ Now that we have some science frames to work with, the next step is to begin cou
 md"""
 First, we estimate the background flux (`bkg_f`) using one of Photometry.jl's [standard estimator algorithms](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals.
 
-To broadly summarize this estimation process, we essentially create a smoothed out version of the background of our image
+To broadly summarize this estimation process, we:
+
+1. [Sigma clip](https://www.gnu.org/software/gnuastro/manual/html_node/Sigma-clipping.html) our image to try remove bright sources (i.e., outliers).
+
+2. Place a mesh grid over the subtracted image to split it into smaller boxes with size determined by `box_size`.
+
+3. Smooth out the remaining image by taking the "average" flux value within each box. "Average" is in quotes because this can be any statistical estimator we choose. By default, this is the [`SourceExtractorBackground`](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) estimator defined in [Photometry.jl](https://juliaastro.org/Photometry.jl/stable/).
+
+4. Interpolate the smaller, averaged image obtained in the previous step back up to its original size to use as our smooth estimate for the background.
+
+
+$()
 """
+
+# ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
+md"""```
+Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely separate the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo. Let's show an example Now let's try and estimate the background using estimate_background. First, we'll si gma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size (50, 50). Within each box, the given statistical estimators get the background value and RMS. By default, we use SourceExtractorBackground and StdRMS. This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via ZoomInterpolator. The end result is a smooth estimate of the spatially varying background and background RMS.
+```"""
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 # The size of our mesh in pixels (a square with side length = `box_size`)
@@ -2769,6 +2785,7 @@ version = "1.4.1+1"
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═e20e02e7-f744-4694-9499-1866ebd617fc
+# ╠═fbaac862-4b2d-4f7c-ada3-8e124882d539
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
