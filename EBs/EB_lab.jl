@@ -54,7 +54,7 @@ $(RGB(1, 0, 0) + RGB(0, 0, 1))
 """;
 
 # ╔═╡ 84d9ed94-11cb-4272-8bd3-d420c50f990d
-msg(x) = details("Details", x);
+msg(x; title="Details") = details(title, x);
 
 # ╔═╡ 14e0627f-ada1-4689-9bc6-c877b81aa582
 cm"""
@@ -252,8 +252,18 @@ Now that we have some science frames to work with, the next step is to begin cou
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
 """
 
+# ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
+msg_background_est = md"""
+For more on the specific estimation procedures, we highlight this section from the [Photometry.jl documentation](https://juliaastro.org/dev/modules/AstroImages/guide/photometry/#Background-Estimation):
+
+
+> Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely separate the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo. Let's show an example Now let's try and estimate the background using estimate_background. First, we'll si gma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size (50, 50). Within each box, the given statistical estimators get the background value and RMS. By default, we use SourceExtractorBackground and StdRMS. This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via ZoomInterpolator. The end result is a smooth estimate of the spatially varying background and background RMS.
+""";
+
 # ╔═╡ e20e02e7-f744-4694-9499-1866ebd617fc
 md"""
+### Background estimation
+
 First, we estimate the background flux (`bkg_f`) using one of Photometry.jl's [standard estimator algorithms](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals.
 
 To broadly summarize this estimation process, we:
@@ -267,23 +277,19 @@ To broadly summarize this estimation process, we:
 4. Interpolate the smaller, averaged image obtained in the previous step back up to its original size to use as our smooth estimate for the background.
 
 
-$()
+$(msg(msg_background_est))
 """
-
-# ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
-md"""```
-Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely separate the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo. Let's show an example Now let's try and estimate the background using estimate_background. First, we'll si gma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size (50, 50). Within each box, the given statistical estimators get the background value and RMS. By default, we use SourceExtractorBackground and StdRMS. This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via ZoomInterpolator. The end result is a smooth estimate of the spatially varying background and background RMS.
-```"""
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 # The size of our mesh in pixels (a square with side length = `box_size`)
 box_size = gcd(size(img)...)
 
 # ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
+# Step 1
 clipped = sigma_clip(img, 1, fill=NaN)
 
 # ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# Estimated background, and its uncertainty
+# Steps 2-4: Estimated background, and its uncertainty
 bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
 
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
@@ -293,6 +299,15 @@ Here we have decided to use a mesh (box) size equal to the greatest common denom
 
 # ╔═╡ 72f5872a-dade-4655-a3cb-ec5093ba96e6
 subt = img - bkg_f
+
+# ╔═╡ 5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
+md"""
+### Source extraction
+
+Now that we have an estimate for the background flux in our image, we can pass both to `extract_sources` to detect our sources. This routine uses the [`PeakMesh`](https://juliaastro.org/Photometry.jl/stable/detection/algs/#Photometry.Detection.PeakMesh) source detection algorithm, which grids our image and then picks sources that are above a certain threshold in each box.
+
+By default, each box is 3 x 3 pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the estimated background as our `error` and the default `nsigma=3.0` to define our source criteria:
+"""
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
@@ -2784,13 +2799,14 @@ version = "1.4.1+1"
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
-# ╠═e20e02e7-f744-4694-9499-1866ebd617fc
-# ╠═fbaac862-4b2d-4f7c-ada3-8e124882d539
+# ╟─e20e02e7-f744-4694-9499-1866ebd617fc
+# ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # ╟─fbc0be60-2a3b-4938-b262-7df938e59333
 # ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
+# ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
