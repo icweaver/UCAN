@@ -306,18 +306,20 @@ md"""
 
 Now that we have an estimate for the background flux in our image, we can pass both to `extract_sources` to detect our sources. This routine uses the [`PeakMesh`](https://juliaastro.org/Photometry.jl/stable/detection/algs/#Photometry.Detection.PeakMesh) source detection algorithm, which grids our image and then picks sources that are above a certain threshold in each box.
 
-By default, each box is 3 x 3 pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the estimated background as our `error` and the default `nsigma=3.0` to define our source criteria:
+By default, each box is 3 x 3  pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the estimated background as our `error` and the default `nsigma=3.0` to define our source criteria.
 """
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
-sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
+# Returns list of extracted sources, sorted from strongest to weakest
+# by default
+sources_all = extract_sources(PeakMesh(), subt, bkg_f)
 
 # ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
 pixel_left, pixel_right = 700, 1_200;
 
 # ╔═╡ 05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 md"""
-Next we apply our extraction routine and only select the brightest sources that fall near our target. Based on the GIF of our target's motion earlier, this looks to range from about pixel $(pixel_left) to $(pixel_right) in the X direction.
+But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
 """
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
@@ -332,11 +334,12 @@ end
 
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
-We next place an aperture `ap` at this location to see how we did:
+Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
 """
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # Place an aperture with radius 24 px at the source extracted location
+# For visualization purposes
 ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
@@ -347,7 +350,7 @@ end
 
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
-Alright, it looks like this approach successfully identified our target star! We look next at applying this to all of our frames. 
+Alright, it looks like this approach successfully identified our target star! We look next at applying this procedure to all of our frames. 
 """
 
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
@@ -385,7 +388,7 @@ aps = [get_aps(img, pixel_left, pixel_right, 24)
 
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
 md"""
-Let's place the apertures onto our movie from earlier to doule check how we did:
+Let's place the apertures onto our movie from earlier to double check how we did:
 """
 
 # ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
@@ -449,7 +452,11 @@ import PlutoPlotly
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 md"""
+### Wrapping up
+
 We now have a light curve of an eclipsing binary captured at the predicted time! By eye, totality looks to have lasted for about half an hour, and the total eclipse duration looks to be close to the three hours estimated by the ephemeris. Not too bad for a quick observation taken from a backyard in the middle of a light polluted city.
+
+Since the total period for this system is about 8 hours, we only caught one of the eclipses, in this case the secondary eclipse. With a more careful treatment of the calibration and data reduction procedures, we might also be able to measure the eclipse depth as well as get a more precise estimate on the "time of minimum" (ToM). The former allows us to determine the size of the eclipsing object relative to its companion, and the latter is the precise time that the two objects are exactly aligned. Measuring the ToM over time create so-called "[O-C curves](https://www.aavso.org/analysis-times-minima-o-c-diagram)", or observed minus calculated (predicted) times over time, which allow us to not only measure the periods of binary systems, but also characterize the stellar and orbital evolution of these dynamic systems.
 """
 
 # ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
@@ -2785,7 +2792,7 @@ version = "1.4.1+1"
 # ╠═335a1a12-379a-4e0d-a3de-788369ae3818
 # ╟─a04886d9-471a-40ec-9f0b-65ffe89932cf
 # ╠═8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
-# ╠═cdf14fe8-6b27-44eb-b789-6cf072f4d184
+# ╟─cdf14fe8-6b27-44eb-b789-6cf072f4d184
 # ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
 # ╠═dbe812e2-a795-4caa-842d-07da5eabcade
@@ -2808,10 +2815,10 @@ version = "1.4.1+1"
 # ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
-# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
+# ╠═05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
-# ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
+# ╠═52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
