@@ -151,7 +151,7 @@ Max Gain (dB): 1.78
 
 # ╔═╡ b360ad74-58b7-47b5-a8b0-437ef1119303
 md"""
-Let's use [CCDReductions.jl](https://github.com/JuliaAstro/CCDReduction.jl?tab=readme-ov-file) to take a quick glance at the fits files in this folder:
+Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#CCDReduction.fitscollection-Tuple{String}) from [CCDReductions.jl](https://github.com/JuliaAstro/CCDReduction.jl?tab=readme-ov-file) to take a quick glance at the fits files in this folder:
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
@@ -632,6 +632,8 @@ rec_gain(g)
 md"""
 ---
 ## Notebook setup 🔧
+
+Below are the packages used in this notebook. Much like an Excel spreadsheet, dependent cells are aware of each other, so package imports can be placed anywhere in the notebook. For simplicity, we have just placed everything here at the bottom.
 """
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
