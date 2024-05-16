@@ -232,11 +232,11 @@ Let's use [Plots.jl](https://github.com/JuliaPlots/Plots.jl) next to make a quic
 imgs = [load(f.path) for f in eachrow(df_fits)];
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-@gif for i in imgs
-	implot(i;
+@gif for img in imgs
+	implot(img;
 		xlabel = "X",
 		ylabel = "Y",
-		title = header(i)["DATE-OBS"],
+		title = header(img)["DATE-OBS"],
 		clims = (2550, 3050),
 	)
 end fps=2
@@ -403,7 +403,6 @@ Let's place the apertures onto our movie from earlier to double check how we did
 		title = header(img)["DATE-OBS"],
 		clims = (2550, 3050),
 	)
-
 	plot!(ap; color=:lightgreen)
 end fps=2
 
