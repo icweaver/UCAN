@@ -470,30 +470,11 @@ md"""
 	Stopped here. Will add more below, just laying out for now
 """
 
-# ╔═╡ 2d9326b5-1c46-4301-8cce-2018ebd35799
-md"""
-### Visualizing the change in brightness
-
-Would be cool to have a side-by-side movie of the image of the target star and its light curve over time
-"""
-
-# ╔═╡ 31dabb68-a8ce-46dd-be13-0ddc2db9f516
-# @gif for (i, (ap, img, t, f)) in enumerate(zip(aps, imgs, times, fluxes))
-# 	ap = first(ap)
-# 	xlims = ap.x - 5*ap.r, ap.x + 5*ap.r
-# 	ylims = ap.y - 5*ap.r, ap.y + 5*ap.r
-	
-# 	im = implot(img; xlims, ylims, clims = (2550, 3050), colorbar=false)
-# 	p1 = plot!(im, ap)
-
-# 	p2 = scatter(times[begin:i], fluxes[begin:i])
-
-# 	plot(p1, p2)
-# end fps=2
-
 # ╔═╡ 934b1888-0e5c-4dcb-a637-5c2f813161d4
 md"""
 ### Correcting systematics
+
+Although this was a fairly bright target with a relatively large [signal-to-noise ratio](http://spiff.rit.edu/classes/ast613/lectures/signal/signal_illus.html), its resulting light curve still contains systematics that need to be addressed.
 """
 
 # ╔═╡ 469f4c4a-4f4b-4a48-9811-4fb123c69ef7
@@ -2835,9 +2816,7 @@ version = "1.4.1+1"
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
-# ╟─276ff16f-95f1-44eb-971d-db65e8821e59
-# ╟─2d9326b5-1c46-4301-8cce-2018ebd35799
-# ╠═31dabb68-a8ce-46dd-be13-0ddc2db9f516
+# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─e822d9e1-f511-4284-b303-4c5f842c3e13
