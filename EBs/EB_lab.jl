@@ -198,8 +198,11 @@ md"""
 Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a look at the image data for one of these files:
 """
 
+# ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
+dark = load("data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
+
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = load(first(df_fits).path);
+img = load(first(df_fits).path) - dark;
 
 # ╔═╡ dbe812e2-a795-4caa-842d-07da5eabcade
 reverse(img)
@@ -231,6 +234,9 @@ Let's use [Plots.jl](https://github.com/JuliaPlots/Plots.jl) next to make a quic
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
 imgs = [load(f.path) for f in eachrow(df_fits)];
 
+# ╔═╡ c2206dbf-02fa-4ebf-8d0f-126fec96cc5c
+header(imgs[1])
+
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for img in imgs
 	implot(img;
@@ -258,10 +264,10 @@ Now that we have some science frames to work with, the next step is to begin cou
 
 # ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
 msg_background_est = md"""
-For more on the specific estimation procedures, we highlight this section from the [Photometry.jl documentation](https://juliaastro.org/dev/modules/AstroImages/guide/photometry/#Background-Estimation):
+For more on the specific estimation procedures, we highlight this modified section from the [Photometry.jl documentation](https://juliaastro.org/dev/modules/AstroImages/guide/photometry/#Background-Estimation):
 
 
-> Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely separate the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo. Let's show an example Now let's try and estimate the background using estimate_background. First, we'll si gma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes, in this case of size (50, 50). Within each box, the given statistical estimators get the background value and RMS. By default, we use SourceExtractorBackground and StdRMS. This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via ZoomInterpolator. The end result is a smooth estimate of the spatially varying background and background RMS.
+> Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely separate the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo. Let's show an example Now let's try and estimate the background using estimate_background. First, we'll sigma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes. Within each box, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) and [`StdRMS`](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.StdRMS). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via ZoomInterpolator. The end result is a smooth estimate of the spatially varying background and background RMS.
 """;
 
 # ╔═╡ e20e02e7-f744-4694-9499-1866ebd617fc
@@ -2779,6 +2785,8 @@ version = "1.4.1+1"
 # ╟─cdf14fe8-6b27-44eb-b789-6cf072f4d184
 # ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
+# ╠═c2206dbf-02fa-4ebf-8d0f-126fec96cc5c
+# ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╠═dbe812e2-a795-4caa-842d-07da5eabcade
 # ╟─74197e45-3b80-44ad-b940-f2544f2f9b54
 # ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
