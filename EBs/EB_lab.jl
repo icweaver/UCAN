@@ -198,11 +198,17 @@ md"""
 Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a look at the image data for one of these files:
 """
 
+# ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
+img = load(first(df_fits).path)
+
+# ╔═╡ 3082d293-b5cf-4670-9ba8-abc64314d4a3
+md"""
+!!! warning "TODO"
+	Adding dark frame analysis section
+"""
+
 # ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 dark = load("data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
-
-# ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = load(first(df_fits).path) - dark;
 
 # ╔═╡ dbe812e2-a795-4caa-842d-07da5eabcade
 reverse(img)
@@ -295,8 +301,8 @@ $(msg(msg_background_est))
 box_size = gcd(size(img)...)
 
 # ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
-# Step 1
-clipped = sigma_clip(img, 1, fill=NaN)
+# # Step 1
+clipped = sigma_clip(img - dark, 1; fill=NaN)
 
 # ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # Steps 2-4: Estimated background, and its uncertainty
@@ -308,7 +314,7 @@ Here we have decided to use a mesh (box) size equal to the greatest common denom
 """
 
 # ╔═╡ 72f5872a-dade-4655-a3cb-ec5093ba96e6
-subt = img - bkg_f
+subt = img - bkg_f - dark
 
 # ╔═╡ 5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 md"""
@@ -322,7 +328,7 @@ By default, each box is 3 x 3  pixels. If the source in the center of this odd-s
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 # Returns list of extracted sources, sorted from strongest to weakest
 # by default
-sources_all = extract_sources(PeakMesh(), subt, bkg_f)
+sources_all = extract_sources(PeakMesh(box_size=25), subt, bkg_f)
 
 # ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
 pixel_left, pixel_right = 700, 1_200;
@@ -339,8 +345,12 @@ sources = let
 		pixel_left ≤ source.y ≤ pixel_right
 	end
 
+	# Break any ties
 	filter(x -> x.value == maximum(candidates.value), candidates)
 end
+
+# ╔═╡ a4257554-c6ba-4fec-af20-7623932b7a09
+# sources = sources_all;
 
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
@@ -373,11 +383,11 @@ Now that we have the building blocks for identifying our source target in place,
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 function get_aps(img, pixel_left, pixel_right, aperture_size)
 	# Clip image
-	clipped = sigma_clip(img, 1, fill=NaN)
+	clipped = sigma_clip(img - dark, 1, fill=NaN)
 	
 	# Subtract background
 	bkg_f, bkg_rms_f = estimate_background(clipped, aperture_size)
-	subt = img - bkg_f
+	subt = img - bkg_f - dark
 	
 	# Extract target source
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
@@ -386,6 +396,7 @@ function get_aps(img, pixel_left, pixel_right, aperture_size)
 		pixel_left ≤ source.y ≤ pixel_right
 	end
 	sources = filter(x -> x.value == maximum(candidates.value), candidates)
+	# sources = sources_all
 	
 	# Place aperture
 	aps = CircularAperture.(sources.y, sources.x, aperture_size);
@@ -491,6 +502,9 @@ md"""
 # ╔═╡ e822d9e1-f511-4284-b303-4c5f842c3e13
 md"""
 #### Dark frames
+
+!!! warning "TODO"
+	Adding to analysis section
 """
 
 # ╔═╡ c5286692-2610-414d-97b7-ffab0bd485a7
@@ -2786,6 +2800,7 @@ version = "1.4.1+1"
 # ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
 # ╠═c2206dbf-02fa-4ebf-8d0f-126fec96cc5c
+# ╟─3082d293-b5cf-4670-9ba8-abc64314d4a3
 # ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╠═dbe812e2-a795-4caa-842d-07da5eabcade
 # ╟─74197e45-3b80-44ad-b940-f2544f2f9b54
@@ -2807,10 +2822,11 @@ version = "1.4.1+1"
 # ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
-# ╠═05b8c987-0b0c-4a18-9d07-fc9faf1abda0
+# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
-# ╠═52c137a0-9ebe-41f9-bae3-35bc0e7264da
+# ╠═a4257554-c6ba-4fec-af20-7623932b7a09
+# ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
