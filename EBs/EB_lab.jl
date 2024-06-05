@@ -20,7 +20,6 @@ begin
 	import PlutoPlotly
 	using Photometry
 	AstroImages.set_cmap!(:cividis)
-	AstroImages.set_clims!((2550, 3050))
 end;
 
 # ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
@@ -265,7 +264,14 @@ plot(
 	implot(img; title="raw image", clims=(2550, 3050)),
 	implot(img - dark; title="dark subtracted", clims=(2550, 3050));
 	layout=(1, 2),
+	size = (600, 200),
+	aspect_ratio = 1,
 )
+
+# ╔═╡ 6a648c52-4682-44d7-9634-eaa663e665fe
+md"""
+Note that we fixed the colorbar scale to make the comparison more accurate. For the rest of this analysis, we will rescale the limits so that our target star is more easily visible.
+"""
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
@@ -522,7 +528,7 @@ md"""
 
 # ╔═╡ 934b1888-0e5c-4dcb-a637-5c2f813161d4
 md"""
-### Correcting systematics
+### Other systematics
 
 Although this was a fairly bright target with a relatively large [signal-to-noise ratio](http://spiff.rit.edu/classes/ast613/lectures/signal/signal_illus.html), its resulting light curve still contains systematics that need to be addressed.
 """
@@ -530,14 +536,6 @@ Although this was a fairly bright target with a relatively large [signal-to-nois
 # ╔═╡ 469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 md"""
 #### Comparison stars
-"""
-
-# ╔═╡ e822d9e1-f511-4284-b303-4c5f842c3e13
-md"""
-#### Dark frames
-
-!!! warning "TODO"
-	Adding to analysis section
 """
 
 # ╔═╡ c5286692-2610-414d-97b7-ffab0bd485a7
@@ -2837,10 +2835,11 @@ version = "1.4.1+1"
 # ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 # ╟─b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 # ╟─2b32512b-63df-4a48-8e72-bf20aa75a845
-# ╠═06dae98b-b134-4893-99d7-d1d67dade7cd
+# ╟─06dae98b-b134-4893-99d7-d1d67dade7cd
 # ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═9b0f6aac-d3c1-4b4e-8cfc-956891af1999
+# ╟─6a648c52-4682-44d7-9634-eaa663e665fe
 # ╠═e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
@@ -2876,7 +2875,6 @@ version = "1.4.1+1"
 # ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
-# ╟─e822d9e1-f511-4284-b303-4c5f842c3e13
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
