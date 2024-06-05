@@ -370,7 +370,7 @@ By default, each box is 3 x 3  pixels. If the source in the center of this odd-s
 # Returns list of extracted sources, sorted from strongest to weakest
 # by default
 sources_all = let
-	subt = img_test - dark
+	subt = img_test - img_dark
 	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
 end
 
@@ -440,7 +440,7 @@ end
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
 aps = [
 	get_aps(img, pixel_left, pixel_right, 24)
-	for img in imgs
+	for img in imgs_sci_dark
 ];
 
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
@@ -449,7 +449,7 @@ Let's place the apertures onto our movie from earlier to double check how we did
 """
 
 # ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-@gif for (ap, img) in zip(aps, imgs)
+@gif for (ap, img) in zip(aps, imgs_sci_dark)
 	implot(img;
 		xlabel = "X",
 		ylabel = "Y",
@@ -469,7 +469,7 @@ begin
 	times = String[]
 	fluxes = Float64[]
 	
-	for (ap, img) in zip(aps, imgs)
+	for (ap, img) in zip(aps, imgs_sci_dark)
 		phot = first(photometry(ap, img))
 		push!(times, header(img)["DATE-OBS"])
 		push!(fluxes, phot.aperture_sum)
@@ -684,7 +684,7 @@ end fps=2
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
-	implot(img_test; title=header(img)["DATE-OBS"], clims)
+	implot(img_test; title=header(img_test)["DATE-OBS"], clims)
 	plot!(ap; color=:lightgreen)
 end
 
