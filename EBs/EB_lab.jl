@@ -270,16 +270,25 @@ plot(
 
 # ╔═╡ 6a648c52-4682-44d7-9634-eaa663e665fe
 md"""
-Note that we fixed the colorbar scale to make the comparison more accurate. For the rest of this analysis, we will rescale the limits so that our target star is more easily visible.
+!!! note
+
+	We fixed the colorbar scale to make the comparison more accurate. For the rest of this analysis, we will rescale the limits so that our target star is more easily visible.
+
+Now that we have a scheme for correcting our images, we turn next to the matter of field rotation.
+"""
+
+# ╔═╡ 6773c197-941e-4de0-b017-ec036fb851bb
+md"""
+### Field rotation
 """
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
-Let's use [Plots.jl](https://github.com/JuliaPlots/Plots.jl) next to make a quick gif of all 34 frames (note for the rest of this notebook that we will be using the default image orientation in the plotting software):
+Before defining what this phenomenon is, let's first see it in action. Here is a quick gif of all 34 frames of our science images shown in chronological order (note for the rest of this notebook that we will be using the default image orientation in the plotting software):
 """
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
-imgs = [load(f.path) for f in eachrow(df_fits)];
+imgs = [load(f.path) - dark for f in eachrow(df_fits)];
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for img in imgs
@@ -2840,7 +2849,8 @@ version = "1.4.1+1"
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═9b0f6aac-d3c1-4b4e-8cfc-956891af1999
 # ╟─6a648c52-4682-44d7-9634-eaa663e665fe
-# ╠═e34ee85f-bd37-421d-aa3b-499259554083
+# ╟─6773c197-941e-4de0-b017-ec036fb851bb
+# ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
