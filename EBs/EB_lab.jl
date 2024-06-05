@@ -291,16 +291,6 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 # Subtract master dark off of each frame
 imgs = [load(f.path) - dark for f in eachrow(df_fits)];
 
-# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-@gif for img in imgs
-	implot(img;
-		xlabel = "X",
-		ylabel = "Y",
-		title = header(img)["DATE-OBS"],
-		clims = (100, 700),
-	)
-end fps=2
-
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
@@ -344,18 +334,6 @@ To broadly summarize this estimation process, we:
 $(msg(msg_background_est))
 """
 
-# ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
-# The size of our mesh in pixels (a square with side length = `box_size`)
-box_size = gcd(size(img)...)
-
-# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
-# # Step 1
-clipped = sigma_clip(img, 1; fill=NaN)
-
-# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# Steps 2-4: Estimated background, and its uncertainty
-bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
-
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
 md"""
 Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
@@ -370,14 +348,6 @@ Now that we have an estimate for the background flux in our image, we can pass b
 By default, each box is 3 x 3  pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the estimated background as our `error` and the default `nsigma=3.0` to define our source criteria.
 """
 
-# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
-# Returns list of extracted sources, sorted from strongest to weakest
-# by default
-sources_all = let
-	subt = img - bkg_f
-	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
-end
-
 # ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
 pixel_left, pixel_right = 700, 1_200;
 
@@ -385,6 +355,34 @@ pixel_left, pixel_right = 700, 1_200;
 md"""
 But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
 """
+
+# ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
+md"""
+Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
+"""
+
+# ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
+img_test = imgs[20]
+
+# ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
+# The size of our mesh in pixels (a square with side length = `box_size`)
+box_size = gcd(size(img_test)...)
+
+# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
+# # Step 1
+clipped = sigma_clip(img_test, 1; fill=NaN)
+
+# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
+# Steps 2-4: Estimated background, and its uncertainty
+bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
+
+# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
+# Returns list of extracted sources, sorted from strongest to weakest
+# by default
+sources_all = let
+	subt = img_test - bkg_f
+	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
+end
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
 sources = let
@@ -397,21 +395,10 @@ sources = let
 	filter(x -> x.value == maximum(candidates.value), candidates)
 end
 
-# ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
-md"""
-Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
-"""
-
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # Place an aperture with radius 24 px at the source extracted location
 # For visualization purposes
 ap = CircularAperture.(sources.y, sources.x, 24);
-
-# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
-let
-	implot(first(imgs); title=header(img)["DATE-OBS"], colorbar=true)
-	plot!(ap; color=:lightgreen)
-end
 
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
@@ -464,7 +451,7 @@ Let's place the apertures onto our movie from earlier to double check how we did
 		xlabel = "X",
 		ylabel = "Y",
 		title = header(img)["DATE-OBS"],
-		clims = (2550, 3050),
+		clims = (100, 700),
 	)
 	plot!(ap; color=:lightgreen)
 end fps=2
@@ -678,6 +665,25 @@ md"""
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents(; depth=4)
+
+# ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
+const clims = (150, 700)
+
+# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
+@gif for img in imgs
+	implot(img;
+		xlabel = "X",
+		ylabel = "Y",
+		title = header(img)["DATE-OBS"],
+		clims,
+	)
+end fps=2
+
+# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+let
+	implot(img_test; title=header(img)["DATE-OBS"], clims)
+	plot!(ap; color=:lightgreen)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2858,7 +2864,7 @@ version = "1.4.1+1"
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# ╠═fbc0be60-2a3b-4938-b262-7df938e59333
+# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
@@ -2867,6 +2873,7 @@ version = "1.4.1+1"
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╠═667116b0-2b87-46ca-80aa-51361e8cde27
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
@@ -2898,6 +2905,7 @@ version = "1.4.1+1"
 # ╠═8c5b8e36-11c4-45fb-94e9-d79e1c2df346
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
+# ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
