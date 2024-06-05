@@ -156,7 +156,7 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
-df_fits = fitscollection("./data/TRANSIT"; abspath=false)
+df_fits = fitscollection("./data/ut20240325"; abspath=false)
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
@@ -196,38 +196,51 @@ Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a 
 """
 
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = load(first(df_fits).path)
-
-# ╔═╡ 3082d293-b5cf-4670-9ba8-abc64314d4a3
-md"""
-!!! warning "TODO"
-	Adding dark frame analysis section
-"""
-
-# ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
-dark = load("data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
+img = load(first(df_fits).path); # The semicolon hides automatic output
 
 # ╔═╡ dbe812e2-a795-4caa-842d-07da5eabcade
 reverse(img)
+
+# ╔═╡ 9d2b2434-7bd9-42c4-b986-34969101b285
+md"""
+and compare it to our corresponding [finder chart](https://astro.swarthmore.edu/transits/finding_charts.cgi) for our target:
+"""
 
 # ╔═╡ 74197e45-3b80-44ad-b940-f2544f2f9b54
 Resource("https://github.com/icweaver/UCAN/blob/main/EBs/data/finder_WUMa.jpg?raw=true")
 
 # ╔═╡ a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 md"""
-Ok, we have some stars! We've also reversed the image to make comparing it to its [finder chart](https://astro.swarthmore.edu/transits/finding_charts.cgi) a bit easier. Here is the associated header information for this file:
+!!! note "Why did we reverse the image?"
+	For easier comparison, we flipped our science frame image over the vertical axis so that it would be in the same orientation as our finder chart.
+
+We have a match! Here is the associated header information for our science frame:
 """
 
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
 header(img)
 
-# ╔═╡ 5b8d79a0-5b92-4e88-b595-2105989521aa
-img_size, img_eltype = size(img), eltype(img);
-
 # ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 md"""
-It looks like this image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel stored as a $(img_eltype) to reduce memory useage.
+It looks like this image is $(size(img, 1)) x $(size(img, 2)) pixels, with the ADU counts for each pixel stored as a $(eltype(img)) to reduce memory useage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
 """
+
+# ╔═╡ b7d3fb2b-c113-413c-b340-9dfb0a9b78af
+md"""
+### Bias, Darks, and Flats
+
+A critical step in analyzing astronomical data is accounting for sources of noise that may impact our final image. This process is known as calibration, and its purpose is to increase the signal-to-noise ratio of our science images. Here is a nice summary modified from [Practical Astrophotography](https://practicalastrophotography.com/a-brief-guide-to-calibration-frames/) of three of the main sources of noise that we typically try to calibrate for:
+
+!!! tip ""
+	**Bias Frames:** Your camera inherently has a base level of read-out noise as it reads the values of each pixel of the sensor, called bias. When averaged out, basically it’s an inherent gradient to the sensor. Bias Frames are meant to capture this so it can be removed.
+
+	**Dark Frames:** When taking a long exposure, the chip will introduce "thermal" noise. Its level is magnified by three things – temperature, exposure time, and ISO. Dark frames are used to subtract this sensor noise from your image and mitigate "hot or cold" pixels. (Some modern sensors automatically calculate dark levels and don't need dark frames). Dark Frames also will calibrate the chip so all pixels give the same value when not exposed to light.
+
+	**Flat Frames:** I’ve seen people say flats help with light pollution. NOT TRUE AT ALL. Flat frames allow you to calculate the correction factor for each pixel so they all give the same value when exposed to the same quantity of light for a given optical path. Things like dust motes, lens vignetting consistently reduce the light to a given pixel, flat frames allow you to mathematically remove them to give a smooth evenly illuminated image.
+"""
+
+# ╔═╡ 2b32512b-63df-4a48-8e72-bf20aa75a845
+
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
@@ -236,9 +249,6 @@ Let's use [Plots.jl](https://github.com/JuliaPlots/Plots.jl) next to make a quic
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
 imgs = [load(f.path) for f in eachrow(df_fits)];
-
-# ╔═╡ c2206dbf-02fa-4ebf-8d0f-126fec96cc5c
-header(imgs[1])
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for img in imgs
@@ -254,6 +264,9 @@ end fps=2
 md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
 """
+
+# ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
+dark = load("data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
 
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
 md"""
@@ -400,7 +413,8 @@ function get_aps(img, pixel_left, pixel_right, aperture_size)
 end
 
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
-aps = [get_aps(img, pixel_left, pixel_right, 24)
+aps = [
+	get_aps(img, pixel_left, pixel_right, 24)
 	for img in imgs
 ];
 
@@ -669,7 +683,7 @@ PlutoUI = "~0.7.59"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.3"
+julia_version = "1.10.4"
 manifest_format = "2.0"
 project_hash = "689e0b3d16db8a80f58dc8215b88e7c7eb445218"
 
@@ -2793,19 +2807,19 @@ version = "1.4.1+1"
 # ╟─cdf14fe8-6b27-44eb-b789-6cf072f4d184
 # ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-# ╠═c2206dbf-02fa-4ebf-8d0f-126fec96cc5c
-# ╟─3082d293-b5cf-4670-9ba8-abc64314d4a3
-# ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╠═dbe812e2-a795-4caa-842d-07da5eabcade
+# ╟─9d2b2434-7bd9-42c4-b986-34969101b285
 # ╟─74197e45-3b80-44ad-b940-f2544f2f9b54
 # ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
 # ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
-# ╠═5b8d79a0-5b92-4e88-b595-2105989521aa
-# ╟─e34ee85f-bd37-421d-aa3b-499259554083
+# ╟─b7d3fb2b-c113-413c-b340-9dfb0a9b78af
+# ╠═2b32512b-63df-4a48-8e72-bf20aa75a845
+# ╠═e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
+# ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
 # ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
@@ -2834,7 +2848,7 @@ version = "1.4.1+1"
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
 # ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
-# ╠═276ff16f-95f1-44eb-971d-db65e8821e59
+# ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─e822d9e1-f511-4284-b303-4c5f842c3e13
