@@ -291,6 +291,9 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 # Subtract master dark off of each frame
 imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 
+# ╔═╡ 48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
+imgs_sci_dark = [img .- img_dark for img in imgs_sci];
+
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
@@ -670,7 +673,7 @@ TableOfContents(; depth=4)
 const clims = (150, 700)
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-@gif for img in imgs_sci
+@gif for img in imgs_sci_dark
 	implot(img;
 		xlabel = "X",
 		ylabel = "Y",
@@ -2853,6 +2856,7 @@ version = "1.4.1+1"
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═9b0f6aac-d3c1-4b4e-8cfc-956891af1999
 # ╟─6a648c52-4682-44d7-9634-eaa663e665fe
+# ╠═48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
