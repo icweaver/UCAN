@@ -247,7 +247,20 @@ In practice, the [sensor calibration](https://help.unistellar.com/hc/en-us/artic
 # ╔═╡ 06dae98b-b134-4893-99d7-d1d67dade7cd
 md"""
 ### Dark frames
+
+The sensor calibration procedure automatically returns a median combined master frame of the series of Dark Frames taken. This is useful for averaging over hot pixels that may appear in our image over time. Let's take a look at this averaged image:
 """
+
+# ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
+dark = load("data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
+
+# ╔═╡ edf446f0-3643-445a-a4b3-b6fa945ded9a
+md"""
+Here we can see the thermal noise from our sensor and underlying gradient encoded in the bias. We can now subtract it from each science frame to have a final calibrated image. Here is a before and after of an example science frame in our series:
+"""
+
+# ╔═╡ 9b0f6aac-d3c1-4b4e-8cfc-956891af1999
+implot([plot(img), plot(img - dark)])
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
@@ -271,9 +284,6 @@ end fps=2
 md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
 """
-
-# ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
-dark = load("data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
 
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
 md"""
@@ -2823,11 +2833,13 @@ version = "1.4.1+1"
 # ╟─b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 # ╟─2b32512b-63df-4a48-8e72-bf20aa75a845
 # ╠═06dae98b-b134-4893-99d7-d1d67dade7cd
+# ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
+# ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
+# ╠═9b0f6aac-d3c1-4b4e-8cfc-956891af1999
 # ╠═e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
-# ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
 # ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
