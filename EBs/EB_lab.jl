@@ -156,15 +156,15 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
-df_fits = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
+df_sci = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
-We see that we have $(nrow(df_fits)) fits files taken over the following period in UTC:
+We see that we have $(nrow(df_sci)) fits files taken over the following period in UTC:
 """
 
 # ╔═╡ 335a1a12-379a-4e0d-a3de-788369ae3818
-df_fits[:, "DATE-OBS"] |> extrema
+df_sci[:, "DATE-OBS"] |> extrema
 
 # ╔═╡ a04886d9-471a-40ec-9f0b-65ffe89932cf
 md"""
@@ -172,7 +172,7 @@ and with the following header fields:
 """
 
 # ╔═╡ 8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
-df_fits |> names |> print
+df_sci |> names |> print
 
 # ╔═╡ cdf14fe8-6b27-44eb-b789-6cf072f4d184
 md"""
@@ -196,10 +196,10 @@ Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a 
 """
 
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
-img = load(first(df_fits).path); # The semicolon hides automatic output
+img_sci = load(first(df_sci).path); # The semicolon hides automatic output
 
 # ╔═╡ dbe812e2-a795-4caa-842d-07da5eabcade
-reverse(img)
+reverse(img_sci)
 
 # ╔═╡ 9d2b2434-7bd9-42c4-b986-34969101b285
 md"""
@@ -218,11 +218,11 @@ We have a match! Here is the associated header information for our science frame
 """
 
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
-header(img)
+header(img_sci)
 
 # ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 md"""
-It looks like this image is $(size(img, 1)) x $(size(img, 2)) pixels, with the ADU counts for each pixel stored as a $(eltype(img)) to reduce memory useage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
+It looks like this image is $(size(img_sci, 1)) x $(size(img_sci, 2)) pixels, with the ADU counts for each pixel stored as a $(eltype(img_sci)) to reduce memory useage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
 """
 
 # ╔═╡ b7d3fb2b-c113-413c-b340-9dfb0a9b78af
@@ -252,7 +252,7 @@ The sensor calibration procedure automatically returns a median combined master 
 """
 
 # ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
-dark = load("data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
+img_dark = load("data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
 
 # ╔═╡ edf446f0-3643-445a-a4b3-b6fa945ded9a
 md"""
@@ -261,8 +261,8 @@ Here we can see the thermal noise from our sensor and underlying gradient encode
 
 # ╔═╡ 9b0f6aac-d3c1-4b4e-8cfc-956891af1999
 plot(
-	implot(img; title="raw image", clims=(2550, 3050)),
-	implot(img - dark; title="dark subtracted", clims=(2550, 3050));
+	implot(img_sci; title="science image", clims=(2550, 3050)),
+	implot(img_sci - img_dark; title="dark subtracted", clims=(2550, 3050));
 	layout=(1, 2),
 	size = (600, 200),
 	aspect_ratio = 1,
@@ -289,7 +289,7 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
 # Subtract master dark off of each frame
-imgs = [load(f.path) - dark for f in eachrow(df_fits)];
+imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
@@ -362,7 +362,7 @@ Ok, it looks like there is only one candidate left! Let's place an aperture `ap`
 """
 
 # ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
-img_test = imgs[20]
+img_test = imgs_sci[30]
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 # The size of our mesh in pixels (a square with side length = `box_size`)
@@ -380,7 +380,7 @@ bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
 # Returns list of extracted sources, sorted from strongest to weakest
 # by default
 sources_all = let
-	subt = img_test - bkg_f
+	subt = img_test - dark
 	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
 end
 
@@ -670,7 +670,7 @@ TableOfContents(; depth=4)
 const clims = (150, 700)
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-@gif for img in imgs
+@gif for img in imgs_sci
 	implot(img;
 		xlabel = "X",
 		ylabel = "Y",
