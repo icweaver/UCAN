@@ -240,7 +240,9 @@ A critical step in analyzing astronomical data is accounting for sources of nois
 """
 
 # ╔═╡ 2b32512b-63df-4a48-8e72-bf20aa75a845
-
+md"""
+In practice, the [sensor calibration](https://help.unistellar.com/hc/en-us/articles/360011333600-Sensor-calibration-Dark-Frame-How-and-Why) step that is required at the end of science observations are set to the same gain and exposure time as your science images. By doing this, the Bias Frame is automatically built into the Dark Frames collected during this step, so no separate Bias Frame acquisition is needed.
+"""
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
