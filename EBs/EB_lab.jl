@@ -288,6 +288,7 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 """
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
+# Subtract master dark off of each frame
 imgs = [load(f.path) - dark for f in eachrow(df_fits)];
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
@@ -296,7 +297,7 @@ imgs = [load(f.path) - dark for f in eachrow(df_fits)];
 		xlabel = "X",
 		ylabel = "Y",
 		title = header(img)["DATE-OBS"],
-		clims = (2550, 3050),
+		clims = (100, 700),
 	)
 end fps=2
 
@@ -349,7 +350,7 @@ box_size = gcd(size(img)...)
 
 # ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
 # # Step 1
-clipped = sigma_clip(img - dark, 1; fill=NaN)
+clipped = sigma_clip(img, 1; fill=NaN)
 
 # ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # Steps 2-4: Estimated background, and its uncertainty
@@ -359,9 +360,6 @@ bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
 md"""
 Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
 """
-
-# ╔═╡ 72f5872a-dade-4655-a3cb-ec5093ba96e6
-subt = img - bkg_f - dark
 
 # ╔═╡ 5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 md"""
@@ -375,7 +373,10 @@ By default, each box is 3 x 3  pixels. If the source in the center of this odd-s
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 # Returns list of extracted sources, sorted from strongest to weakest
 # by default
-sources_all = extract_sources(PeakMesh(box_size=25), subt, bkg_f)
+sources_all = let
+	subt = img - bkg_f
+	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
+end
 
 # ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
 pixel_left, pixel_right = 700, 1_200;
@@ -396,9 +397,6 @@ sources = let
 	filter(x -> x.value == maximum(candidates.value), candidates)
 end
 
-# ╔═╡ a4257554-c6ba-4fec-af20-7623932b7a09
-# sources = sources_all;
-
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
 Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
@@ -411,7 +409,7 @@ ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
-	implot(img; title=header(img)["DATE-OBS"], colorbar=false)
+	implot(first(imgs); title=header(img)["DATE-OBS"], colorbar=true)
 	plot!(ap; color=:lightgreen)
 end
 
@@ -430,11 +428,11 @@ Now that we have the building blocks for identifying our source target in place,
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 function get_aps(img, pixel_left, pixel_right, aperture_size)
 	# Clip image
-	clipped = sigma_clip(img - dark, 1, fill=NaN)
+	clipped = sigma_clip(img, 1, fill=NaN)
 	
 	# Subtract background
 	bkg_f, bkg_rms_f = estimate_background(clipped, aperture_size)
-	subt = img - bkg_f - dark
+	subt = img - bkg_f
 	
 	# Extract target source
 	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
@@ -2860,14 +2858,12 @@ version = "1.4.1+1"
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
-# ╠═72f5872a-dade-4655-a3cb-ec5093ba96e6
+# ╠═fbc0be60-2a3b-4938-b262-7df938e59333
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
-# ╠═a4257554-c6ba-4fec-af20-7623932b7a09
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
