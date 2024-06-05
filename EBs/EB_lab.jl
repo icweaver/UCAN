@@ -337,6 +337,21 @@ To broadly summarize this estimation process, we:
 $(msg(msg_background_est))
 """
 
+# ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
+img_test = rand(imgs_sci_dark)
+
+# ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
+# The size of our mesh in pixels (a square with side length = `box_size`)
+box_size = gcd(size(img_test)...)
+
+# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
+# # Step 1
+clipped = sigma_clip(img_test, 1; fill=NaN)
+
+# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
+# Steps 2-4: Estimated background, and its uncertainty
+bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
+
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
 md"""
 Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
@@ -351,34 +366,6 @@ Now that we have an estimate for the background flux in our image, we can pass b
 By default, each box is 3 x 3  pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the estimated background as our `error` and the default `nsigma=3.0` to define our source criteria.
 """
 
-# ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
-pixel_left, pixel_right = 700, 1_200;
-
-# ╔═╡ 05b8c987-0b0c-4a18-9d07-fc9faf1abda0
-md"""
-But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
-"""
-
-# ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
-md"""
-Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
-"""
-
-# ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
-img_test = imgs_sci[30]
-
-# ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
-# The size of our mesh in pixels (a square with side length = `box_size`)
-box_size = gcd(size(img_test)...)
-
-# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
-# # Step 1
-clipped = sigma_clip(img_test, 1; fill=NaN)
-
-# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# Steps 2-4: Estimated background, and its uncertainty
-bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
-
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 # Returns list of extracted sources, sorted from strongest to weakest
 # by default
@@ -386,6 +373,14 @@ sources_all = let
 	subt = img_test - dark
 	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
 end
+
+# ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
+pixel_left, pixel_right = 700, 1_200;
+
+# ╔═╡ 05b8c987-0b0c-4a18-9d07-fc9faf1abda0
+md"""
+But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
+"""
 
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
 sources = let
@@ -397,6 +392,11 @@ sources = let
 	# Break any ties
 	filter(x -> x.value == maximum(candidates.value), candidates)
 end
+
+# ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
+md"""
+Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
+"""
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # Place an aperture with radius 24 px at the source extracted location
@@ -2865,6 +2865,7 @@ version = "1.4.1+1"
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
 # ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
+# ╠═667116b0-2b87-46ca-80aa-51361e8cde27
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
@@ -2877,7 +2878,6 @@ version = "1.4.1+1"
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
-# ╠═667116b0-2b87-46ca-80aa-51361e8cde27
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
