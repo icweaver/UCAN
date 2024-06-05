@@ -20,6 +20,7 @@ begin
 	import PlutoPlotly
 	using Photometry
 	AstroImages.set_cmap!(:cividis)
+	AstroImages.set_clims!((2550, 3050))
 end;
 
 # ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
@@ -156,7 +157,7 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
-df_fits = fitscollection("./data/ut20240325"; abspath=false)
+df_fits = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
@@ -168,7 +169,7 @@ df_fits[:, "DATE-OBS"] |> extrema
 
 # ╔═╡ a04886d9-471a-40ec-9f0b-65ffe89932cf
 md"""
-and with the following header keys:
+and with the following header fields:
 """
 
 # ╔═╡ 8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
@@ -252,7 +253,7 @@ The sensor calibration procedure automatically returns a median combined master 
 """
 
 # ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
-dark = load("data/mgcc3f/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
+dark = load("data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
 
 # ╔═╡ edf446f0-3643-445a-a4b3-b6fa945ded9a
 md"""
@@ -260,7 +261,11 @@ Here we can see the thermal noise from our sensor and underlying gradient encode
 """
 
 # ╔═╡ 9b0f6aac-d3c1-4b4e-8cfc-956891af1999
-implot([plot(img), plot(img - dark)])
+plot(
+	implot(img; title="raw image", clims=(2550, 3050)),
+	implot(img - dark; title="dark subtracted", clims=(2550, 3050));
+	layout=(1, 2),
+)
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
