@@ -227,7 +227,7 @@ It looks like this image is $(size(img, 1)) x $(size(img, 2)) pixels, with the A
 
 # ╔═╡ b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 md"""
-### Bias, Darks, and Flats
+### Image calibration
 
 A critical step in analyzing astronomical data is accounting for sources of noise that may impact our final image. This process is known as calibration, and its purpose is to increase the signal-to-noise ratio of our science images. Here is a nice summary modified from [Practical Astrophotography](https://practicalastrophotography.com/a-brief-guide-to-calibration-frames/) of three of the main sources of noise that we typically try to calibrate for:
 
@@ -241,7 +241,12 @@ A critical step in analyzing astronomical data is accounting for sources of nois
 
 # ╔═╡ 2b32512b-63df-4a48-8e72-bf20aa75a845
 md"""
-In practice, the [sensor calibration](https://help.unistellar.com/hc/en-us/articles/360011333600-Sensor-calibration-Dark-Frame-How-and-Why) step that is required at the end of science observations are set to the same gain and exposure time as your science images. By doing this, the Bias Frame is automatically built into the Dark Frames collected during this step, so no separate Bias Frame acquisition is needed.
+In practice, the [sensor calibration](https://help.unistellar.com/hc/en-us/articles/360011333600-Sensor-calibration-Dark-Frame-How-and-Why) step that is required at the end of science observations are set to the same gain and exposure time as your science images. By doing this, the Bias Frame is automatically built into the Dark Frames collected during this step, so no separate bias acquisition is needed. Different flat fielding techniques are being examined by our team, but in general this has not been oberserved to be a significant source of noise in science mode observations. For the rest of this calibration section, we will just be focusing on the Dark Frame calibration.
+"""
+
+# ╔═╡ 06dae98b-b134-4893-99d7-d1d67dade7cd
+md"""
+### Dark frames
 """
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
@@ -2816,7 +2821,8 @@ version = "1.4.1+1"
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
 # ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 # ╟─b7d3fb2b-c113-413c-b340-9dfb0a9b78af
-# ╠═2b32512b-63df-4a48-8e72-bf20aa75a845
+# ╟─2b32512b-63df-4a48-8e72-bf20aa75a845
+# ╠═06dae98b-b134-4893-99d7-d1d67dade7cd
 # ╠═e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
