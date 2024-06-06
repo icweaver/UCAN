@@ -582,26 +582,6 @@ function get_url(s)
 	Markdown.parse("""[link]($(url))""")
 end
 
-# ╔═╡ 47ae7d0b-748b-4379-a31d-61604e545b0b
-cols = [
-	:star_name,
-	:period,
-	:ra,
-	:dec,
-	:min_mag,
-	# :min_mag_band,
-	:V_mag,
-	:max_mag,
-	# :max_mag_band,
-	:var_type,
-	# :min_mag,
-	# :max_mag,
-	:ephem,
-];
-
-# ╔═╡ 094ad9c0-8f21-463c-a011-71477bf90ec6
-ff(x) = x
-
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 df_selected = @chain df begin
 	dropmissing
@@ -620,7 +600,21 @@ df_selected = @chain df begin
 		:dec = to_dms(:dec)
 	end
 
-	select(:ra, :dec, :period)
+	@select begin
+		:star_name
+		:period
+		:ra
+		:dec
+		:min_mag
+		# :min_mag_band
+		:max_mag
+		:V_mag
+		# :max_mag_band
+		# :var_type
+		# :min_mag
+		# :max_mag
+		:ephem
+	end
 
 	sort(:period)
 end;
@@ -628,12 +622,11 @@ end;
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 DataFrames.PrettyTables.pretty_table(HTML, df_selected;
 	maximum_columns_width = "max-width",
-	# show_subheader = false,
-	header = [:star_name],
+	header = (
+		names(df_selected),
+		["", "Days", "J2000.0", "J2000.0", "", "", "", ""]
+	),
 )
-
-# ╔═╡ e2b90860-8dbb-417f-9ec4-b79a6474e6bc
-f
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
@@ -2976,10 +2969,7 @@ version = "1.4.1+1"
 # ╠═77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╠═95f9803a-86df-4517-adc8-0bcbb0ff6fbc
-# ╠═47ae7d0b-748b-4379-a31d-61604e545b0b
-# ╠═094ad9c0-8f21-463c-a011-71477bf90ec6
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
-# ╠═e2b90860-8dbb-417f-9ec4-b79a6474e6bc
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
