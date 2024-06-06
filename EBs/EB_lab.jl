@@ -301,10 +301,10 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 """
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
-# Subtract master dark off of each frame
 imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 
 # ╔═╡ 48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
+# Subtract master dark off of each frame
 imgs_sci_dark = [img .- img_dark for img in imgs_sci];
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
@@ -324,7 +324,7 @@ Now that we have some science frames to work with, the next step is to begin cou
 
 # ╔═╡ ba008023-7a79-45ea-b547-23071a12a2f5
 md"""
-Before applying this scheme to all of our frames, let's test it out on a random image selected from our time series:
+Before applying this scheme to all of our frames, let's test it out on a random image (`img_test`) selected from our time series:
 """
 
 # ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
@@ -357,7 +357,7 @@ $(msg(msg_background_est))
 
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
 md"""
-Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
+Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a fairly course, but whole number of them will fit nicely over our image. This will allow us to avoid needing to deal with boundary conditions where only part of a cell would fit at the edge of the image. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
 """
 
 # ╔═╡ 5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
@@ -377,8 +377,22 @@ md"""
 But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
 """
 
-# ╔═╡ f5aede01-639f-4735-94fb-5507c6bc7915
-# sources = sources_all
+# ╔═╡ 9517c714-8214-47be-beb0-80f8e8fa483a
+md"""
+!!! note "What is this `do` syntax?"
+
+	`do` blocks are handy ways for breaking up long lines. For example, the above could equivalently be written like this:
+	
+	```julia
+	sources = let
+		candidates = filter(source -> pixel_left ≤ source.y ≤ pixel_right, sources_all)
+	
+		# Break any ties
+		max_val = maximum(candidates.value)
+		filter(candidate -> candidate.value == max_val, candidates)
+	end
+	```
+""" |> msg
 
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
@@ -671,7 +685,7 @@ plot_img(img; clims=clims) = implot(img;
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for img in imgs_sci_dark
 	plot_img(img)
-end fps=2
+end fps=2;
 
 # ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
 new_img; img_test = rand(imgs_sci); plot_img(img_test - img_dark)
@@ -685,7 +699,7 @@ clipped = sigma_clip(img_test - img_dark, 1; fill=:clamp)
 box_size = gcd(size(img_test)...)
 
 # ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# Steps 2-4: Estimated background, and its uncertainty
+# Steps 2-4: Estimate background, and its uncertainty
 bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
@@ -699,12 +713,14 @@ end
 # ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
 sources = let
 	candidates = filter(sources_all) do source
-		# 20_000 ≤ source.value ≤ 60_000 &&
 		pixel_left ≤ source.y ≤ pixel_right
 	end
 
 	# Break any ties
-	filter(x -> x.value == maximum(candidates.value), candidates)
+	max_val = maximum(candidates.value)
+	filter(candidates) do candidate
+		candidate.value == max_val
+	end
 end
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
@@ -2887,10 +2903,10 @@ version = "1.4.1+1"
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═9b0f6aac-d3c1-4b4e-8cfc-956891af1999
 # ╟─6a648c52-4682-44d7-9634-eaa663e665fe
-# ╠═48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
+# ╠═48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
@@ -2901,13 +2917,13 @@ version = "1.4.1+1"
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
+# ╠═fbc0be60-2a3b-4938-b262-7df938e59333
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
-# ╠═f5aede01-639f-4735-94fb-5507c6bc7915
+# ╟─9517c714-8214-47be-beb0-80f8e8fa483a
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╟─087bb2d6-f2c7-4290-aab7-793e43dbc8e7
