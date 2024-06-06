@@ -14,6 +14,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ ccc2bb2a-834b-4bff-8c26-a40b5f4ac476
+using Statistics
+
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -347,6 +350,12 @@ To broadly summarize this estimation process, we:
 $(msg(msg_background_est))
 """
 
+# ╔═╡ 0e943140-8f5c-45b2-9670-3a03772d5f21
+median(img_dark)
+
+# ╔═╡ 447e7133-d682-43ec-b56f-24ebc50e22ba
+median(imgs_sci[7] - img_dark)
+
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
 md"""
 Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
@@ -369,6 +378,17 @@ md"""
 But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
 """
 
+# ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
+# sources = let
+# 	candidates = filter(sources_all) do source
+# 		# 20_000 ≤ source.value ≤ 60_000 &&
+# 		pixel_left ≤ source.y ≤ pixel_right
+# 	end
+
+# 	# Break any ties
+# 	filter(x -> x.value == maximum(candidates.value), candidates)
+# end
+
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
 Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
@@ -383,36 +403,31 @@ begin
 	img_test = rand(imgs_sci)
 end
 
+# ╔═╡ 914ac33b-e8dc-47a7-81ea-5a6ff2dcf4be
+median(img_test)
+
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 # The size of our mesh in pixels (a square with side length = `box_size`)
 box_size = gcd(size(img_test)...)
 
 # ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
-# # Step 1
+# Step 1
 clipped = sigma_clip(img_test, 1; fill=NaN)
 
 # ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # Steps 2-4: Estimated background, and its uncertainty
-bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
+bkg_f, bkg_rms_f = estimate_background(clipped - img_dark, box_size)
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 # Returns list of extracted sources, sorted from strongest to weakest
 # by default
 sources_all = let
-	subt = img_test - bkg_f
+	subt = img_test - bkg_f - img_dark
 	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
 end
 
-# ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
-sources = let
-	candidates = filter(sources_all) do source
-		# 20_000 ≤ source.value ≤ 60_000 &&
-		pixel_left ≤ source.y ≤ pixel_right
-	end
-
-	# Break any ties
-	filter(x -> x.value == maximum(candidates.value), candidates)
-end
+# ╔═╡ f5aede01-639f-4735-94fb-5507c6bc7915
+sources = sources_all
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # Place an aperture with radius 24 px at the source extracted location
@@ -421,7 +436,7 @@ ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
-	implot(img_test; title=header(img_test)["DATE-OBS"])
+	implot(img_test; title=header(img_test)["DATE-OBS"], colorbar=false)
 	plot!(ap; color=:lightgreen)
 end
 
@@ -717,6 +732,7 @@ Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 AstroImages = "~0.4.2"
@@ -737,7 +753,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "689e0b3d16db8a80f58dc8215b88e7c7eb445218"
+project_hash = "325dfe17bf18d5f14508e424d74a89f3ab540af7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2882,6 +2898,10 @@ version = "1.4.1+1"
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
 # ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
 # ╠═667116b0-2b87-46ca-80aa-51361e8cde27
+# ╠═914ac33b-e8dc-47a7-81ea-5a6ff2dcf4be
+# ╠═0e943140-8f5c-45b2-9670-3a03772d5f21
+# ╠═447e7133-d682-43ec-b56f-24ebc50e22ba
+# ╠═ccc2bb2a-834b-4bff-8c26-a40b5f4ac476
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
@@ -2891,6 +2911,7 @@ version = "1.4.1+1"
 # ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
+# ╠═f5aede01-639f-4735-94fb-5507c6bc7915
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╟─087bb2d6-f2c7-4290-aab7-793e43dbc8e7
