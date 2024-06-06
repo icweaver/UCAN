@@ -14,9 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ ccc2bb2a-834b-4bff-8c26-a40b5f4ac476
-using Statistics
-
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -322,6 +319,11 @@ Now that we have some science frames to work with, the next step is to begin cou
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
 """
 
+# ╔═╡ ba008023-7a79-45ea-b547-23071a12a2f5
+md"""
+Before applying these scheme to all of our frames, let's test it out on a random image selected from our time series:
+"""
+
 # ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
 msg_background_est = md"""
 For more on the specific estimation procedures, we highlight this modified section from the [Photometry.jl documentation](https://juliaastro.org/dev/modules/AstroImages/guide/photometry/#Background-Estimation):
@@ -350,12 +352,6 @@ To broadly summarize this estimation process, we:
 $(msg(msg_background_est))
 """
 
-# ╔═╡ 0e943140-8f5c-45b2-9670-3a03772d5f21
-median(img_dark)
-
-# ╔═╡ 447e7133-d682-43ec-b56f-24ebc50e22ba
-median(imgs_sci[7] - img_dark)
-
 # ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
 md"""
 Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a whole number of them will fit nicely without needing to account for wrapping or boundary conditions. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
@@ -367,7 +363,7 @@ md"""
 
 Now that we have an estimate for the background flux in our image, we can pass both to `extract_sources` to detect our sources. This routine uses the [`PeakMesh`](https://juliaastro.org/Photometry.jl/stable/detection/algs/#Photometry.Detection.PeakMesh) source detection algorithm, which grids our image and then picks sources that are above a certain threshold in each box.
 
-By default, each box is 3 x 3  pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the estimated background as our `error` and the default `nsigma=3.0` to define our source criteria.
+By default, each box is 3 x 3  pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the master dark frame as our `error` and the default `nsigma=3.0` above the background estimate subtracted science image to define our source criteria. Please feel free to experiment with different criteria to see how the different choices can affect our final list of extracted sources.
 """
 
 # ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
@@ -398,32 +394,28 @@ Ok, it looks like there is only one candidate left! Let's place an aperture `ap`
 @bind new_img Button("New frame")
 
 # ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
-begin
-	new_img
-	img_test = rand(imgs_sci)
-end
+new_img; img_test = rand(imgs_sci); implot(img_test;
+	title="yea"
+)
 
-# ╔═╡ 914ac33b-e8dc-47a7-81ea-5a6ff2dcf4be
-median(img_test)
+# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
+# Step 1
+clipped = sigma_clip(img_test - img_dark, 1; fill=:clamp)
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 # The size of our mesh in pixels (a square with side length = `box_size`)
 box_size = gcd(size(img_test)...)
 
-# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
-# Step 1
-clipped = sigma_clip(img_test, 1; fill=NaN)
-
 # ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # Steps 2-4: Estimated background, and its uncertainty
-bkg_f, bkg_rms_f = estimate_background(clipped - img_dark, box_size)
+bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
 
 # ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
 # Returns list of extracted sources, sorted from strongest to weakest
 # by default
 sources_all = let
-	subt = img_test - bkg_f - img_dark
-	extract_sources(PeakMesh(box_size=25), subt, bkg_f)
+	subt = img_test - bkg_f
+	extract_sources(PeakMesh(), subt, img_dark)
 end
 
 # ╔═╡ f5aede01-639f-4735-94fb-5507c6bc7915
@@ -709,14 +701,17 @@ TableOfContents(; depth=4)
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
 const clims = (150, 700)
 
+# ╔═╡ 08b18b14-15dc-4ca8-981c-1e35e41e6dfa
+plot_img(img; clims=clims) = implot(img;
+	xlabel = "X",
+	ylabel = "Y",
+	title = header(img)["DATE-OBS"],
+	clims,
+)
+
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 @gif for img in imgs_sci_dark
-	implot(img;
-		xlabel = "X",
-		ylabel = "Y",
-		title = header(img)["DATE-OBS"],
-		clims,
-	)
+	plot_img(img)
 end fps=2
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -732,7 +727,6 @@ Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 AstroImages = "~0.4.2"
@@ -753,7 +747,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "325dfe17bf18d5f14508e424d74a89f3ab540af7"
+project_hash = "689e0b3d16db8a80f58dc8215b88e7c7eb445218"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2896,14 +2890,11 @@ version = "1.4.1+1"
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
-# ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
+# ╟─ba008023-7a79-45ea-b547-23071a12a2f5
 # ╠═667116b0-2b87-46ca-80aa-51361e8cde27
-# ╠═914ac33b-e8dc-47a7-81ea-5a6ff2dcf4be
-# ╠═0e943140-8f5c-45b2-9670-3a03772d5f21
-# ╠═447e7133-d682-43ec-b56f-24ebc50e22ba
-# ╠═ccc2bb2a-834b-4bff-8c26-a40b5f4ac476
-# ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
+# ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
+# ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
 # ╟─fbc0be60-2a3b-4938-b262-7df938e59333
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
@@ -2947,6 +2938,7 @@ version = "1.4.1+1"
 # ╠═8c5b8e36-11c4-45fb-94e9-d79e1c2df346
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
+# ╠═08b18b14-15dc-4ca8-981c-1e35e41e6dfa
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
