@@ -321,7 +321,7 @@ Now that we have some science frames to work with, the next step is to begin cou
 
 # ╔═╡ ba008023-7a79-45ea-b547-23071a12a2f5
 md"""
-Before applying these scheme to all of our frames, let's test it out on a random image selected from our time series:
+Before applying this scheme to all of our frames, let's test it out on a random image selected from our time series:
 """
 
 # ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
@@ -374,16 +374,8 @@ md"""
 But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
 """
 
-# ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
-# sources = let
-# 	candidates = filter(sources_all) do source
-# 		# 20_000 ≤ source.value ≤ 60_000 &&
-# 		pixel_left ≤ source.y ≤ pixel_right
-# 	end
-
-# 	# Break any ties
-# 	filter(x -> x.value == maximum(candidates.value), candidates)
-# end
+# ╔═╡ f5aede01-639f-4735-94fb-5507c6bc7915
+# sources = sources_all
 
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
@@ -393,48 +385,9 @@ Ok, it looks like there is only one candidate left! Let's place an aperture `ap`
 # ╔═╡ 087bb2d6-f2c7-4290-aab7-793e43dbc8e7
 @bind new_img Button("New frame")
 
-# ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
-new_img; img_test = rand(imgs_sci); implot(img_test;
-	title="yea"
-)
-
-# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
-# Step 1
-clipped = sigma_clip(img_test - img_dark, 1; fill=:clamp)
-
-# ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
-# The size of our mesh in pixels (a square with side length = `box_size`)
-box_size = gcd(size(img_test)...)
-
-# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# Steps 2-4: Estimated background, and its uncertainty
-bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
-
-# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
-# Returns list of extracted sources, sorted from strongest to weakest
-# by default
-sources_all = let
-	subt = img_test - bkg_f
-	extract_sources(PeakMesh(), subt, img_dark)
-end
-
-# ╔═╡ f5aede01-639f-4735-94fb-5507c6bc7915
-sources = sources_all
-
-# ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
-# Place an aperture with radius 24 px at the source extracted location
-# For visualization purposes
-ap = CircularAperture.(sources.y, sources.x, 24);
-
-# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
-let
-	implot(img_test; title=header(img_test)["DATE-OBS"], colorbar=false)
-	plot!(ap; color=:lightgreen)
-end
-
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
-Alright, it looks like this approach successfully identified our target star! We look next at applying this procedure to all of our frames. 
+Alright, it looks like this approach successfully identified our target star! We look next at applying this procedure to all of our frames. Feel free to hit the `New frame` button to verify that this scheme works on other sample science frames.
 """
 
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
@@ -454,7 +407,7 @@ function get_aps(img, pixel_left, pixel_right, aperture_size)
 	subt = img - bkg_f
 	
 	# Extract target source
-	sources_all = extract_sources(PeakMesh(), subt, bkg_f, true)
+	sources_all = extract_sources(PeakMesh(), subt, img_dark, true)
 	candidates = filter(sources_all) do source
 		# 20_000 ≤ source.value ≤ 60_000 &&
 		pixel_left ≤ source.y ≤ pixel_right
@@ -547,21 +500,20 @@ Since the total period for this system is about 8 hours, we only caught one of t
 # ╔═╡ 276ff16f-95f1-44eb-971d-db65e8821e59
 md"""
 ## Extensions 🌱
-
-!!! warning "TODO"
-	Stopped here. Will add more below, just laying out for now
 """
 
 # ╔═╡ 934b1888-0e5c-4dcb-a637-5c2f813161d4
 md"""
 ### Other systematics
 
-Although this was a fairly bright target with a relatively large [signal-to-noise ratio](http://spiff.rit.edu/classes/ast613/lectures/signal/signal_illus.html), its resulting light curve still contains systematics that need to be addressed.
+Although this was a fairly bright target with a relatively large [signal-to-noise ratio](http://spiff.rit.edu/classes/ast613/lectures/signal/signal_illus.html), its resulting light curve still contains systematics that can be addressed.
 """
 
 # ╔═╡ 469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 md"""
 #### Comparison stars
+
+Comparison stars are a great way to deal with systematics from our atmosphere if they are available in our field of view. By dividing our target light curve by the light curve from one or multiple of these stars using our same analysis, we can remove much of the noise introduced by atmopsheric turbulence and changes in airmass. How could we generalize our pipeline to handle this use case? What other systematics would we want to account for?
 """
 
 # ╔═╡ c5286692-2610-414d-97b7-ffab0bd485a7
@@ -650,16 +602,18 @@ end
 md"""
 #### Determining observation parameters
 
-Once a target has been found, we need to figure out a good observing scheme for it. Cadence, exposure time, and friends
+Once a target has been found, here's how we might estimate an observing setup for it based on the [Unistellar Exposure Time and Gain Calculator](https://docs.google.com/spreadsheets/d/1niBg5LOkWyR8lCCOOcIo6OHt5kwlc3vnsBsazo7YfXQ/edit#gid=0).
 """
 
 # ╔═╡ 77a2953f-2af2-45f6-b01d-61134e53f47c
+# Enter target visual magnitude and desired exposure time
 target = (
 	v_mag = 7.9,
 	t_exp = 1400,
 )
 
 # ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
+# Keep these values untouched
 baseline = (
 	v_mag = 11.7, # V (mag)
 	t_exp = 3200.0, # Exptime (ms)
@@ -675,9 +629,11 @@ function flux_factor(target, baseline)
 end
 
 # ╔═╡ f26f890b-5924-497c-85a3-eff924d0470b
+# Maximum gain
 max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
 
 # ╔═╡ 95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+# Recommended gain
 rec_gain(g) = round(g, RoundDown) - 1.0
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
@@ -713,6 +669,51 @@ plot_img(img; clims=clims) = implot(img;
 @gif for img in imgs_sci_dark
 	plot_img(img)
 end fps=2
+
+# ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
+new_img; img_test = rand(imgs_sci); plot_img(img_test - img_dark)
+
+# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
+# Step 1
+clipped = sigma_clip(img_test - img_dark, 1; fill=:clamp)
+
+# ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
+# The size of our mesh in pixels (a square with side length = `box_size`)
+box_size = gcd(size(img_test)...)
+
+# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
+# Steps 2-4: Estimated background, and its uncertainty
+bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
+
+# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
+# Returns list of extracted sources, sorted from strongest to weakest
+# by default
+sources_all = let
+	subt = img_test - bkg_f
+	extract_sources(PeakMesh(), subt, img_dark)
+end
+
+# ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
+sources = let
+	candidates = filter(sources_all) do source
+		# 20_000 ≤ source.value ≤ 60_000 &&
+		pixel_left ≤ source.y ≤ pixel_right
+	end
+
+	# Break any ties
+	filter(x -> x.value == maximum(candidates.value), candidates)
+end
+
+# ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
+# Place an aperture with radius 24 px at the source extracted location
+# For visualization purposes
+ap = CircularAperture.(sources.y, sources.x, 24);
+
+# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+let
+	implot(img_test; title=header(img_test)["DATE-OBS"], colorbar=false)
+	plot!(ap; color=:lightgreen)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
