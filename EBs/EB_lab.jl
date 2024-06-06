@@ -582,8 +582,25 @@ function get_url(s)
 	Markdown.parse("""[link]($(url))""")
 end
 
-# ╔═╡ 38f3d919-f9c4-43ef-abe1-c7ad44d5e148
-dict = Dict(1 => "Jan", 2 => "Feb", 3 => "Mar", 4 => "Apr", 5 => "May", 6 => "Jun")
+# ╔═╡ 47ae7d0b-748b-4379-a31d-61604e545b0b
+cols = [
+	:star_name,
+	:period,
+	:ra,
+	:dec,
+	:min_mag,
+	# :min_mag_band,
+	:V_mag,
+	:max_mag,
+	# :max_mag_band,
+	:var_type,
+	# :min_mag,
+	# :max_mag,
+	:ephem,
+];
+
+# ╔═╡ 094ad9c0-8f21-463c-a011-71477bf90ec6
+ff(x) = x
 
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 df_selected = @chain df begin
@@ -603,24 +620,20 @@ df_selected = @chain df begin
 		:dec = to_dms(:dec)
 	end
 
-	@select begin
-		:star_name
-		:period
-		:ra
-		:dec
-		:min_mag
-		# :min_mag_band
-		:V_mag
-		:max_mag
-		# :max_mag_band
-		:var_type
-		# :min_mag
-		# :max_mag
-		:ephem
-	end
+	select(:ra, :dec, :period)
 
 	sort(:period)
-end
+end;
+
+# ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
+DataFrames.PrettyTables.pretty_table(HTML, df_selected;
+	maximum_columns_width = "max-width",
+	# show_subheader = false,
+	header = [:star_name],
+)
+
+# ╔═╡ e2b90860-8dbb-417f-9ec4-b79a6474e6bc
+f
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
@@ -661,13 +674,13 @@ max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
 rec_gain(g) = round(g, RoundDown) - 1.0
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
-f = flux_factor(target, baseline)
+let
+	f = flux_factor(target, baseline)
+	g = max_gain(baseline, f)
+	g_rec = rec_gain(g)
 
-# ╔═╡ abaa38e1-fbeb-470f-8152-480f586c38aa
-g = max_gain(baseline, f)
-
-# ╔═╡ 8c5b8e36-11c4-45fb-94e9-d79e1c2df346
-rec_gain(g)
+	@debug "Observing params" f g g_rec
+end
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 md"""
@@ -2962,8 +2975,11 @@ version = "1.4.1+1"
 # ╠═46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╠═77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
-# ╠═38f3d919-f9c4-43ef-abe1-c7ad44d5e148
+# ╠═95f9803a-86df-4517-adc8-0bcbb0ff6fbc
+# ╠═47ae7d0b-748b-4379-a31d-61604e545b0b
+# ╠═094ad9c0-8f21-463c-a011-71477bf90ec6
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═e2b90860-8dbb-417f-9ec4-b79a6474e6bc
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
@@ -2971,8 +2987,6 @@ version = "1.4.1+1"
 # ╠═f26f890b-5924-497c-85a3-eff924d0470b
 # ╠═95a67d04-0a32-4e55-ac2f-d004ecc9ca84
 # ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
-# ╠═abaa38e1-fbeb-470f-8152-480f586c38aa
-# ╠═8c5b8e36-11c4-45fb-94e9-d79e1c2df346
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╠═08b18b14-15dc-4ca8-981c-1e35e41e6dfa
