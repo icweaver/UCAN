@@ -626,9 +626,6 @@ DataFrames.PrettyTables.pretty_table(HTML, df_selected;
 	header_alignment = :c,
 )
 
-# ╔═╡ d720dedd-5a8c-43df-9f7c-b76d295089ba
-df
-
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
 #### Determining observation parameters
@@ -2941,7 +2938,7 @@ version = "1.4.1+1"
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
 # ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# ╠═fbc0be60-2a3b-4938-b262-7df938e59333
+# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
 # ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
@@ -2975,7 +2972,6 @@ version = "1.4.1+1"
 # ╠═26c41d51-3922-449f-93b4-d45b20b010d0
 # ╠═95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
-# ╠═d720dedd-5a8c-43df-9f7c-b76d295089ba
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
