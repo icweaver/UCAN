@@ -187,7 +187,7 @@ df_sci |> names |> print
 # ╔═╡ cdf14fe8-6b27-44eb-b789-6cf072f4d184
 md"""
 !!! note "What does |> do?"
-	Known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to another. For example,
+	Also known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to the next. For example,
 
 	```julia
 	sqrt(sum([1, 4, 5, 6])) # 4.0
@@ -202,7 +202,7 @@ md"""
 
 # ╔═╡ a38466b5-c7fb-4600-904b-b7ddd7afd272
 md"""
-Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) take a look at the image data for one of these files:
+Let's use [AstroImages.jl](https://github.com/JuliaAstro/AstroImages.jl) to take a look at the image data for one of these files:
 """
 
 # ╔═╡ 2b8c75f6-c148-4c70-be6a-c1a4b95d5849
@@ -232,8 +232,11 @@ header(img_sci)
 
 # ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 md"""
-It looks like this image is $(size(img_sci, 1)) x $(size(img_sci, 2)) pixels, with the ADU counts for each pixel stored as a $(eltype(img_sci)) to reduce memory useage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
+It looks like this image is $(size(img_sci, 1)) x $(size(img_sci, 2)) pixels, with the ADU counts for each pixel stored as a $(eltype(img_sci)) to reduce memory storage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
 """
+
+# ╔═╡ f6197e8e-3132-4ab5-86d7-32572e337c58
+size(img_sci), eltype(img_sci)
 
 # ╔═╡ b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 md"""
@@ -242,11 +245,11 @@ md"""
 A critical step in analyzing astronomical data is accounting for sources of noise that may impact our final image. This process is known as calibration, and its purpose is to increase the signal-to-noise ratio of our science images. Here is a nice summary modified from [Practical Astrophotography](https://practicalastrophotography.com/a-brief-guide-to-calibration-frames/) of three of the main sources of noise that we typically try to calibrate for:
 
 !!! tip ""
-	**Bias Frames:** Your camera inherently has a base level of read-out noise as it reads the values of each pixel of the sensor, called bias. When averaged out, basically it’s an inherent gradient to the sensor. Bias Frames are meant to capture this so it can be removed.
+	**Bias Frames:** "Your camera inherently has a base level of read-out noise as it reads the values of each pixel of the sensor, called bias. When averaged out, basically it’s an inherent gradient to the sensor. Bias Frames are meant to capture this so it can be removed."
 
-	**Dark Frames:** When taking a long exposure, the chip will introduce "thermal" noise. Its level is magnified by three things – temperature, exposure time, and ISO. Dark frames are used to subtract this sensor noise from your image and mitigate "hot or cold" pixels. (Some modern sensors automatically calculate dark levels and don't need dark frames). Dark Frames also will calibrate the chip so all pixels give the same value when not exposed to light.
+	**Dark Frames:** "When taking a long exposure, the chip will introduce "thermal" noise. Its level is magnified by three things – temperature, exposure time, and ISO. Dark frames are used to subtract this sensor noise from your image and mitigate "hot or cold" pixels. (Some modern sensors automatically calculate dark levels and don't need dark frames). Dark Frames also will calibrate the chip so all pixels give the same value when not exposed to light."
 
-	**Flat Frames:** I’ve seen people say flats help with light pollution. NOT TRUE AT ALL. Flat frames allow you to calculate the correction factor for each pixel so they all give the same value when exposed to the same quantity of light for a given optical path. Things like dust motes, lens vignetting consistently reduce the light to a given pixel, flat frames allow you to mathematically remove them to give a smooth evenly illuminated image.
+	**Flat Frames:** "I've seen people say flats help with light pollution. NOT TRUE AT ALL. Flat frames allow you to calculate the correction factor for each pixel so they all give the same value when exposed to the same quantity of light for a given optical path. Things like dust motes, lens vignetting consistently reduce the light to a given pixel, flat frames allow you to mathematically remove them to give a smooth evenly illuminated image."
 """
 
 # ╔═╡ 2b32512b-63df-4a48-8e72-bf20aa75a845
@@ -266,7 +269,7 @@ img_dark = load("data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DAR
 
 # ╔═╡ edf446f0-3643-445a-a4b3-b6fa945ded9a
 md"""
-Here we can see the thermal noise from our sensor and underlying gradient encoded in the bias. We can now subtract it from each science frame to have a final calibrated image. Here is a before and after of an example science frame in our series:
+Here we can see the thermal noise from our sensor and underlying gradient encoded in the bias. We can now subtract it from each science frame to have a final calibrated image. Here is a before and after of our example science frame from earlier:
 """
 
 # ╔═╡ 9b0f6aac-d3c1-4b4e-8cfc-956891af1999
@@ -2876,6 +2879,7 @@ version = "1.4.1+1"
 # ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
 # ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
+# ╠═f6197e8e-3132-4ab5-86d7-32572e337c58
 # ╟─b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 # ╟─2b32512b-63df-4a48-8e72-bf20aa75a845
 # ╟─06dae98b-b134-4893-99d7-d1d67dade7cd
