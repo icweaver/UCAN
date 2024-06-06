@@ -396,7 +396,7 @@ md"""
 
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
-Ok, it looks like there is only one candidate left! Let's place an aperture `ap` at this location to see how we did:
+Ok, it looks like there is only one candidate left! Let's place an aperture (`ap`) at this location to see how we did:
 """
 
 # ╔═╡ 087bb2d6-f2c7-4290-aab7-793e43dbc8e7
@@ -426,11 +426,13 @@ function get_aps(img, pixel_left, pixel_right, aperture_size)
 	# Extract target source
 	sources_all = extract_sources(PeakMesh(), subt, img_dark, true)
 	candidates = filter(sources_all) do source
-		# 20_000 ≤ source.value ≤ 60_000 &&
 		pixel_left ≤ source.y ≤ pixel_right
 	end
-	sources = filter(x -> x.value == maximum(candidates.value), candidates)
-	# sources = sources_all
+	
+	max_val = maximum(candidates.value)
+	sources = filter(candidates) do candidate
+		candidate.value == max_val
+	end
 	
 	# Place aperture
 	aps = CircularAperture.(sources.y, sources.x, aperture_size);
@@ -447,20 +449,9 @@ md"""
 Let's place the apertures onto our movie from earlier to double check how we did:
 """
 
-# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-@gif for (ap, img) in zip(aps, imgs_sci)
-	implot(img;
-		xlabel = "X",
-		ylabel = "Y",
-		title = header(img)["DATE-OBS"],
-		# clims = (100, 700),
-	)
-	plot!(ap; color=:lightgreen)
-end fps=2
-
 # ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
 md"""
-Not bad! We can now sum up the flux in the target aperture for each frame to create our final light curve:
+Not bad! Now we can sum up the flux in the target aperture for each frame to create our final light curve:
 """
 
 # ╔═╡ 050b8516-b375-4f1f-906f-6362034b6564
@@ -567,8 +558,40 @@ if !isempty(username)
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
 end;
 
-# ╔═╡ 848b5a48-c6e6-441f-90e9-133fca81b528
-df
+# ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
+df_selected = @chain df begin
+	# dropmissing
+	# @rsubset begin
+	# 	# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
+	# 	:min_mag - :max_mag ≥ 0.5 &&
+	# 	:min_mag_band == "V" && :max_mag_band == "V" &&
+	# 	:period ≤ 3.0 &&
+	# 	startswith(:other_info, "[[Ephemeris")
+	# end
+		
+	# @rtransform begin
+	# 	:ephem = get_url(:other_info)
+	# 	:V_mag = (:min_mag + :max_mag) / 2.0
+	# end
+
+	@select begin
+		:star_name
+		:period
+		:ra
+		:dec
+		:min_mag
+		# :min_mag_band
+		# :V_mag
+		:max_mag
+		# :max_mag_band
+		:var_type
+		# :min_mag
+		# :max_mag
+		# :ephem
+	end
+
+	sort(:period)
+end
 
 # ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
 function get_url(s)
@@ -580,39 +603,6 @@ function get_url(s)
 	end
 	
 	cm"""[link]($(url))"""
-end
-
-# ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
-df_selected = @chain df begin
-	dropmissing
-	@rsubset begin
-		# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
-		:min_mag - :max_mag ≥ 0.5 &&
-		:min_mag_band == "V" && :max_mag_band == "V" &&
-		:period ≤ 3.0 &&
-		startswith(:other_info, "[[Ephemeris")
-	end
-		
-	@rtransform begin
-		:ephem = get_url(:other_info)
-		:V_mag = (:min_mag + :max_mag) / 2.0
-	end
-
-	@select begin
-		:star_name
-		:ra
-		:dec
-		:min_mag
-		# :min_mag_band
-		:V_mag
-		:max_mag
-		# :max_mag_band
-		:period
-		:var_type
-		# :min_mag
-		# :max_mag
-		:ephem
-	end
 end
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
@@ -724,8 +714,7 @@ sources = let
 end
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
-# Place an aperture with radius 24 px at the source extracted location
-# For visualization purposes
+# Place an aperture with radius 24 px at the source extracted location for visualization purposes
 ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
@@ -733,6 +722,12 @@ let
 	implot(img_test; title=header(img_test)["DATE-OBS"], colorbar=false)
 	plot!(ap; color=:lightgreen)
 end
+
+# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+@gif for (ap, img) in zip(aps, imgs_sci_dark)
+	plot_img(img)
+	plot!(ap; color=:lightgreen)
+end fps=2
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2945,7 +2940,6 @@ version = "1.4.1+1"
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
-# ╠═848b5a48-c6e6-441f-90e9-133fca81b528
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
