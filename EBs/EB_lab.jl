@@ -14,11 +14,8 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 228563fc-dd3f-432a-b5c0-18d948d99630
-using Dates
-
 # ╔═╡ 26c41d51-3922-449f-93b4-d45b20b010d0
-using Unitful
+using Dates, Unitful
 
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
@@ -553,7 +550,7 @@ if !isempty(username)
 		url = "https://$(username):$(passwd)@$(api)"
 		query = (
 			:obs_section => "eb",
-			:observable => true,
+			# :observable => true,
 			:orderby => "period",
 		)
 		HTTP.get(url; query)
@@ -588,18 +585,6 @@ function get_url(s)
 	Markdown.parse("""[link]($(url))""")
 end
 
-# ╔═╡ cab88fe4-bff3-4fad-bb51-f30326dc1449
-dt = DateTime(2024, 06, 04, 7, 18) - DateTime(2024, 06, 02, 22, 41)
-
-# ╔═╡ d8c3991e-f484-458d-a1e0-4023b5747745
-canonicalize(dt)
-
-# ╔═╡ d902bd60-3929-44fd-a98b-53ae466be457
-x = 1.5
-
-# ╔═╡ bd91f0e4-bd8a-42e1-bd7b-06e1c70af2e6
-round(Hour, x*u"d")
-
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 df_selected = @chain df begin
 	dropmissing
@@ -613,7 +598,7 @@ df_selected = @chain df begin
 
 	@rselect begin
 		:star_name
-		:period = :period
+		:period = round(Minute, :period * u"d") |> canonicalize
 		:ra = to_hms(:ra)
 		:dec = to_dms(:dec)
 		:min_mag
@@ -630,17 +615,19 @@ df_selected = @chain df begin
 	sort(:period)
 end;
 
-# ╔═╡ aab706c8-0bdc-4770-8580-9a0825fd249f
-round(Minute, df_selected.period[1] * u"d") |> canonicalize
-
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 DataFrames.PrettyTables.pretty_table(HTML, df_selected;
 	maximum_columns_width = "max-width",
-	header = (
-		names(df_selected),
-		["", "Days", "J2000.0", "J2000.0", "", "", "", ""]
-	),
+	# header = (
+	# 	names(df_selected),
+	# 	["", "", "(J2000.0)", "(J2000.0)", "", "", "", ""]
+	# ),
+	show_subheader = false,
+	header_alignment = :c,
 )
+
+# ╔═╡ d720dedd-5a8c-43df-9f7c-b76d295089ba
+df
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
@@ -2985,15 +2972,10 @@ version = "1.4.1+1"
 # ╠═46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╠═77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
-# ╠═228563fc-dd3f-432a-b5c0-18d948d99630
-# ╠═cab88fe4-bff3-4fad-bb51-f30326dc1449
-# ╠═d8c3991e-f484-458d-a1e0-4023b5747745
-# ╠═d902bd60-3929-44fd-a98b-53ae466be457
-# ╠═bd91f0e4-bd8a-42e1-bd7b-06e1c70af2e6
-# ╠═aab706c8-0bdc-4770-8580-9a0825fd249f
 # ╠═26c41d51-3922-449f-93b4-d45b20b010d0
 # ╠═95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═d720dedd-5a8c-43df-9f7c-b76d295089ba
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
