@@ -26,7 +26,7 @@ begin
 	using HTTP, JSONTables
 	
 	# Visualization and analysis
-	using AstroImages, Plots
+	using AstroImages, Plots, AstroAngles
 	import PlutoPlotly
 	using Photometry
 	AstroImages.set_cmap!(:cividis)
@@ -558,39 +558,16 @@ if !isempty(username)
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
 end;
 
-# ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
-df_selected = @chain df begin
-	# dropmissing
-	# @rsubset begin
-	# 	# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
-	# 	:min_mag - :max_mag ≥ 0.5 &&
-	# 	:min_mag_band == "V" && :max_mag_band == "V" &&
-	# 	:period ≤ 3.0 &&
-	# 	startswith(:other_info, "[[Ephemeris")
-	# end
-		
-	# @rtransform begin
-	# 	:ephem = get_url(:other_info)
-	# 	:V_mag = (:min_mag + :max_mag) / 2.0
-	# end
+# ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
+function to_hms(ra_deci)
+	hms = round.(deg2hms(ra_deci); digits=2)
+	format_angle(hms; delim=["h ", "m ", "s"])
+end
 
-	@select begin
-		:star_name
-		:period
-		:ra
-		:dec
-		:min_mag
-		# :min_mag_band
-		# :V_mag
-		:max_mag
-		# :max_mag_band
-		:var_type
-		# :min_mag
-		# :max_mag
-		# :ephem
-	end
-
-	sort(:period)
+# ╔═╡ 77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
+function to_dms(ra_deci)
+	dms = round.(deg2dms(ra_deci); digits=2)
+	format_angle(dms; delim=["° ", "' ", "\""])
 end
 
 # ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
@@ -602,7 +579,47 @@ function get_url(s)
 		first
 	end
 	
-	cm"""[link]($(url))"""
+	Markdown.parse("""[link]($(url))""")
+end
+
+# ╔═╡ 38f3d919-f9c4-43ef-abe1-c7ad44d5e148
+dict = Dict(1 => "Jan", 2 => "Feb", 3 => "Mar", 4 => "Apr", 5 => "May", 6 => "Jun")
+
+# ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
+df_selected = @chain df begin
+	dropmissing
+	@rsubset begin
+		# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
+		:min_mag - :max_mag ≥ 0.5 &&
+		:min_mag_band == "V" && :max_mag_band == "V" &&
+		:period ≤ 3.0 &&
+		startswith(:other_info, "[[Ephemeris")
+	end
+		
+	@rtransform begin
+		:ephem = get_url(:other_info)
+		:V_mag = (:min_mag + :max_mag) / 2.0
+		:ra = to_hms(:ra)
+		:dec = to_dms(:dec)
+	end
+
+	@select begin
+		:star_name
+		:period
+		:ra
+		:dec
+		:min_mag
+		# :min_mag_band
+		:V_mag
+		:max_mag
+		# :max_mag_band
+		:var_type
+		# :min_mag
+		# :max_mag
+		:ephem
+	end
+
+	sort(:period)
 end
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
@@ -732,6 +749,7 @@ end fps=2
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+AstroAngles = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
@@ -744,6 +762,7 @@ PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
+AstroAngles = "~0.1.3"
 AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
 CommonMark = "~0.8.12"
@@ -762,7 +781,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "689e0b3d16db8a80f58dc8215b88e7c7eb445218"
+project_hash = "dc2ddcef702ac8cb445a0587ac720a456de2dd6f"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2940,8 +2959,11 @@ version = "1.4.1+1"
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
-# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═46e6bba9-0c83-47b7-be17-f41301efa18e
+# ╠═77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╠═38f3d919-f9c4-43ef-abe1-c7ad44d5e148
+# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
