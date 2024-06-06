@@ -14,6 +14,12 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 228563fc-dd3f-432a-b5c0-18d948d99630
+using Dates
+
+# ╔═╡ 26c41d51-3922-449f-93b4-d45b20b010d0
+using Unitful
+
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -582,6 +588,18 @@ function get_url(s)
 	Markdown.parse("""[link]($(url))""")
 end
 
+# ╔═╡ cab88fe4-bff3-4fad-bb51-f30326dc1449
+dt = DateTime(2024, 06, 04, 7, 18) - DateTime(2024, 06, 02, 22, 41)
+
+# ╔═╡ d8c3991e-f484-458d-a1e0-4023b5747745
+canonicalize(dt)
+
+# ╔═╡ d902bd60-3929-44fd-a98b-53ae466be457
+x = 1.5
+
+# ╔═╡ bd91f0e4-bd8a-42e1-bd7b-06e1c70af2e6
+round(Hour, x*u"d")
+
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 df_selected = @chain df begin
 	dropmissing
@@ -592,32 +610,28 @@ df_selected = @chain df begin
 		:period ≤ 3.0 &&
 		startswith(:other_info, "[[Ephemeris")
 	end
-		
-	@rtransform begin
-		:ephem = get_url(:other_info)
-		:V_mag = (:min_mag + :max_mag) / 2.0
+
+	@rselect begin
+		:star_name
+		:period = :period
 		:ra = to_hms(:ra)
 		:dec = to_dms(:dec)
-	end
-
-	@select begin
-		:star_name
-		:period
-		:ra
-		:dec
 		:min_mag
 		# :min_mag_band
 		:max_mag
-		:V_mag
+		:V_mag = (:min_mag + :max_mag) / 2.0
 		# :max_mag_band
 		# :var_type
 		# :min_mag
 		# :max_mag
-		:ephem
+		:ephem = get_url(:other_info)
 	end
 
 	sort(:period)
 end;
+
+# ╔═╡ aab706c8-0bdc-4770-8580-9a0825fd249f
+round(Minute, df_selected.period[1] * u"d") |> canonicalize
 
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 DataFrames.PrettyTables.pretty_table(HTML, df_selected;
@@ -760,12 +774,14 @@ AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 AstroAngles = "~0.1.3"
@@ -779,6 +795,7 @@ Photometry = "~0.9.0"
 Plots = "~1.40.4"
 PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.59"
+Unitful = "~1.20.0"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -787,7 +804,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "dc2ddcef702ac8cb445a0587ac720a456de2dd6f"
+project_hash = "98dad0d12fbe8ff44984d37cbd3378b576f0677b"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2968,6 +2985,13 @@ version = "1.4.1+1"
 # ╠═46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╠═77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╠═228563fc-dd3f-432a-b5c0-18d948d99630
+# ╠═cab88fe4-bff3-4fad-bb51-f30326dc1449
+# ╠═d8c3991e-f484-458d-a1e0-4023b5747745
+# ╠═d902bd60-3929-44fd-a98b-53ae466be457
+# ╠═bd91f0e4-bd8a-42e1-bd7b-06e1c70af2e6
+# ╠═aab706c8-0bdc-4770-8580-9a0825fd249f
+# ╠═26c41d51-3922-449f-93b4-d45b20b010d0
 # ╠═95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
