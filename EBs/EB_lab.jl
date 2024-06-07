@@ -569,21 +569,22 @@ if !isempty(username)
 
 	```julia
 	query = (
-			# :lat => -33.448155603864784,
-			# :longitude => 70.66004370266562,
-			:obs_section => "eb",
-			:observable => true,
-			:orderby => "period",
-		)
+		# :lat => -33.448155603864784,
+		# :longitude => 70.66004370266562,
+		:obs_section => "eb",
+		:observable => true,
+		:orderby => "period",
+	)
 	```
 	
 	Below is a list from the API page of what each of the inputs mean:
 
 	!!! tip ""
-		`obs_section` An array with observing sections of interest. You may use one or more of: ac,ep,cv,eb,spp,lpv,yso,het,misc,all. Default is ['ac'] (Alerts & Campaigns).
+		`obs_section` An array with observing sections of interest. You may use one or more of: ac,ep,cv,eb,spp,lpv,yso,het,misc,all. Default is \['ac'\] (Alerts & Campaigns).
 		
 		`observable` If true, filters out targets which are visible at the telescope location during the following nighttime period. Default is false.
-		`orderby` Order by any of the output fields below, except for observability_times and solar_conjunction.
+		
+		`orderby` Order by any of the output fields below, except for observability\_times and solar\_conjunction.
 		
 		`reverse` If true, reverses the order. Default is false.
 		
@@ -615,10 +616,42 @@ if !isempty(username)
 	# The table under the `target` field of the JSONTable does not
 	# seem to convert nulls to missings, so using the raw string directly instead
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
-end;
 
-# ╔═╡ 63a6aefa-6c9c-4708-88bf-a14d5c71fd94
-query
+	md"""
+	Feel free to uncomment the lat/long fields below to override the default location set in your profile, or add any additional settings.
+
+	!!! tip "What is `$()`?"
+
+		This is Julia's way of interpolating strings. For example:
+	
+		```julia
+		animal = "dogs"
+		"I like $(animal)!" # I like dogs!
+		```
+
+	We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the results:
+	"""
+
+	df
+end
+
+# ╔═╡ a00cbbfc-56ce-413a-a7b8-13de8541fa6f
+if !isempty(username)
+	md"""
+	It looks like we have $(nrow(df)) hits, great! Let's filter these using some convenience syntax from [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to subset for targets that are easily observable, i.e., with our following criteria:
+
+	1. Large change in brightness (at least half a mag)
+	2. Fairly short period (period < 3 days)
+	3. Includes an ephemeris (the `other_info` column must include this link)
+	
+	Lastly, we select the columns that we care about and make some visual transforms for convenience (e.g., converting decimal RA and Dec to H M S, and ∘ ' " format, respectively, for easy copy-pasting into the Unistellar app):
+	"""
+end
+
+# ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
+md"""
+### Convenience functions
+"""
 
 # ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
 function to_hms(ra_deci)
@@ -645,45 +678,52 @@ function get_url(s)
 end
 
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
-df_selected = @chain df begin
-	dropmissing
-	@rsubset begin
-		# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
-		:min_mag - :max_mag ≥ 0.5 &&
-		:min_mag_band == "V" && :max_mag_band == "V" &&
-		:period ≤ 3.0 &&
-		startswith(:other_info, "[[Ephemeris")
+if !isempty(username)
+	df_selected = @chain df begin
+		dropmissing
+		@rsubset begin
+			# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
+			:min_mag - :max_mag ≥ 0.5 &&
+			:min_mag_band == "V" && :max_mag_band == "V" &&
+			:period ≤ 3.0 &&
+			startswith(:other_info, "[[Ephemeris")
+		end
+	
+		@rselect begin
+			:star_name
+			:period = round(Minute, :period * u"d") |> canonicalize
+			:ra = to_hms(:ra)
+			:dec = to_dms(:dec)
+			:min_mag
+			# :min_mag_band
+			:max_mag
+			:V_mag = (:min_mag + :max_mag) / 2.0
+			# :max_mag_band
+			# :var_type
+			# :min_mag
+			# :max_mag
+			:ephem = get_url(:other_info)
+		end
+	
+		sort(:period)
 	end
 
-	@rselect begin
-		:star_name
-		:period = round(Minute, :period * u"d") |> canonicalize
-		:ra = to_hms(:ra)
-		:dec = to_dms(:dec)
-		:min_mag
-		# :min_mag_band
-		:max_mag
-		:V_mag = (:min_mag + :max_mag) / 2.0
-		# :max_mag_band
-		# :var_type
-		# :min_mag
-		# :max_mag
-		:ephem = get_url(:other_info)
-	end
-
-	sort(:period)
-end;
+	# Make the view a bit nicer in the browser
+	DataFrames.PrettyTables.pretty_table(HTML, df_selected;
+		maximum_columns_width = "max-width",
+		# header = (
+		# 	names(df_selected),
+		# 	["", "", "(J2000.0)", "(J2000.0)", "", "", "", ""]
+		# ),
+		show_subheader = false,
+		header_alignment = :c,
+	)
+end
 
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
-DataFrames.PrettyTables.pretty_table(HTML, df_selected;
-	maximum_columns_width = "max-width",
-	# header = (
-	# 	names(df_selected),
-	# 	["", "", "(J2000.0)", "(J2000.0)", "", "", "", ""]
-	# ),
-	show_subheader = false,
-	header_alignment = :c,
-)
+md"""
+We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the expected eclipse times.
+"""
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
@@ -3027,14 +3067,15 @@ version = "1.4.1+1"
 # ╟─e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╟─4a779bd1-bcf3-41e1-af23-ed00d29db46f
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
-# ╠═399f53c5-b654-4330-9ead-4d795917b03b
-# ╠═63a6aefa-6c9c-4708-88bf-a14d5c71fd94
+# ╟─399f53c5-b654-4330-9ead-4d795917b03b
+# ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
+# ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
+# ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╠═26c41d51-3922-449f-93b4-d45b20b010d0
-# ╠═95f9803a-86df-4517-adc8-0bcbb0ff6fbc
-# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
