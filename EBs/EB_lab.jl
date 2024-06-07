@@ -629,10 +629,15 @@ if !isempty(username)
 		"I like $(animal)!" # I like dogs!
 		```
 
-	We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the results:
+	We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the first 10 results:
 	"""
 
-	df
+	DataFrames.PrettyTables.pretty_table(HTML, df;
+		max_num_of_rows = 10,	
+		maximum_columns_width = "max-width",
+		show_subheader = false,
+		header_alignment = :c,
+	)
 end
 
 # ╔═╡ a00cbbfc-56ce-413a-a7b8-13de8541fa6f
@@ -644,7 +649,7 @@ if !isempty(username)
 	2. Fairly short period (period < 3 days)
 	3. Includes an ephemeris (the `other_info` column must include this link)
 	
-	Lastly, we select the columns that we care about and make some visual transforms for convenience (e.g., converting decimal RA and Dec to H M S, and ∘ ' " format, respectively, for easy copy-pasting into the Unistellar app):
+	Lastly, we select the columns that we care about and make some visual transforms for convenience (e.g., including units, converting decimal RA and Dec to `H M S`, and `∘ ' "` format, respectively, for easy copy-pasting into the Unistellar app):
 	"""
 end
 
@@ -848,6 +853,9 @@ end fps=2
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents(; depth=4)
+
+# ╔═╡ ccadc893-59f7-4e9e-bc4e-b9cb073d4433
+ENV["COLUMNS"] = 100
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -3087,6 +3095,7 @@ version = "1.4.1+1"
 # ╟─285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╟─08b18b14-15dc-4ca8-981c-1e35e41e6dfa
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
+# ╠═ccadc893-59f7-4e9e-bc4e-b9cb073d4433
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
