@@ -537,6 +537,11 @@ The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding
 	The username is your [AAVSO API key](https://targettool.aavso.org/TargetTool/api/index). Do not share this with others.
 """
 
+# ╔═╡ 4a6a8956-f6e5-433a-a87b-056a5123ffbc
+md"""
+We start by [creating an account](https://targettool.aavso.org/init/default/user/register?_next=/init/default/index) on AAVSO. This will allow us to access their API and set our observing location
+"""
+
 # ╔═╡ e2b8a7ae-cd74-4a9b-a853-f436262676b6
 username = open("data/.aavso_api") do f
 	readline(f)
@@ -549,8 +554,10 @@ if !isempty(username)
 		api = "targettool.aavso.org/TargetTool/api/v1/targets"
 		url = "https://$(username):$(passwd)@$(api)"
 		query = (
+			# :lat => -33.448155603864784,
+			# :longitude => 70.66004370266562,
 			:obs_section => "eb",
-			# :observable => true,
+			:observable => true,
 			:orderby => "period",
 		)
 		HTTP.get(url; query)
@@ -560,6 +567,9 @@ if !isempty(username)
 	# seem to convert nulls to missings, so using the raw string directly instead
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
 end;
+
+# ╔═╡ a3e4ffc7-56e3-46c0-83bf-e35cdb6a45c7
+first(df, 4)
 
 # ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
 function to_hms(ra_deci)
@@ -740,7 +750,7 @@ ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
-	implot(img_test; title=header(img_test)["DATE-OBS"], colorbar=false)
+	plot_img(img_test - img_dark)
 	plot!(ap; color=:lightgreen)
 end
 
@@ -2964,8 +2974,10 @@ version = "1.4.1+1"
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
+# ╠═4a6a8956-f6e5-433a-a87b-056a5123ffbc
 # ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
+# ╠═a3e4ffc7-56e3-46c0-83bf-e35cdb6a45c7
 # ╠═46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╠═77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
