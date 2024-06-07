@@ -531,7 +531,7 @@ Comparison stars are a great way to deal with systematics from our atmosphere if
 md"""
 ### Observing other eclipsing binary systems
 
-The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding other potential eclipsing binary targets. Below, we briefly show how this could be accessed in a programmatic fashion using [their API](https://targettool.aavso.org/TargetTool/api).
+The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding other potential eclipsing binary targets. Below, we briefly show how this could be accessed in a programmatic fashion using [their API](https://targettool.aavso.org/TargetTool/api). If there is interest, we may publish a separate lab on just this topic.
 """
 
 # ╔═╡ 4a6a8956-f6e5-433a-a87b-056a5123ffbc
@@ -551,9 +551,14 @@ md"""
 """
 
 # ╔═╡ 7f9c4c42-26fc-4d02-805f-97732032b272
-md"""
-We are now ready to query AAVSO for eclipsing binaries observable from our location. Using the [HTTP.jl](https://juliaweb.github.io/HTTP.jl/stable/) package, we send our query using the following format:
-"""
+if !isempty(username)
+	md"""
+	We are now ready to query AAVSO for eclipsing binaries observable from our location. Using the [HTTP.jl](https://juliaweb.github.io/HTTP.jl/stable/) package, we send our query using the following format:
+
+	```julia
+	```
+	"""
+end
 
 # ╔═╡ 399f53c5-b654-4330-9ead-4d795917b03b
 if !isempty(username)
@@ -573,15 +578,7 @@ if !isempty(username)
 	# The table under the `target` field of the JSONTable does not
 	# seem to convert nulls to missings, so using the raw string directly instead
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
-
-	md"""
-	```julia
-	HTTP.get(url; query)
-	```
-
-	where
-	"""
-end
+end;
 
 # ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
 function to_hms(ra_deci)
@@ -650,7 +647,7 @@ DataFrames.PrettyTables.pretty_table(HTML, df_selected;
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
-#### Determining observation parameters
+### Determining observation parameters
 
 Once a target has been found, here's how we might estimate an observing setup for it based on the [Unistellar Exposure Time and Gain Calculator](https://docs.google.com/spreadsheets/d/1niBg5LOkWyR8lCCOOcIo6OHt5kwlc3vnsBsazo7YfXQ/edit#gid=0).
 """
@@ -700,9 +697,6 @@ md"""
 ---
 ## Notebook setup 🔧
 """
-
-# ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
-TableOfContents(; depth=4)
 
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
 const clims = (150, 700)
@@ -771,6 +765,9 @@ end
 	plot_img(img)
 	plot!(ap; color=:lightgreen)
 end fps=2
+
+# ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
+TableOfContents(; depth=4)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2989,8 +2986,8 @@ version = "1.4.1+1"
 # ╟─4a6a8956-f6e5-433a-a87b-056a5123ffbc
 # ╟─e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╟─4a779bd1-bcf3-41e1-af23-ed00d29db46f
-# ╟─7f9c4c42-26fc-4d02-805f-97732032b272
-# ╟─399f53c5-b654-4330-9ead-4d795917b03b
+# ╠═7f9c4c42-26fc-4d02-805f-97732032b272
+# ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
