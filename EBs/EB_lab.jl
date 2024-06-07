@@ -849,7 +849,7 @@ end
 @gif for (ap, img) in zip(aps, imgs_sci_dark)
 	plot_img(img)
 	plot!(ap; color=:lightgreen)
-end fps=2
+end fps=2;
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents(; depth=4)
