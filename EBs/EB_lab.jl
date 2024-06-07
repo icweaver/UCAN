@@ -532,27 +532,34 @@ md"""
 ### Observing other eclipsing binary systems
 
 The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding other potential eclipsing binary targets. Below, we briefly show how this could be accessed in a programmatic fashion using [their API](https://targettool.aavso.org/TargetTool/api).
-
-!!! note
-	The username is your [AAVSO API key](https://targettool.aavso.org/TargetTool/api/index). Do not share this with others.
 """
 
 # ╔═╡ 4a6a8956-f6e5-433a-a87b-056a5123ffbc
 md"""
-We start by [creating an account](https://targettool.aavso.org/init/default/user/register?_next=/init/default/index) on AAVSO. This will allow us to access their API and set our observing location
+We start by [creating an account](https://targettool.aavso.org/init/default/user/register?_next=/init/default/index) on AAVSO. This will allow us to access their API and set our observing location. Once we are logged in, our API key will be displayed as a string of numbers and letters across the top of the [API webpage](https://targettool.aavso.org/TargetTool/api). Copy this key into the field below to continue.
 """
 
 # ╔═╡ e2b8a7ae-cd74-4a9b-a853-f436262676b6
-username = open("data/.aavso_api") do f
-	readline(f)
-end;
+md"""
+Enter API key: $(@bind username TextField() |> confirm)
+"""
+
+# ╔═╡ 4a779bd1-bcf3-41e1-af23-ed00d29db46f
+md"""
+!!! note
+	This is your personal key. Do not share this with others.
+"""
+
+# ╔═╡ 7f9c4c42-26fc-4d02-805f-97732032b272
+md"""
+We are now ready to query AAVSO for eclipsing binaries observable from our location. Using the [HTTP.jl](https://juliaweb.github.io/HTTP.jl/stable/) package, we send our query using the following format:
+"""
 
 # ╔═╡ 399f53c5-b654-4330-9ead-4d795917b03b
 if !isempty(username)
-	r = let
-		passwd = "api_token"
+	r = begin
 		api = "targettool.aavso.org/TargetTool/api/v1/targets"
-		url = "https://$(username):$(passwd)@$(api)"
+		url = "https://$(username):api_token@$(api)"
 		query = (
 			# :lat => -33.448155603864784,
 			# :longitude => 70.66004370266562,
@@ -566,10 +573,15 @@ if !isempty(username)
 	# The table under the `target` field of the JSONTable does not
 	# seem to convert nulls to missings, so using the raw string directly instead
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
-end;
 
-# ╔═╡ a3e4ffc7-56e3-46c0-83bf-e35cdb6a45c7
-first(df, 4)
+	md"""
+	```julia
+	HTTP.get(url; query)
+	```
+
+	where
+	"""
+end
 
 # ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
 function to_hms(ra_deci)
@@ -2974,13 +2986,14 @@ version = "1.4.1+1"
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
-# ╠═4a6a8956-f6e5-433a-a87b-056a5123ffbc
-# ╠═e2b8a7ae-cd74-4a9b-a853-f436262676b6
-# ╠═399f53c5-b654-4330-9ead-4d795917b03b
-# ╠═a3e4ffc7-56e3-46c0-83bf-e35cdb6a45c7
-# ╠═46e6bba9-0c83-47b7-be17-f41301efa18e
-# ╠═77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
-# ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╟─4a6a8956-f6e5-433a-a87b-056a5123ffbc
+# ╟─e2b8a7ae-cd74-4a9b-a853-f436262676b6
+# ╟─4a779bd1-bcf3-41e1-af23-ed00d29db46f
+# ╟─7f9c4c42-26fc-4d02-805f-97732032b272
+# ╟─399f53c5-b654-4330-9ead-4d795917b03b
+# ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
+# ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
+# ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╠═26c41d51-3922-449f-93b4-d45b20b010d0
 # ╠═95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
@@ -2992,9 +3005,9 @@ version = "1.4.1+1"
 # ╠═95a67d04-0a32-4e55-ac2f-d004ecc9ca84
 # ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
+# ╟─285a56b7-bb3e-4929-a853-2fc69c77bdcb
+# ╟─08b18b14-15dc-4ca8-981c-1e35e41e6dfa
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
-# ╠═08b18b14-15dc-4ca8-981c-1e35e41e6dfa
-# ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
