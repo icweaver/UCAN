@@ -556,7 +556,44 @@ if !isempty(username)
 	We are now ready to query AAVSO for eclipsing binaries observable from our location. Using the [HTTP.jl](https://juliaweb.github.io/HTTP.jl/stable/) package, we send our query using the following format:
 
 	```julia
+	HTTP.get(url; query)
 	```
+	
+	where `url` is entry point into the API (essentially what we would manually type into our browser window):
+	
+	```julia
+	url = "https://{your api key here}:api_token@targettool.aavso.org/TargetTool/api/v1/targets"
+	```
+	
+	and `query` is a key, value map (dictionary) of settings that we would like to pass to the API:
+
+	```julia
+	query = (
+			# :lat => -33.448155603864784,
+			# :longitude => 70.66004370266562,
+			:obs_section => "eb",
+			:observable => true,
+			:orderby => "period",
+		)
+	```
+	
+	Below is a list from the API page of what each of the inputs mean:
+
+	!!! tip ""
+		`obs_section` An array with observing sections of interest. You may use one or more of: ac,ep,cv,eb,spp,lpv,yso,het,misc,all. Default is ['ac'] (Alerts & Campaigns).
+		
+		`observable` If true, filters out targets which are visible at the telescope location during the following nighttime period. Default is false.
+		`orderby` Order by any of the output fields below, except for observability_times and solar_conjunction.
+		
+		`reverse` If true, reverses the order. Default is false.
+		
+		`latitude` Latitude of telescope. South is negative, North is positive. If not provided, the user's settings are assumed.
+		
+		`longitude` Longitude of telescope. West is negative, East is positive. If not provided, the user's settings are assumed.
+		
+		`targetaltitude` Minimum altitude that the telescope can observe in degrees relative to the horizon. If not provided, the user's settings are assumed.
+		
+		`sunaltitude` Altitude of sun at dusk and dawn in degrees. If not provided, the user's settings are assumed.
 	"""
 end
 
@@ -579,6 +616,9 @@ if !isempty(username)
 	# seem to convert nulls to missings, so using the raw string directly instead
 	df = DataFrame(jsontable(chop(String(r.body); head=12)))
 end;
+
+# ╔═╡ 63a6aefa-6c9c-4708-88bf-a14d5c71fd94
+query
 
 # ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
 function to_hms(ra_deci)
@@ -2986,8 +3026,9 @@ version = "1.4.1+1"
 # ╟─4a6a8956-f6e5-433a-a87b-056a5123ffbc
 # ╟─e2b8a7ae-cd74-4a9b-a853-f436262676b6
 # ╟─4a779bd1-bcf3-41e1-af23-ed00d29db46f
-# ╠═7f9c4c42-26fc-4d02-805f-97732032b272
+# ╟─7f9c4c42-26fc-4d02-805f-97732032b272
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
+# ╠═63a6aefa-6c9c-4708-88bf-a14d5c71fd94
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
