@@ -14,9 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 26c41d51-3922-449f-93b4-d45b20b010d0
-using Dates, Unitful
-
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -29,11 +26,11 @@ begin
 	using HTTP, JSONTables
 	
 	# Visualization and analysis
-	using AstroImages, Plots, AstroAngles
-	import PlutoPlotly
-	using Photometry
-	AstroImages.set_cmap!(:cividis)
-end;
+	using AstroImages, AstroAngles, Photometry, ImageCore
+	using Plots: Plots
+	using PlutoPlotly: PlutoPlotly
+	using Dates, Unitful 
+end
 
 # ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
 md"""
@@ -188,8 +185,8 @@ and with the following header fields:
 df_sci |> names |> print
 
 # ╔═╡ cdf14fe8-6b27-44eb-b789-6cf072f4d184
-md"""
-!!! note "What does |> do?"
+msg(md"""
+!!! note ""
 	Also known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to the next. For example,
 
 	```julia
@@ -201,7 +198,7 @@ md"""
 	```julia
 	[1, 4, 5, 6] |> sum |> sqrt # 4.0
 	```
-""" |> msg
+"""; title=md"What does `|>` do?")
 
 # ╔═╡ a38466b5-c7fb-4600-904b-b7ddd7afd272
 md"""
@@ -247,7 +244,7 @@ md"""
 
 A critical step in analyzing astronomical data is accounting for sources of noise that may impact our final image. This process is known as calibration, and its purpose is to increase the signal-to-noise ratio of our science images. Here is a nice summary modified from [Practical Astrophotography](https://practicalastrophotography.com/a-brief-guide-to-calibration-frames/) of three of the main sources of noise that we typically try to calibrate for:
 
-!!! tip ""
+!!! note ""
 	**Bias Frames:** "Your camera inherently has a base level of read-out noise as it reads the values of each pixel of the sensor, called bias. When averaged out, basically it’s an inherent gradient to the sensor. Bias Frames are meant to capture this so it can be removed."
 
 	**Dark Frames:** "When taking a long exposure, the chip will introduce "thermal" noise. Its level is magnified by three things – temperature, exposure time, and ISO. Dark frames are used to subtract this sensor noise from your image and mitigate "hot or cold" pixels. (Some modern sensors automatically calculate dark levels and don't need dark frames). Dark Frames also will calibrate the chip so all pixels give the same value when not exposed to light."
@@ -276,7 +273,7 @@ Here we can see the thermal noise from our sensor and underlying gradient encode
 """
 
 # ╔═╡ 9b0f6aac-d3c1-4b4e-8cfc-956891af1999
-plot(
+Plots.plot(
 	implot(img_sci; title="science image", clims=(2550, 3050)),
 	implot(img_sci - img_dark; title="dark subtracted", clims=(2550, 3050));
 	layout=(1, 2),
@@ -484,19 +481,20 @@ end
 
 # ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
 md"""
-We use the package [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) here instead of Plots.jl so that we can create a nice interactive plot of our light curve
-
-The cumbersome PlutoPlotly qualifiers are being used because we are using multiple plotting packages in this notebook for demonstration purposes. They can be dropped for convenience if just using one package by doing
-
-```julia
-using PlutoPlotly
-```
-
-instead of
-
-```julia
-import PlutoPlotly
-```
+!!! note "Why so verbose?"
+	We use the package [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) here instead of Plots.jl so that we can create a nice interactive plot of our light curve
+	
+	The cumbersome PlutoPlotly qualifiers are being used because we are using multiple plotting packages in this notebook for demonstration purposes. They can be dropped for convenience if just using one package by doing
+	
+	```julia
+	using PlutoPlotly
+	```
+	
+	instead of
+	
+	```julia
+	using PlutoPlotly: PlutoPlotly
+	```
 """ |> msg
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
@@ -536,13 +534,23 @@ The AAVSO has a great [web interface](https://targettool.aavso.org/) for finding
 
 # ╔═╡ 4a6a8956-f6e5-433a-a87b-056a5123ffbc
 md"""
-We start by [creating an account](https://targettool.aavso.org/init/default/user/register?_next=/init/default/index) on AAVSO. This will allow us to access their API and set our observing location. Once we are logged in, our API key will be displayed as a string of numbers and letters across the top of the [API webpage](https://targettool.aavso.org/TargetTool/api). Copy this key into the field below to continue.
+We start by [creating an account](https://targettool.aavso.org/init/default/user/register?_next=/init/default/index) on AAVSO. This will allow us to access their API and set our observing location. Once we are logged in, our API key will be displayed as a string of numbers and letters across the top of the [API webpage](https://targettool.aavso.org/TargetTool/api). Copy this key into a text file in your `data` folder, and name it `.aavso_key`. Select the `Query` button below to submit your query to AAVSO.
 """
 
-# ╔═╡ e2b8a7ae-cd74-4a9b-a853-f436262676b6
-md"""
-Enter API key: $(@bind username TextField() |> confirm)
-"""
+# ╔═╡ 502fe5dd-d55a-450e-9209-60dc05f395dc
+@bind submit_query Button("Submit Query")
+
+# ╔═╡ 14998fe7-8e22-4cd4-87c6-9a5334d218ed
+begin
+	submit_query
+	username = if isfile("data/.aavso_key")
+		@debug "API key found"
+		readline("data/.aavso_key")
+	else
+		@debug "No API key found"
+		""
+	end
+end;
 
 # ╔═╡ 4a779bd1-bcf3-41e1-af23-ed00d29db46f
 md"""
@@ -569,8 +577,8 @@ if !isempty(username)
 
 	```julia
 	query = (
-		# :lat => -33.448155603864784,
-		# :longitude => 70.66004370266562,
+		# :lat => 37.76329102360394,
+		# :longitude => -122.41190624779506,
 		:obs_section => "eb",
 		:observable => true,
 		:orderby => "period",
@@ -604,8 +612,8 @@ if !isempty(username)
 		api = "targettool.aavso.org/TargetTool/api/v1/targets"
 		url = "https://$(username):api_token@$(api)"
 		query = (
-			# :lat => -33.448155603864784,
-			# :longitude => 70.66004370266562,
+			:lat => 37.76329102360394,
+			:longitude => -122.41190624779506,
 			:obs_section => "eb",
 			:observable => true,
 			:orderby => "period",
@@ -649,7 +657,7 @@ if !isempty(username)
 	2. Fairly short period (period < 3 days)
 	3. Includes an ephemeris (the `other_info` column must include this link)
 	
-	Lastly, we select the columns that we care about and make some visual transforms for convenience (e.g., including units, converting decimal RA and Dec to `H M S`, and `∘ ' "` format, respectively, for easy copy-pasting into the Unistellar app):
+	Lastly, we select the columns that we care about and make some visual transforms for convenience (e.g., including units, converting decimal RA and Dec to `[h m s]`, and `[° ' "]` format, respectively, for easy copy-pasting into the Unistellar app):
 	"""
 end
 
@@ -687,7 +695,6 @@ if !isempty(username)
 	df_selected = @chain df begin
 		dropmissing
 		@rsubset begin
-			# all(!isnothing, (:min_mag, :max_mag, :other_info, :period)) &&
 			:min_mag - :max_mag ≥ 0.5 &&
 			:min_mag_band == "V" && :max_mag_band == "V" &&
 			:period ≤ 3.0 &&
@@ -716,19 +723,17 @@ if !isempty(username)
 	# Make the view a bit nicer in the browser
 	DataFrames.PrettyTables.pretty_table(HTML, df_selected;
 		maximum_columns_width = "max-width",
-		# header = (
-		# 	names(df_selected),
-		# 	["", "", "(J2000.0)", "(J2000.0)", "", "", "", ""]
-		# ),
 		show_subheader = false,
 		header_alignment = :c,
 	)
 end
 
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
-md"""
-We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the expected eclipse times.
-"""
+if !isempty(username)
+	md"""
+	We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times.
+	"""
+end
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
@@ -783,8 +788,19 @@ md"""
 ## Notebook setup 🔧
 """
 
+# ╔═╡ 2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
+md"""
+### Convenience functions and settings
+"""
+
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
-const clims = (150, 700)
+const clims = (150, 700);
+
+# ╔═╡ 834662a3-d1ae-418f-b023-ac455ca99b85
+AstroImages.set_cmap!(:cividis);
+
+# ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
+TableOfContents(; depth=4)
 
 # ╔═╡ 08b18b14-15dc-4ca8-981c-1e35e41e6dfa
 plot_img(img; clims=clims) = implot(img;
@@ -795,7 +811,7 @@ plot_img(img; clims=clims) = implot(img;
 )
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-@gif for img in imgs_sci_dark
+Plots.@gif for img in imgs_sci_dark
 	plot_img(img)
 end fps=2;
 
@@ -842,20 +858,19 @@ ap = CircularAperture.(sources.y, sources.x, 24);
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
 	plot_img(img_test - img_dark)
-	plot!(ap; color=:lightgreen)
+	Plots.plot!(ap; color=:lightgreen)
 end
 
 # ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-@gif for (ap, img) in zip(aps, imgs_sci_dark)
+Plots.@gif for (ap, img) in zip(aps, imgs_sci_dark)
 	plot_img(img)
-	plot!(ap; color=:lightgreen)
+	Plots.plot!(ap; color=:lightgreen)
 end fps=2;
 
-# ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
-TableOfContents(; depth=4)
-
-# ╔═╡ ccadc893-59f7-4e9e-bc4e-b9cb073d4433
-ENV["COLUMNS"] = 100
+# ╔═╡ 5b079ce8-3b28-4fe7-8df2-f576c2c948f5
+md"""
+### Packages
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -867,6 +882,7 @@ CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -881,6 +897,7 @@ CCDReduction = "~0.2.2"
 CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.2"
 HTTP = "~1.10.6"
+ImageCore = "~0.9.4"
 JSONTables = "~1.0.3"
 Photometry = "~0.9.0"
 Plots = "~1.40.4"
@@ -895,7 +912,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "98dad0d12fbe8ff44984d37cbd3378b576f0677b"
+project_hash = "dab5fcccc04c5320d77bc81630c7f7af5128ed02"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -3072,7 +3089,8 @@ version = "1.4.1+1"
 # ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╟─4a6a8956-f6e5-433a-a87b-056a5123ffbc
-# ╟─e2b8a7ae-cd74-4a9b-a853-f436262676b6
+# ╟─502fe5dd-d55a-450e-9209-60dc05f395dc
+# ╟─14998fe7-8e22-4cd4-87c6-9a5334d218ed
 # ╟─4a779bd1-bcf3-41e1-af23-ed00d29db46f
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
 # ╟─399f53c5-b654-4330-9ead-4d795917b03b
@@ -3083,7 +3101,6 @@ version = "1.4.1+1"
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
-# ╠═26c41d51-3922-449f-93b4-d45b20b010d0
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
@@ -3092,10 +3109,12 @@ version = "1.4.1+1"
 # ╠═95a67d04-0a32-4e55-ac2f-d004ecc9ca84
 # ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
-# ╟─285a56b7-bb3e-4929-a853-2fc69c77bdcb
-# ╟─08b18b14-15dc-4ca8-981c-1e35e41e6dfa
+# ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
+# ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
+# ╠═834662a3-d1ae-418f-b023-ac455ca99b85
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
-# ╠═ccadc893-59f7-4e9e-bc4e-b9cb073d4433
+# ╟─08b18b14-15dc-4ca8-981c-1e35e41e6dfa
+# ╟─5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
