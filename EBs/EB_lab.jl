@@ -733,7 +733,7 @@ end
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
 	md"""
-	We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times.
+	We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
 	"""
 end
 
