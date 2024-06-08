@@ -30,7 +30,9 @@ begin
 	using Plots: Plots
 	using PlutoPlotly: PlutoPlotly
 	using Dates, Unitful 
-end
+
+	AstroImages.set_cmap!(:cividis);
+end;
 
 # ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
 md"""
@@ -378,8 +380,8 @@ But which one of these potential candidates is our target star? Based on the GIF
 """
 
 # ╔═╡ 9517c714-8214-47be-beb0-80f8e8fa483a
-md"""
-!!! note "What is this `do` syntax?"
+msg(md"""
+!!! tip ""
 
 	`do` blocks are handy ways for breaking up long lines. For example, the above could equivalently be written like this:
 	
@@ -392,7 +394,7 @@ md"""
 		filter(candidate -> candidate.value == max_val, candidates)
 	end
 	```
-""" |> msg
+"""; title=md"What is this `do` syntax?")
 
 # ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
 md"""
@@ -795,9 +797,6 @@ md"""
 
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
 const clims = (150, 700);
-
-# ╔═╡ 834662a3-d1ae-418f-b023-ac455ca99b85
-AstroImages.set_cmap!(:cividis);
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents(; depth=4)
@@ -3111,7 +3110,6 @@ version = "1.4.1+1"
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
-# ╠═834662a3-d1ae-418f-b023-ac455ca99b85
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╟─08b18b14-15dc-4ca8-981c-1e35e41e6dfa
 # ╟─5b079ce8-3b28-4fe7-8df2-f576c2c948f5
