@@ -692,6 +692,9 @@ df_ephem = let
 	end
 end
 
+# ╔═╡ eb574396-c356-479e-a821-7a0801cf5184
+
+
 # ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 md"""
 #### Convenience functions
@@ -779,6 +782,14 @@ target = (
 	v_mag = 7.9,
 	t_exp = 1400,
 )
+
+# ╔═╡ 9c482134-6336-4e72-9d30-87080ebae671
+@bind yee PlutoUI.combine() do Child
+	md"""
+	``V_\mathrm{mag}``: $(Child(:v_mag, NumberField(1:10)))
+	``t_\mathrm{exp} (ms)``: $(Child(:t_exp, NumberField(1:100:1_000)))
+	"""
+end
 
 # ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
 # Keep these values untouched
@@ -3160,16 +3171,18 @@ version = "1.4.1+1"
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 # ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
+# ╠═eb574396-c356-479e-a821-7a0801cf5184
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
-# ╠═f290d98e-5a8a-44f2-bee5-b93738abe9af
-# ╠═3c601844-3bb9-422c-ab1e-b40f7e7cb0df
-# ╠═f26f890b-5924-497c-85a3-eff924d0470b
-# ╠═95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+# ╠═9c482134-6336-4e72-9d30-87080ebae671
+# ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
+# ╟─3c601844-3bb9-422c-ab1e-b40f7e7cb0df
+# ╟─f26f890b-5924-497c-85a3-eff924d0470b
+# ╟─95a67d04-0a32-4e55-ac2f-d004ecc9ca84
 # ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
