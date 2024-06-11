@@ -613,7 +613,7 @@ end
 
 # ╔═╡ 399f53c5-b654-4330-9ead-4d795917b03b
 if !isempty(username)
-	r = begin
+	df = let
 		api = "targettool.aavso.org/TargetTool/api/v1/targets"
 		url = "https://$(username):api_token@$(api)"
 		query = (
@@ -623,12 +623,12 @@ if !isempty(username)
 			:observable => true,
 			:orderby => "period",
 		)
-		HTTP.get(url; query)
+		r = HTTP.get(url; query)
+		
+		# The table under the `target` field of the JSONTable does not
+		# seem to convert nulls to missings, so using the raw string directly instead
+		DataFrame(jsontable(chop(String(r.body); head=12)))
 	end
-
-	# The table under the `target` field of the JSONTable does not
-	# seem to convert nulls to missings, so using the raw string directly instead
-	df = DataFrame(jsontable(chop(String(r.body); head=12)))
 
 	md"""
 	Feel free to uncomment the lat/long fields below to override the default location set in your profile, or add any additional settings.
@@ -682,11 +682,21 @@ function deep_link(df_selected, star_name)
 	dec =
 end
 
+# ╔═╡ d32b16de-2ca4-4fca-9ea8-125f846f6523
+url = "https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169"
+
+# ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
+function ephem(url)
+	st = scrape_tables()
+	ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows)
+	return ephem_title, ephem_data
+end
+
 # ╔═╡ c2d5ba10-1601-46f7-9e32-39cc0584bd0e
-st = scrape_tables("https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169");
+
 
 # ╔═╡ 9e856f06-8645-498c-9ce3-433823ec5cdb
-ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows);
+ephem_title, ephem_data... = ephem(url)
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
 df_ephem = let
@@ -705,6 +715,7 @@ df_ephem = let
 			:Mid = DateTime(:Mid, fmt)
 			:End = DateTime(:End, fmt)
 		end
+		
 		@rtransform begin
 			:Duration = canonicalize(:End - :Start)
 			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
@@ -3190,11 +3201,13 @@ version = "1.4.1+1"
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
 # ╟─399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
-# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
 # ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
 # ╠═f7874b56-130a-4dcd-9e96-0738da934f39
+# ╠═d32b16de-2ca4-4fca-9ea8-125f846f6523
+# ╠═2ea12676-7b5e-444e-8025-5bf9c05d0e2d
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 # ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
