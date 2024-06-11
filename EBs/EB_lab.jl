@@ -14,6 +14,12 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 4db2b734-4832-46b8-ac81-87b524fb5de5
+using Gumbo, Cascadia
+
+# ╔═╡ f7874b56-130a-4dcd-9e96-0738da934f39
+using TableScraper
+
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -663,9 +669,30 @@ if !isempty(username)
 	"""
 end
 
+# ╔═╡ c2d5ba10-1601-46f7-9e32-39cc0584bd0e
+st = scrape_tables("https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169")
+
+# ╔═╡ 939123a7-50c3-417d-9126-e1442ec3831d
+
+
+# ╔═╡ 9e856f06-8645-498c-9ce3-433823ec5cdb
+ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows)
+
+# ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
+DataFrame(
+	mapreduce(permutedims, vcat, ephem_data),
+	ephem_title,
+)
+
+# ╔═╡ 5e489b8e-7604-4548-85a5-68771cea66e1
+s = "08 Jun 2024 07:01"
+
+# ╔═╡ efc2e7c9-da62-4d9d-a81d-1a180b553c27
+DateTime(s, dateformat"dd u YYYY HH:MM")
+
 # ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 md"""
-### Convenience functions
+#### Convenience functions
 """
 
 # ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
@@ -877,9 +904,11 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 AstroAngles = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
+Cascadia = "54eefc05-d75b-58de-a785-1a3403f0919f"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Gumbo = "708ec375-b3d6-5a57-a7ce-8257bf98657a"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
@@ -887,14 +916,17 @@ Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+TableScraper = "3d876f86-fca9-45cb-9864-7207416dc431"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 AstroAngles = "~0.1.3"
 AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
+Cascadia = "~1.0.2"
 CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.2"
+Gumbo = "~0.8.2"
 HTTP = "~1.10.6"
 ImageCore = "~0.9.4"
 JSONTables = "~1.0.3"
@@ -902,6 +934,7 @@ Photometry = "~0.9.0"
 Plots = "~1.40.4"
 PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.59"
+TableScraper = "~0.1.4"
 Unitful = "~1.20.0"
 """
 
@@ -911,7 +944,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "dab5fcccc04c5320d77bc81630c7f7af5128ed02"
+project_hash = "1dca4d3154af37c6817fc1ef716a15499ffa19f5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -929,6 +962,11 @@ deps = ["Pkg"]
 git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
 version = "1.3.2"
+
+[[deps.AbstractTrees]]
+git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
+uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+version = "0.4.5"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "LinearAlgebra", "MacroTools", "Markdown", "Test"]
@@ -1110,6 +1148,12 @@ deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jl
 git-tree-sha1 = "a2f1c8c668c8e3cb4cca4e57a8efdb09067bb3fd"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.0+2"
+
+[[deps.Cascadia]]
+deps = ["AbstractTrees", "Gumbo"]
+git-tree-sha1 = "c0769cbd930aea932c0912c4d2749c619a263fc1"
+uuid = "54eefc05-d75b-58de-a785-1a3403f0919f"
+version = "1.0.2"
 
 [[deps.CatIndices]]
 deps = ["CustomUnitRanges", "OffsetArrays"]
@@ -1541,6 +1585,18 @@ version = "1.3.14+0"
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
+
+[[deps.Gumbo]]
+deps = ["AbstractTrees", "Gumbo_jll", "Libdl"]
+git-tree-sha1 = "a1a138dfbf9df5bace489c7a9d5196d6afdfa140"
+uuid = "708ec375-b3d6-5a57-a7ce-8257bf98657a"
+version = "0.8.2"
+
+[[deps.Gumbo_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "29070dee9df18d9565276d68a596854b1764aa38"
+uuid = "528830af-5a63-567c-a44a-034ed33b8444"
+version = "0.10.2+0"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
@@ -2562,6 +2618,12 @@ git-tree-sha1 = "c0405d3f8189bb9a9755e429c6ea2138fca7e31f"
 uuid = "9ce81f87-eacc-4366-bf80-b621a3098ee2"
 version = "0.1.0"
 
+[[deps.TableScraper]]
+deps = ["Cascadia", "Gumbo", "HTTP", "Tables"]
+git-tree-sha1 = "73e600bad3a9b6c04c8a055e316fd60dd2ab372c"
+uuid = "3d876f86-fca9-45cb-9864-7207416dc431"
+version = "0.1.4"
+
 [[deps.TableTraits]]
 deps = ["IteratorInterfaceExtensions"]
 git-tree-sha1 = "c06b2f539df1c6efa794486abfb6ed2022561a39"
@@ -3096,6 +3158,14 @@ version = "1.4.1+1"
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 # ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
+# ╠═4db2b734-4832-46b8-ac81-87b524fb5de5
+# ╠═f7874b56-130a-4dcd-9e96-0738da934f39
+# ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
+# ╠═939123a7-50c3-417d-9126-e1442ec3831d
+# ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
+# ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
+# ╠═5e489b8e-7604-4548-85a5-68771cea66e1
+# ╠═efc2e7c9-da62-4d9d-a81d-1a180b553c27
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
