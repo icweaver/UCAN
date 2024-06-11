@@ -14,9 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ f7874b56-130a-4dcd-9e96-0738da934f39
-using TableScraper
-
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -26,7 +23,7 @@ begin
 	using CCDReduction, DataFramesMeta
 
 	# Web
-	using HTTP, JSONTables
+	using HTTP, JSONTables, TableScraper
 	
 	# Visualization and analysis
 	using AstroImages, AstroAngles, Photometry, ImageCore
@@ -687,16 +684,13 @@ url = "https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=
 
 # ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
 function ephem(url)
-	st = scrape_tables()
+	st = scrape_tables(url)
 	ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows)
 	return ephem_title, ephem_data
 end
 
-# ╔═╡ c2d5ba10-1601-46f7-9e32-39cc0584bd0e
-
-
-# ╔═╡ 9e856f06-8645-498c-9ce3-433823ec5cdb
-ephem_title, ephem_data... = ephem(url)
+# ╔═╡ 6e79c007-52c7-4a59-912f-63fd1e0294c4
+ephem_title, ephem_data = ephem(url)
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
 df_ephem = let
@@ -797,7 +791,7 @@ rec_gain(g) = round(g, RoundDown) - 1.0
 
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 if !isempty(username)
-	df_selected = @chain df begin
+	df_candidates = @chain df begin
 		dropmissing
 		@rsubset begin
 			:min_mag > 9.0 &&
@@ -837,7 +831,7 @@ if !isempty(username)
 	end
 
 	# Make the view a bit nicer in the browser
-	DataFrames.PrettyTables.pretty_table(HTML, df_selected;
+	DataFrames.PrettyTables.pretty_table(HTML, df_candidates;
 		maximum_columns_width = "max-width",
 		show_subheader = false,
 		header_alignment = :c,
@@ -847,9 +841,15 @@ end
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
 	md"""
-	We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
+	We now have $(nrow(df_candidates)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
 	"""
 end
+
+# ╔═╡ a5f3915c-6eed-480d-9aed-8fdd052a324a
+@bind star_name Select(df_candidates.star_name)
+
+# ╔═╡ 6fb9a3fa-3528-4fc4-be37-d41daa0aad31
+df_selected = @rsubset df_candidates :star_name == star_name
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let
@@ -3203,13 +3203,13 @@ version = "1.4.1+1"
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 # ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
+# ╠═a5f3915c-6eed-480d-9aed-8fdd052a324a
+# ╠═6fb9a3fa-3528-4fc4-be37-d41daa0aad31
 # ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
 # ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
-# ╠═f7874b56-130a-4dcd-9e96-0738da934f39
 # ╠═d32b16de-2ca4-4fca-9ea8-125f846f6523
 # ╠═2ea12676-7b5e-444e-8025-5bf9c05d0e2d
-# ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
-# ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
+# ╠═6e79c007-52c7-4a59-912f-63fd1e0294c4
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
