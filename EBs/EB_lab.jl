@@ -579,7 +579,7 @@ if !isempty(username)
 
 	```julia
 	query = (
-		# :lat => 37.76329102360394,
+		# :latitude => 37.76329102360394,
 		# :longitude => -122.41190624779506,
 		:obs_section => "eb",
 		:observable => true,
@@ -619,8 +619,8 @@ if !isempty(username)
 		api = "targettool.aavso.org/TargetTool/api/v1/targets"
 		url = "https://$(username):api_token@$(api)"
 		query = (
-			:lat => 37.76329102360394,
-			:longitude => -122.41190624779506,
+			# :latitude => 37.76329102360394,
+			# :longitude => -122.41190624779506,
 			:obs_section => "eb",
 			# :observable => true,
 			:orderby => "period",
@@ -645,14 +645,14 @@ msg(md"""
 	```
 """; title=md"What is `$()`?")
 
-# ╔═╡ f2c89a20-09d5-47f4-8f83-e59477723d95
-nrow(df_all) # Total number of targets in our list
-
 # ╔═╡ 29197489-441c-440d-9ce2-3dbd17fa53fc
 msg(md"""
 !!! tip ""
 	We are using the [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) package to make the output of our DataFrames look a bit nicer in the browser. Try right clicking on the function to see where it is defined.
 """; title=md"What is `pretty`?")
+
+# ╔═╡ f2c89a20-09d5-47f4-8f83-e59477723d95
+nrow(df_all) # Total number of targets in our list
 
 # ╔═╡ a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 if !isempty(username)
@@ -1012,7 +1012,7 @@ end
 Plots.@gif for (ap, img) in zip(aps, imgs_sci_dark)
 	plot_img(img)
 	Plots.plot!(ap; color=:lightgreen)
-end fps=2;
+end fps=2
 
 # ╔═╡ 5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 md"""
@@ -3275,8 +3275,8 @@ version = "1.4.1+1"
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─c5e95837-fd89-4da2-b480-13f5ed788fb6
 # ╠═edda8d09-ec46-4a0b-b1b2-b1289ee5456e
-# ╠═f2c89a20-09d5-47f4-8f83-e59477723d95
 # ╟─29197489-441c-440d-9ce2-3dbd17fa53fc
+# ╠═f2c89a20-09d5-47f4-8f83-e59477723d95
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 # ╠═4042bc32-1a14-4408-974d-7405fd8c8ccc
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
@@ -3294,11 +3294,11 @@ version = "1.4.1+1"
 # ╟─829cde81-be03-4a9f-a853-28f84923d493
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╟─9c482134-6336-4e72-9d30-87080ebae671
+# ╟─90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
 # ╟─3c601844-3bb9-422c-ab1e-b40f7e7cb0df
 # ╟─f26f890b-5924-497c-85a3-eff924d0470b
 # ╟─95a67d04-0a32-4e55-ac2f-d004ecc9ca84
-# ╟─90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
