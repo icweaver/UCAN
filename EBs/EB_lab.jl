@@ -666,6 +666,18 @@ if !isempty(username)
 	"""
 end
 
+# ╔═╡ cf4aa798-197a-477e-bc5f-221b76c615e2
+let
+	s = "unistellar://science/transit?ra=306.12392&dec=16.76215&c=3970&et=3970&g=24&d=15070&t=1718084340000&scitag=e240611HATZPZ23b"
+	split(s, ['?', '&'])
+end
+
+# ╔═╡ 66fb208f-e623-4955-8862-716aec07884a
+1718080410
+
+# ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
+deep_link = ""
+
 # ╔═╡ c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 st = scrape_tables("https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169");
 
@@ -712,6 +724,9 @@ function to_dms(ra_deci)
 	format_angle(dms; delim=["° ", "' ", "\""])
 end
 
+# ╔═╡ ed3dcd20-d44c-48ee-beca-5b0ed0f41bad
+to_dms(16.76215)
+
 # ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
 function get_url(s)
 	url = @chain s begin
@@ -749,6 +764,7 @@ if !isempty(username)
 			# :min_mag
 			# :max_mag
 			:ephem = get_url(:other_info)
+			# :unix_timestamp = (last ∘ first)(:observability_times)
 		end
 	
 		sort(:period)
@@ -3162,8 +3178,12 @@ version = "1.4.1+1"
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
 # ╟─399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
-# ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
+# ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
+# ╠═66fb208f-e623-4955-8862-716aec07884a
+# ╠═ed3dcd20-d44c-48ee-beca-5b0ed0f41bad
+# ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
 # ╠═f7874b56-130a-4dcd-9e96-0738da934f39
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 # ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
