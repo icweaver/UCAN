@@ -785,11 +785,16 @@ target = (
 
 # ╔═╡ 9c482134-6336-4e72-9d30-87080ebae671
 @bind yee PlutoUI.combine() do Child
-	md"""
-	``V_\mathrm{mag}``: $(Child(:v_mag, NumberField(1:10)))
-	``t_\mathrm{exp} (ms)``: $(Child(:t_exp, NumberField(1:100:1_000)))
+	cm"""
+	!!! tip "Observation inputs"
+	
+	``V_\mathrm{mag}``: $(Child(:v_mag, NumberField(1:0.1:20)))
+	``t_\mathrm{exp} (ms)``: $(Child(:t_exp, NumberField(100:100:4_000)))
 	"""
 end
+
+# ╔═╡ 8a94e39d-a9bc-4d5a-9437-a4fccbbeac83
+yee.t_exp
 
 # ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
 # Keep these values untouched
@@ -3179,6 +3184,7 @@ version = "1.4.1+1"
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
 # ╠═9c482134-6336-4e72-9d30-87080ebae671
+# ╠═8a94e39d-a9bc-4d5a-9437-a4fccbbeac83
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
 # ╟─3c601844-3bb9-422c-ab1e-b40f7e7cb0df
 # ╟─f26f890b-5924-497c-85a3-eff924d0470b
