@@ -14,9 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 4db2b734-4832-46b8-ac81-87b524fb5de5
-using Gumbo, Cascadia
-
 # ╔═╡ f7874b56-130a-4dcd-9e96-0738da934f39
 using TableScraper
 
@@ -909,11 +906,9 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 AstroAngles = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
-Cascadia = "54eefc05-d75b-58de-a785-1a3403f0919f"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
-Gumbo = "708ec375-b3d6-5a57-a7ce-8257bf98657a"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
@@ -928,10 +923,8 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 AstroAngles = "~0.1.3"
 AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
-Cascadia = "~1.0.2"
 CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.2"
-Gumbo = "~0.8.2"
 HTTP = "~1.10.6"
 ImageCore = "~0.9.4"
 JSONTables = "~1.0.3"
@@ -949,7 +942,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "1dca4d3154af37c6817fc1ef716a15499ffa19f5"
+project_hash = "c1e596819e5e9da4eaf6911fe0380718cf0c7699"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -3163,7 +3156,6 @@ version = "1.4.1+1"
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 # ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
-# ╠═4db2b734-4832-46b8-ac81-87b524fb5de5
 # ╠═f7874b56-130a-4dcd-9e96-0738da934f39
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 # ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
