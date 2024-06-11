@@ -666,12 +666,6 @@ if !isempty(username)
 	"""
 end
 
-# ╔═╡ 9b9c9f47-d97b-4817-978f-e326a5574450
-df
-
-# ╔═╡ 9652010f-28ca-4faa-97e8-74985f01f5ee
-Millisecond(15300000) |> Second
-
 # ╔═╡ cf4aa798-197a-477e-bc5f-221b76c615e2
 let
 	s = "unistellar://science/transit?ra=306.12392&dec=16.76215&c=3970&et=3970&g=24&d=15070&t=1718084340000&scitag=e240611HATZPZ23b"
@@ -682,6 +676,9 @@ end
 function deep_link(df; scitag ra, dec, c=4_000, et=4_000)
 	return "unistellar://science/transit?ra=306.12392&dec=16.76215&c=3970&et=3970&g=24&d=15070&t=1718084340000&scitag=e240611HATZPZ23b"
 end
+
+# ╔═╡ 267c0321-04c7-48a4-94df-a58acc62cd03
+"c=4&d=5"
 
 # ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
 function ephem(url)
@@ -859,25 +856,17 @@ df_ephem = let
 	fmt = dateformat"dd u YYYY HH:MM"
 	@chain df begin
 		@rtransform begin
-	# 		# :Epoch = parse(Float64, :Epoch)
+			# :Epoch = parse(Float64, :Epoch)
 			:star_name = only(df_selected.star_name)
-	# 		# :ra = only(df_selected.ra)
-	# 		# :ra_deci = only(df_selected.ra_deci)
-	# 		# :dec = only(df_selected.dec)
-	# 		# :dec_deci = only(df_selected.dec_deci)
 			:Start = DateTime(:Start, fmt)
 			:Mid = DateTime(:Mid, fmt)
 			:End = DateTime(:End, fmt)
 		end
 		
-		# @rtransform begin
-		# 	:Duration = canonicalize(:End - :Start)
-		# 	:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
-		# end
-
-		# @rtransform begin
-		# 	:Duration_s = Second(:End - :Start)
-		# end
+		@rtransform begin
+			:Duration_s = Second(:End - :Start)
+			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
+		end
 	end
 end
 
@@ -889,6 +878,7 @@ df_obs = let
 		:ra
 		:dec
 		:Start
+		:gain
 	end
 end
 
@@ -3248,10 +3238,9 @@ version = "1.4.1+1"
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
 # ╠═3f548bb1-37b0-48b7-a35c-d7701405a64e
 # ╠═31c23e2b-1a2d-41aa-81c1-22868e241f7e
-# ╠═9b9c9f47-d97b-4817-978f-e326a5574450
-# ╠═9652010f-28ca-4faa-97e8-74985f01f5ee
 # ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
 # ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
+# ╠═267c0321-04c7-48a4-94df-a58acc62cd03
 # ╟─2ea12676-7b5e-444e-8025-5bf9c05d0e2d
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
