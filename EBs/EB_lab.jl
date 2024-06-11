@@ -670,17 +670,14 @@ if !isempty(username)
 end
 
 # ╔═╡ c2d5ba10-1601-46f7-9e32-39cc0584bd0e
-st = scrape_tables("https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169")
-
-# ╔═╡ 939123a7-50c3-417d-9126-e1442ec3831d
-
+st = scrape_tables("https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169");
 
 # ╔═╡ 9e856f06-8645-498c-9ce3-433823ec5cdb
-ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows)
+ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows);
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
-DataFrame(
-	mapreduce(permutedims, vcat, ephem_data),
+df_ephem = DataFrame(
+	stack(ephem_data; dims=1),
 	ephem_title,
 )
 
@@ -3161,7 +3158,6 @@ version = "1.4.1+1"
 # ╠═4db2b734-4832-46b8-ac81-87b524fb5de5
 # ╠═f7874b56-130a-4dcd-9e96-0738da934f39
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
-# ╠═939123a7-50c3-417d-9126-e1442ec3831d
 # ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
 # ╠═5e489b8e-7604-4548-85a5-68771cea66e1
