@@ -673,7 +673,11 @@ let
 end
 
 # ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
-deep_link = ""
+function deep_link(df_selected, star_name)
+	mission = "unistellar://science/transit"
+	ra = 
+	dec =
+end
 
 # ╔═╡ c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 st = scrape_tables("https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169");
@@ -734,52 +738,6 @@ function get_url(s)
 	Markdown.parse("""[link]($(url))""")
 end
 
-# ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
-if !isempty(username)
-	df_selected = @chain df begin
-		dropmissing
-		@rsubset begin
-			:min_mag - :max_mag ≥ 0.5 &&
-			:min_mag_band == "V" && :max_mag_band == "V" &&
-			:period ≤ 3.0 &&
-			startswith(:other_info, "[[Ephemeris")
-		end
-	
-		@rselect begin
-			:star_name
-			:period = round(Minute, :period * u"d") |> canonicalize
-			:ra = to_hms(:ra)
-			:dec = to_dms(:dec)
-			:min_mag
-			# :min_mag_band
-			:max_mag
-			:V_mag = (:min_mag + :max_mag) / 2.0
-			# :max_mag_band
-			# :var_type
-			# :min_mag
-			# :max_mag
-			:ephem = get_url(:other_info)
-			# :unix_timestamp = (last ∘ first)(:observability_times)
-		end
-	
-		sort(:period)
-	end
-
-	# Make the view a bit nicer in the browser
-	DataFrames.PrettyTables.pretty_table(HTML, df_selected;
-		maximum_columns_width = "max-width",
-		show_subheader = false,
-		header_alignment = :c,
-	)
-end
-
-# ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
-if !isempty(username)
-	md"""
-	We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
-	"""
-end
-
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
 ### Determining observation parameters
@@ -801,7 +759,7 @@ end
 
 # ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
 # Keep these values untouched
-baseline = (
+const baseline = (
 	v_mag = 11.7, # V (mag)
 	t_exp = 3200.0, # Exptime (ms)
 	gain = 25.0, # Gain (dB)
@@ -823,13 +781,69 @@ max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
 # Recommended gain
 rec_gain(g) = round(g, RoundDown) - 1.0
 
+# ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
+if !isempty(username)
+	df_selected = @chain df begin
+		dropmissing
+		@rsubset begin
+			:min_mag > 9.0 &&
+			:min_mag - :max_mag ≥ 0.5 &&
+			:min_mag_band == "V" && :max_mag_band == "V" &&
+			:period ≤ 3.0 &&
+			startswith(:other_info, "[[Ephemeris")
+		end
+		
+		@rselect begin
+			:star_name
+			:period = round(Minute, :period * u"d") |> canonicalize
+			:ra = to_hms(:ra)
+			:dec = to_dms(:dec)
+			:min_mag
+			# :min_mag_band
+			:max_mag
+			:V_mag = (:min_mag + :max_mag) / 2.0
+			# :max_mag_band
+			# :var_type
+			# :min_mag
+			# :max_mag
+			:ephem = get_url(:other_info)
+			# :unix_timestamp = (last ∘ first)(:observability_times)
+		end
+
+		@rtransform begin
+			:gain = let
+				target = (v_mag=:V_mag, t_exp=4_000) # Default to max exp
+				f_factor = flux_factor(target, baseline) 
+				gain_max = max_gain(baseline, f_factor)
+				rec_gain(gain_max)
+			end
+		end
+	
+		sort(:period)
+	end
+
+	# Make the view a bit nicer in the browser
+	DataFrames.PrettyTables.pretty_table(HTML, df_selected;
+		maximum_columns_width = "max-width",
+		show_subheader = false,
+		header_alignment = :c,
+	)
+end
+
+# ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
+if !isempty(username)
+	md"""
+	We now have $(nrow(df_selected)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
+	"""
+end
+
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let
-	flux = flux_factor(target, baseline)
-	gain_max = max_gain(baseline, flux)
+	f_factor = flux_factor(target, baseline)
+	gain_max = max_gain(baseline, f_factor)
 	gain_recommended = rec_gain(gain_max)
 
-	@debug "Observing params" flux gain_max gain_recommended
+	@debug "Observing params" f_factor gain_max gain_recommended
 end
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
@@ -3189,10 +3203,10 @@ version = "1.4.1+1"
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╟─9c482134-6336-4e72-9d30-87080ebae671
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
-# ╟─3c601844-3bb9-422c-ab1e-b40f7e7cb0df
-# ╟─f26f890b-5924-497c-85a3-eff924d0470b
-# ╟─95a67d04-0a32-4e55-ac2f-d004ecc9ca84
-# ╟─90b6ef16-7853-46e1-bbd6-cd1a904c442a
+# ╠═3c601844-3bb9-422c-ab1e-b40f7e7cb0df
+# ╠═f26f890b-5924-497c-85a3-eff924d0470b
+# ╠═95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+# ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
