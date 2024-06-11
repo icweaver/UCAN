@@ -679,42 +679,11 @@ function deep_link(df_selected, star_name)
 	dec =
 end
 
-# ╔═╡ d32b16de-2ca4-4fca-9ea8-125f846f6523
-url = "https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=167169"
-
 # ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
 function ephem(url)
 	st = scrape_tables(url)
 	ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows)
 	return ephem_title, ephem_data
-end
-
-# ╔═╡ 6e79c007-52c7-4a59-912f-63fd1e0294c4
-ephem_title, ephem_data = ephem(url)
-
-# ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
-df_ephem = let
-	
-	df = DataFrame(
-		stack(ephem_data; dims=1),
-		ephem_title,
-	)
-
-	fmt = dateformat"dd u YYYY HH:MM"
-	
-	@chain df begin
-		@rtransform begin
-			# :Epoch = parse(Float64, :Epoch)
-			:Start = DateTime(:Start, fmt)
-			:Mid = DateTime(:Mid, fmt)
-			:End = DateTime(:End, fmt)
-		end
-		
-		@rtransform begin
-			:Duration = canonicalize(:End - :Start)
-			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
-		end
-	end
 end
 
 # ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
@@ -742,8 +711,6 @@ function get_url(s)
 		split("]]")
 		first
 	end
-	
-	Markdown.parse("""[link]($(url))""")
 end
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
@@ -801,6 +768,8 @@ if !isempty(username)
 			startswith(:other_info, "[[Ephemeris")
 		end
 		
+		@rtransform :ephem_url = get_url(:other_info)
+		
 		@rselect begin
 			:star_name
 			:period = round(Minute, :period * u"d") |> canonicalize
@@ -814,10 +783,10 @@ if !isempty(username)
 			# :var_type
 			# :min_mag
 			# :max_mag
-			:ephem = get_url(:other_info)
+			:ephem_link = Markdown.parse("""[link]($(:ephem_url))""")
+			:ephem_url
 			# :unix_timestamp = (last ∘ first)(:observability_times)
 		end
-
 		@rtransform begin
 			:gain = let
 				target = (v_mag=:V_mag, t_exp=4_000) # Default to max exp
@@ -850,6 +819,35 @@ end
 
 # ╔═╡ 6fb9a3fa-3528-4fc4-be37-d41daa0aad31
 df_selected = @rsubset df_candidates :star_name == star_name
+
+# ╔═╡ d32b16de-2ca4-4fca-9ea8-125f846f6523
+url = only(df_selected.ephem_url)
+
+# ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
+df_ephem = let
+	ephem_title, ephem_data = ephem(url)
+	
+	df = DataFrame(
+		stack(ephem_data; dims=1),
+		ephem_title,
+	)
+
+	fmt = dateformat"dd u YYYY HH:MM"
+	
+	@chain df begin
+		@rtransform begin
+			# :Epoch = parse(Float64, :Epoch)
+			:Start = DateTime(:Start, fmt)
+			:Mid = DateTime(:Mid, fmt)
+			:End = DateTime(:End, fmt)
+		end
+		
+		@rtransform begin
+			:Duration = canonicalize(:End - :Start)
+			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
+		end
+	end
+end
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let
@@ -3201,20 +3199,19 @@ version = "1.4.1+1"
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
 # ╟─399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
-# ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╠═a5f3915c-6eed-480d-9aed-8fdd052a324a
 # ╠═6fb9a3fa-3528-4fc4-be37-d41daa0aad31
+# ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
 # ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
 # ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
 # ╠═d32b16de-2ca4-4fca-9ea8-125f846f6523
 # ╠═2ea12676-7b5e-444e-8025-5bf9c05d0e2d
-# ╠═6e79c007-52c7-4a59-912f-63fd1e0294c4
-# ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
-# ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╟─9c482134-6336-4e72-9d30-87080ebae671
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
