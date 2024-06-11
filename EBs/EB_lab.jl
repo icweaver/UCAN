@@ -617,7 +617,7 @@ if !isempty(username)
 			:lat => 37.76329102360394,
 			:longitude => -122.41190624779506,
 			:obs_section => "eb",
-			:observable => true,
+			# :observable => true,
 			:orderby => "period",
 		)
 		r = HTTP.get(url; query)
@@ -757,9 +757,10 @@ Once a target has been found, here's how we might estimate an observing setup fo
 	!!! tip "Observation inputs"
 		Enter your target's visual magnitude and desired exposure time (in milliseconds) below:
 	
-		``V_\mathrm{mag}``: $(Child(:v_mag, NumberField(1:0.1:20; default=11.7))) 
 		
-		``t_\mathrm{exp}``: $(Child(:t_exp, NumberField(100:100:4_000; default=3_200))) (ms)
+		|``V_\mathrm{mag}``|``t_\mathrm{exp}``|
+		|------------------|------------------|
+		|$(Child(:v_mag, NumberField(1:0.1:20; default=11.7)))|$(Child(:t_exp, NumberField(100:100:4_000; default=3_200))) (ms)
 	"""
 end
 
@@ -844,14 +845,10 @@ if !isempty(username)
 			:ephem_url
 		end
 	end
+end;
 
-	# Make the view a bit nicer in the browser
-	DataFrames.PrettyTables.pretty_table(HTML, df_candidates;
-		maximum_columns_width = "max-width",
-		show_subheader = false,
-		header_alignment = :c,
-	)
-end
+# ╔═╡ 4042bc32-1a14-4408-974d-7405fd8c8ccc
+df_candidates |> pretty
 
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
@@ -861,7 +858,7 @@ if !isempty(username)
 	For convenience, we can also select one of the targets below to generate a table of deep links:
 
 	!!! note
-		This will only work for targets that have a complete ephemeris.
+		This will only work for targets that have a complete ephemeris. All times are in UTC.
 	"""
 end
 
@@ -896,34 +893,36 @@ df_ephem = let
 			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
 		end
 	end
-end
+end;
 
 # ╔═╡ 31c23e2b-1a2d-41aa-81c1-22868e241f7e
-df_obs = let
-	df = leftjoin(df_selected, df_ephem; on=:star_name)
-	fmt = dateformat"yymmdd"
-	@rselect df begin
-		:star_name
-		:ra
-		:dec
-		:Duration
-		:Start
-		:Mid
-		:End
-		:deep_link = deep_link(;
-			ra = :ra_deci,
-			dec = :dec_deci,
-			g = :gain,
-			d = round(Int, 1.5 * :Duration_s),
-			t = round(Int, :unix_timestamp_ms),
-			scitag = join([
-				"e",
-				Dates.format(:Mid, fmt),
-				replace(:star_name, " " => ""),
-			]),
-		)
+if !isempty(username)
+	df_obs = let
+		df = leftjoin(df_selected, df_ephem; on=:star_name)
+		fmt = dateformat"yymmdd"
+		@rselect df begin
+			:star_name
+			:Start
+			:Mid
+			:End
+			:Duration
+			:deep_link = deep_link(;
+				ra = :ra_deci,
+				dec = :dec_deci,
+				g = :gain,
+				d = round(Int, 1.5 * :Duration_s),
+				t = round(Int, :unix_timestamp_ms),
+				scitag = join([
+					"e",
+					Dates.format(:Mid, fmt),
+					replace(:star_name, " " => ""),
+				]),
+			)
+		end
 	end
-end |> pretty
+
+	df_obs |> pretty
+end
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let
@@ -3279,12 +3278,13 @@ version = "1.4.1+1"
 # ╟─29197489-441c-440d-9ce2-3dbd17fa53fc
 # ╠═f2c89a20-09d5-47f4-8f83-e59477723d95
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
-# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═4042bc32-1a14-4408-974d-7405fd8c8ccc
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╟─a5f3915c-6eed-480d-9aed-8fdd052a324a
-# ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
-# ╠═3f548bb1-37b0-48b7-a35c-d7701405a64e
 # ╟─31c23e2b-1a2d-41aa-81c1-22868e241f7e
+# ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╟─8a39fbbb-6b5b-4744-a875-469c289242fb
+# ╟─3f548bb1-37b0-48b7-a35c-d7701405a64e
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
@@ -3293,7 +3293,7 @@ version = "1.4.1+1"
 # ╟─d359625e-5a95-49aa-86e4-bc65299dd92a
 # ╟─829cde81-be03-4a9f-a853-28f84923d493
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
-# ╟─9c482134-6336-4e72-9d30-87080ebae671
+# ╠═9c482134-6336-4e72-9d30-87080ebae671
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
 # ╠═3c601844-3bb9-422c-ab1e-b40f7e7cb0df
 # ╠═f26f890b-5924-497c-85a3-eff924d0470b
