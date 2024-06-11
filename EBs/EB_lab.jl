@@ -676,16 +676,24 @@ st = scrape_tables("https://www.aavso.org/vsx/index.php?view=detail.ephemeris&no
 ephem_title, ephem_data... = filter(x -> length(x) == 4, first(st).rows);
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
-df_ephem = DataFrame(
-	stack(ephem_data; dims=1),
-	ephem_title,
-)
+df_ephem = let
+	
+	df = DataFrame(
+		stack(ephem_data; dims=1),
+		ephem_title,
+	)
 
-# ╔═╡ 5e489b8e-7604-4548-85a5-68771cea66e1
-s = "08 Jun 2024 07:01"
-
-# ╔═╡ efc2e7c9-da62-4d9d-a81d-1a180b553c27
-DateTime(s, dateformat"dd u YYYY HH:MM")
+	fmt = dateformat"dd u YYYY HH:MM"
+	
+	@chain df begin
+		@rtransform begin
+			# :Epoch = parse(Float64, :Epoch)
+			:Start = DateTime(:Start, fmt)
+			:Mid = DateTime(:Mid, fmt)
+			:End = DateTime(:End, fmt)
+		end
+	end
+end
 
 # ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 md"""
@@ -3160,8 +3168,6 @@ version = "1.4.1+1"
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 # ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
-# ╠═5e489b8e-7604-4548-85a5-68771cea66e1
-# ╠═efc2e7c9-da62-4d9d-a81d-1a180b553c27
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
