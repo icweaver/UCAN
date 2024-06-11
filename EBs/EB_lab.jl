@@ -610,7 +610,7 @@ end
 
 # ╔═╡ 399f53c5-b654-4330-9ead-4d795917b03b
 if !isempty(username)
-	df = let
+	df_all = let
 		api = "targettool.aavso.org/TargetTool/api/v1/targets"
 		url = "https://$(username):api_token@$(api)"
 		query = (
@@ -642,7 +642,7 @@ if !isempty(username)
 	We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the first 10 results:
 	"""
 
-	DataFrames.PrettyTables.pretty_table(HTML, df;
+	DataFrames.PrettyTables.pretty_table(HTML, df_all;
 		max_num_of_rows = 10,	
 		maximum_columns_width = "max-width",
 		show_subheader = false,
@@ -653,7 +653,7 @@ end
 # ╔═╡ a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 if !isempty(username)
 	md"""
-	It looks like we have $(nrow(df)) hits, great! Let's filter these using some convenience syntax from [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to subset for targets that are easily observable, i.e., with our following criteria:
+	It looks like we have $(nrow(df_all)) hits, great! Let's filter these using some convenience syntax from [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to subset for targets that are easily observable, i.e., with our following criteria:
 
 	1. Large change in brightness (at least half a mag)
 	2. Fairly short period (period < 3 days)
@@ -666,6 +666,12 @@ if !isempty(username)
 	"""
 end
 
+# ╔═╡ 9b9c9f47-d97b-4817-978f-e326a5574450
+df
+
+# ╔═╡ 9652010f-28ca-4faa-97e8-74985f01f5ee
+Millisecond(15300000) |> Second
+
 # ╔═╡ cf4aa798-197a-477e-bc5f-221b76c615e2
 let
 	s = "unistellar://science/transit?ra=306.12392&dec=16.76215&c=3970&et=3970&g=24&d=15070&t=1718084340000&scitag=e240611HATZPZ23b"
@@ -673,18 +679,8 @@ let
 end
 
 # ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
-function deep_link(df; c=4_000, et=4_000)
-	return (
-		mission = "unistellar://science/transit"
-		ra = df.ra
-		dec = df.dec
-		c = 
-		et = 
-		g = 
-		d = 
-		t = 
-		scitag =
-	)
+function deep_link(df; scitag ra, dec, c=4_000, et=4_000)
+	return "unistellar://science/transit?ra=306.12392&dec=16.76215&c=3970&et=3970&g=24&d=15070&t=1718084340000&scitag=e240611HATZPZ23b"
 end
 
 # ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
@@ -770,7 +766,7 @@ rec_gain(g) = round(g, RoundDown) - 1.0
 
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 if !isempty(username)
-	df_candidates = @chain df begin
+	df_candidates = @chain df_all begin
 		dropmissing
 		@rsubset begin
 			:min_mag > 9.0 &&
@@ -782,7 +778,7 @@ if !isempty(username)
 		
 		@rtransform :ephem_url = get_url(:other_info)
 		
-		@rselect begin
+		@rtransform begin
 			:star_name
 			:period = round(Minute, :period * u"d") |> canonicalize
 			:ra = to_hms(:ra)
@@ -811,6 +807,19 @@ if !isempty(username)
 		end
 	
 		sort(:period)
+
+		@select begin
+			:star_name
+			:period
+			:ra
+			:ra_deci
+			:dec
+			:dec_deci
+			:V_mag
+			:gain
+			:ephem_link
+			:ephem_url
+		end
 	end
 
 	# Make the view a bit nicer in the browser
@@ -824,14 +833,19 @@ end
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
 	md"""
-	We now have $(nrow(df_candidates)) prime candidates that we can plan our observations for. Clicking on the `ephem` link in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
+	We now have $(nrow(df_candidates)) prime candidates that we can plan our observations for. Clicking on the `ephem_link` in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
+
+	For convenience, we can also select one of the targets below to generate a table of deep links:
+
+	!!! note
+		This will only work for targets that have a complete ephemeris.
 	"""
 end
 
 # ╔═╡ a5f3915c-6eed-480d-9aed-8fdd052a324a
 @bind star_name Select(df_candidates.star_name)
 
-# ╔═╡ 6fb9a3fa-3528-4fc4-be37-d41daa0aad31
+# ╔═╡ 3f548bb1-37b0-48b7-a35c-d7701405a64e
 df_selected = @rsubset df_candidates :star_name == star_name
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
@@ -844,20 +858,37 @@ df_ephem = let
 
 	fmt = dateformat"dd u YYYY HH:MM"
 	@chain df begin
-		@rselect begin
-			# :Epoch = parse(Float64, :Epoch)
+		@rtransform begin
+	# 		# :Epoch = parse(Float64, :Epoch)
 			:star_name = only(df_selected.star_name)
-			:ra = only(df_selected.ra)
-			:dec = only(df_selected.dec)
+	# 		# :ra = only(df_selected.ra)
+	# 		# :ra_deci = only(df_selected.ra_deci)
+	# 		# :dec = only(df_selected.dec)
+	# 		# :dec_deci = only(df_selected.dec_deci)
 			:Start = DateTime(:Start, fmt)
 			:Mid = DateTime(:Mid, fmt)
 			:End = DateTime(:End, fmt)
 		end
 		
-		@rtransform begin
-			:Duration = canonicalize(:End - :Start)
-			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
-		end
+		# @rtransform begin
+		# 	:Duration = canonicalize(:End - :Start)
+		# 	:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
+		# end
+
+		# @rtransform begin
+		# 	:Duration_s = Second(:End - :Start)
+		# end
+	end
+end
+
+# ╔═╡ 31c23e2b-1a2d-41aa-81c1-22868e241f7e
+df_obs = let
+	df = leftjoin(df_selected, df_ephem; on=:star_name)
+	@select df begin
+		:star_name
+		:ra
+		:dec
+		:Start
 	end
 end
 
@@ -3211,14 +3242,17 @@ version = "1.4.1+1"
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
 # ╟─399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
-# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
-# ╠═a5f3915c-6eed-480d-9aed-8fdd052a324a
-# ╠═6fb9a3fa-3528-4fc4-be37-d41daa0aad31
+# ╟─a5f3915c-6eed-480d-9aed-8fdd052a324a
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
+# ╠═3f548bb1-37b0-48b7-a35c-d7701405a64e
+# ╠═31c23e2b-1a2d-41aa-81c1-22868e241f7e
+# ╠═9b9c9f47-d97b-4817-978f-e326a5574450
+# ╠═9652010f-28ca-4faa-97e8-74985f01f5ee
 # ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
 # ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
-# ╠═2ea12676-7b5e-444e-8025-5bf9c05d0e2d
+# ╟─2ea12676-7b5e-444e-8025-5bf9c05d0e2d
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
