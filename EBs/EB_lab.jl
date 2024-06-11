@@ -608,6 +608,11 @@ if !isempty(username)
 	"""
 end
 
+# ╔═╡ e927297b-9d63-4448-8245-4d73d1fbff27
+md"""
+Feel free to uncomment the lat/long fields below to override the default location set in your profile, or add any additional settings. We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the first 10 results:
+"""
+
 # ╔═╡ 399f53c5-b654-4330-9ead-4d795917b03b
 if !isempty(username)
 	df_all = let
@@ -626,11 +631,7 @@ if !isempty(username)
 		# seem to convert nulls to missings, so using the raw string directly instead
 		DataFrame(jsontable(chop(String(r.body); head=12)))
 	end
-
-	md"""
-	Feel free to uncomment the lat/long fields below to override the default location set in your profile, or add any additional settings. We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the first 10 results:
-	"""
-end
+end;
 
 # ╔═╡ c5e95837-fd89-4da2-b480-13f5ed788fb6
 msg(md"""
@@ -644,14 +645,14 @@ msg(md"""
 	```
 """; title=md"What is `$()`?")
 
+# ╔═╡ f2c89a20-09d5-47f4-8f83-e59477723d95
+nrow(df_all) # Total number of targets in our list
+
 # ╔═╡ 29197489-441c-440d-9ce2-3dbd17fa53fc
 msg(md"""
 !!! tip ""
 	We are using the [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) package to make the output of our DataFrames look a bit nicer in the browser. Try right clicking on the function to see where it is defined.
 """; title=md"What is `pretty`?")
-
-# ╔═╡ f2c89a20-09d5-47f4-8f83-e59477723d95
-nrow(df_all)
 
 # ╔═╡ a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 if !isempty(username)
@@ -853,9 +854,7 @@ df_candidates |> pretty
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
 	md"""
-	We now have $(nrow(df_candidates)) prime candidates that we can plan our observations for. Clicking on the `ephem_link` in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month.
-
-	For convenience, we can also select one of the targets below to generate a table of deep links:
+	We now have $(nrow(df_candidates)) prime candidates that we can plan our observations for. Clicking on the `ephem_link` in the last column should take us to a table on AAVSO with the predicted eclipse times for the next month. For convenience, we can also select one of the targets below to generate a table of deep links:
 
 	!!! note
 		This will only work for targets that have a complete ephemeris. All times are in UTC.
@@ -3272,11 +3271,12 @@ version = "1.4.1+1"
 # ╟─14998fe7-8e22-4cd4-87c6-9a5334d218ed
 # ╟─4a779bd1-bcf3-41e1-af23-ed00d29db46f
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
+# ╟─e927297b-9d63-4448-8245-4d73d1fbff27
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─c5e95837-fd89-4da2-b480-13f5ed788fb6
 # ╠═edda8d09-ec46-4a0b-b1b2-b1289ee5456e
-# ╟─29197489-441c-440d-9ce2-3dbd17fa53fc
 # ╠═f2c89a20-09d5-47f4-8f83-e59477723d95
+# ╟─29197489-441c-440d-9ce2-3dbd17fa53fc
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 # ╠═4042bc32-1a14-4408-974d-7405fd8c8ccc
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
@@ -3293,12 +3293,12 @@ version = "1.4.1+1"
 # ╟─d359625e-5a95-49aa-86e4-bc65299dd92a
 # ╟─829cde81-be03-4a9f-a853-28f84923d493
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
-# ╠═9c482134-6336-4e72-9d30-87080ebae671
+# ╟─9c482134-6336-4e72-9d30-87080ebae671
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
-# ╠═3c601844-3bb9-422c-ab1e-b40f7e7cb0df
-# ╠═f26f890b-5924-497c-85a3-eff924d0470b
-# ╠═95a67d04-0a32-4e55-ac2f-d004ecc9ca84
-# ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
+# ╟─3c601844-3bb9-422c-ab1e-b40f7e7cb0df
+# ╟─f26f890b-5924-497c-85a3-eff924d0470b
+# ╟─95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+# ╟─90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
