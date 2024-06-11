@@ -672,9 +672,6 @@ let
 	split(s, ['?', '&'])
 end
 
-# ╔═╡ 66fb208f-e623-4955-8862-716aec07884a
-1718080410
-
 # ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
 deep_link = ""
 
@@ -701,6 +698,7 @@ df_ephem = let
 			:Mid = DateTime(:Mid, fmt)
 			:End = DateTime(:End, fmt)
 		end
+		@rtransform :unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
 	end
 end
 
@@ -723,9 +721,6 @@ function to_dms(ra_deci)
 	dms = round.(deg2dms(ra_deci); digits=2)
 	format_angle(dms; delim=["° ", "' ", "\""])
 end
-
-# ╔═╡ ed3dcd20-d44c-48ee-beca-5b0ed0f41bad
-to_dms(16.76215)
 
 # ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
 function get_url(s)
@@ -3181,8 +3176,6 @@ version = "1.4.1+1"
 # ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
-# ╠═66fb208f-e623-4955-8862-716aec07884a
-# ╠═ed3dcd20-d44c-48ee-beca-5b0ed0f41bad
 # ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
 # ╠═f7874b56-130a-4dcd-9e96-0738da934f39
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
