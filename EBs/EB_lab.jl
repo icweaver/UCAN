@@ -705,12 +705,12 @@ df_ephem = let
 			:Mid = DateTime(:Mid, fmt)
 			:End = DateTime(:End, fmt)
 		end
-		@rtransform :unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
+		@rtransform begin
+			:Duration = canonicalize(:End - :Start)
+			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
+		end
 	end
 end
-
-# ╔═╡ eb574396-c356-479e-a821-7a0801cf5184
-
 
 # ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 md"""
@@ -3198,7 +3198,6 @@ version = "1.4.1+1"
 # ╠═c2d5ba10-1601-46f7-9e32-39cc0584bd0e
 # ╠═9e856f06-8645-498c-9ce3-433823ec5cdb
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
-# ╠═eb574396-c356-479e-a821-7a0801cf5184
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
