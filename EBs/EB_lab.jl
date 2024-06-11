@@ -776,25 +776,17 @@ md"""
 Once a target has been found, here's how we might estimate an observing setup for it based on the [Unistellar Exposure Time and Gain Calculator](https://docs.google.com/spreadsheets/d/1niBg5LOkWyR8lCCOOcIo6OHt5kwlc3vnsBsazo7YfXQ/edit#gid=0).
 """
 
-# ╔═╡ 77a2953f-2af2-45f6-b01d-61134e53f47c
-# Enter target visual magnitude and desired exposure time
-target = (
-	v_mag = 7.9,
-	t_exp = 1400,
-)
-
 # ╔═╡ 9c482134-6336-4e72-9d30-87080ebae671
-@bind yee PlutoUI.combine() do Child
+@bind target PlutoUI.combine() do Child
 	cm"""
 	!!! tip "Observation inputs"
+		Enter your target's visual magnitude and desired exposure time (in milliseconds) below:
 	
-	``V_\mathrm{mag}``: $(Child(:v_mag, NumberField(1:0.1:20)))
-	``t_\mathrm{exp} (ms)``: $(Child(:t_exp, NumberField(100:100:4_000)))
+		``V_\mathrm{mag}``: $(Child(:v_mag, NumberField(1:0.1:20; default=11.7))) 
+		
+		``t_\mathrm{exp}``: $(Child(:t_exp, NumberField(100:100:4_000; default=3_200))) (ms)
 	"""
 end
-
-# ╔═╡ 8a94e39d-a9bc-4d5a-9437-a4fccbbeac83
-yee.t_exp
 
 # ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
 # Keep these values untouched
@@ -822,11 +814,11 @@ rec_gain(g) = round(g, RoundDown) - 1.0
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let
-	f = flux_factor(target, baseline)
-	g = max_gain(baseline, f)
-	g_rec = rec_gain(g)
+	flux = flux_factor(target, baseline)
+	gain_max = max_gain(baseline, flux)
+	gain_recommended = rec_gain(gain_max)
 
-	@debug "Observing params" f g g_rec
+	@debug "Observing params" flux gain_max gain_recommended
 end
 
 # ╔═╡ 7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
@@ -3182,14 +3174,12 @@ version = "1.4.1+1"
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
-# ╠═77a2953f-2af2-45f6-b01d-61134e53f47c
-# ╠═9c482134-6336-4e72-9d30-87080ebae671
-# ╠═8a94e39d-a9bc-4d5a-9437-a4fccbbeac83
+# ╟─9c482134-6336-4e72-9d30-87080ebae671
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
 # ╟─3c601844-3bb9-422c-ab1e-b40f7e7cb0df
 # ╟─f26f890b-5924-497c-85a3-eff924d0470b
 # ╟─95a67d04-0a32-4e55-ac2f-d004ecc9ca84
-# ╠═90b6ef16-7853-46e1-bbd6-cd1a904c442a
+# ╟─90b6ef16-7853-46e1-bbd6-cd1a904c442a
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
