@@ -836,24 +836,19 @@ df_selected = @rsubset df_candidates :star_name == star_name
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
 df_ephem = let
-	star_name = only(df_selected.star_name)
-	ra = only(df_selected.ra)
-	url = only(df_selected.ephem_url)
-	
-	ephem_title, ephem_data = ephem(url)
-	
+	ephem_title, ephem_data = ephem(only(df_selected.ephem_url))
 	df = DataFrame(
 		stack(ephem_data; dims=1),
 		ephem_title,
 	)
 
 	fmt = dateformat"dd u YYYY HH:MM"
-	
 	@chain df begin
 		@rselect begin
 			# :Epoch = parse(Float64, :Epoch)
-			:star_name = star_name
-			:ra = ra
+			:star_name = only(df_selected.star_name)
+			:ra = only(df_selected.ra)
+			:dec = only(df_selected.dec)
 			:Start = DateTime(:Start, fmt)
 			:Mid = DateTime(:Mid, fmt)
 			:End = DateTime(:End, fmt)
