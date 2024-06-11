@@ -628,27 +628,30 @@ if !isempty(username)
 	end
 
 	md"""
-	Feel free to uncomment the lat/long fields below to override the default location set in your profile, or add any additional settings.
-
-	!!! tip "What is `$()`?"
-
-		This is Julia's way of interpolating strings. For example:
-	
-		```julia
-		animal = "dogs"
-		"I like $(animal)!" # I like dogs!
-		```
-
-	We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the first 10 results:
+	Feel free to uncomment the lat/long fields below to override the default location set in your profile, or add any additional settings. We store our query in a [DataFrame](https://dataframes.juliadata.org/stable/) to view the first 10 results:
 	"""
-
-	DataFrames.PrettyTables.pretty_table(HTML, df_all;
-		max_num_of_rows = 10,	
-		maximum_columns_width = "max-width",
-		show_subheader = false,
-		header_alignment = :c,
-	)
 end
+
+# ╔═╡ c5e95837-fd89-4da2-b480-13f5ed788fb6
+msg(md"""
+!!! tip ""
+
+	This is Julia's way of interpolating strings. For example:
+	
+	```julia
+	animal = "dogs"
+	"I like $(animal)!" # I like dogs!
+	```
+"""; title=md"What is `$()`?")
+
+# ╔═╡ 29197489-441c-440d-9ce2-3dbd17fa53fc
+msg(md"""
+!!! tip ""
+	We are using the [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) package to make the output of our DataFrames look a bit nicer in the browser. Try right clicking on the function to see where it is defined.
+"""; title=md"What is `pretty`?")
+
+# ╔═╡ f2c89a20-09d5-47f4-8f83-e59477723d95
+nrow(df_all)
 
 # ╔═╡ a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 if !isempty(username)
@@ -664,31 +667,6 @@ if !isempty(username)
 	
 	Lastly, we select the columns that we care about and make some visual transforms for convenience (e.g., including units, converting decimal RA and Dec to `[h m s]`, and `[° ' "]` format, respectively, for easy copy-pasting into the Unistellar app):
 	"""
-end
-
-# ╔═╡ cf4aa798-197a-477e-bc5f-221b76c615e2
-let
-	s = "unistellar://science/transit?ra=306.12392&dec=16.76215&c=3970&et=3970&g=24&d=15070&t=1718084340000&scitag=e240611HATZPZ23b"
-	split(s, ['?', '&'])
-end
-
-# ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
-function deep_link(df; scitag ra, dec, c=4_000, et=4_000)
-	return "unistellar://science/transit?ra=306.12392&dec=16.76215&c=3970&et=3970&g=24&d=15070&t=1718084340000&scitag=e240611HATZPZ23b"
-end
-
-# ╔═╡ 267c0321-04c7-48a4-94df-a58acc62cd03
-"c=4&d=5"
-
-# ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
-function ephem(url)
-	st = scrape_tables(url)
-	ephem_blob = st[3].rows
-	if length(ephem_blob[2]) != 4
-		error("Expected ephemeris to have Epoch, Start, Mid, and End. Received: ", ephem_blob[2])
-	end
-	ephem_title, ephem_data... = filter(x -> length(x) == 4, ephem_blob)
-	return ephem_title, ephem_data
 end
 
 # ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
@@ -717,6 +695,54 @@ function get_url(s)
 		first
 	end
 end
+
+# ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
+function ephem(url)
+	st = scrape_tables(url)
+	ephem_blob = st[3].rows
+	if length(ephem_blob[2]) != 4
+		error("Expected ephemeris to have Epoch, Start, Mid, and End. Received: ", ephem_blob[2])
+	end
+	ephem_title, ephem_data... = filter(x -> length(x) == 4, ephem_blob)
+	return ephem_title, ephem_data
+end
+
+# ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
+function deep_link(;
+	mission = "transit",
+	ra = 0.0,
+	dec = 0.0,
+	c = 4_000,
+	et = 4_000,
+	g = 0.0,
+	d = 0.0,
+	t = 0.0,
+	scitag = "scitag",
+)
+	link = join([
+		"unistellar://science/$(mission)?ra=$(ra)",
+		"dec=$(dec)",
+		"c=$(c)",
+		"et=$(et)",
+		"g=$(g)",
+		"d=$(d)",
+		"t=$(t)",
+		"scitag=$(scitag)",
+	], '&')
+
+	Markdown.parse("[link]($(link))")
+end
+
+# ╔═╡ 829cde81-be03-4a9f-a853-28f84923d493
+# Make the table view a bit nicer in the browser
+pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
+	maximum_columns_width = "max-width",
+	show_subheader = false,
+	header_alignment = :c,
+)
+
+# ╔═╡ edda8d09-ec46-4a0b-b1b2-b1289ee5456e
+first(df_all, 10) |> pretty
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
@@ -759,7 +785,7 @@ max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
 
 # ╔═╡ 95a67d04-0a32-4e55-ac2f-d004ecc9ca84
 # Recommended gain
-rec_gain(g) = round(g, RoundDown) - 1.0
+rec_gain(g) = Int(round(g, RoundDown) - 1.0)
 
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 if !isempty(username)
@@ -790,7 +816,7 @@ if !isempty(username)
 			# :var_type
 			# :min_mag
 			# :max_mag
-			:ephem_link = Markdown.parse("""[link]($(:ephem_url))""")
+			:ephem_link = Markdown.parse("[link]($(:ephem_url))")
 			:ephem_url
 			# :unix_timestamp = (last ∘ first)(:observability_times)
 		end
@@ -843,7 +869,7 @@ end
 @bind star_name Select(df_candidates.star_name)
 
 # ╔═╡ 3f548bb1-37b0-48b7-a35c-d7701405a64e
-df_selected = @rsubset df_candidates :star_name == star_name
+df_selected = @rsubset df_candidates :star_name == star_name;
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
 df_ephem = let
@@ -861,10 +887,12 @@ df_ephem = let
 			:Start = DateTime(:Start, fmt)
 			:Mid = DateTime(:Mid, fmt)
 			:End = DateTime(:End, fmt)
+			
 		end
 		
 		@rtransform begin
-			:Duration_s = Second(:End - :Start)
+			:Duration = canonicalize(:End - :Start)
+			:Duration_s = Second(:End - :Start).value
 			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
 		end
 	end
@@ -873,14 +901,29 @@ end
 # ╔═╡ 31c23e2b-1a2d-41aa-81c1-22868e241f7e
 df_obs = let
 	df = leftjoin(df_selected, df_ephem; on=:star_name)
-	@select df begin
+	fmt = dateformat"yymmdd"
+	@rselect df begin
 		:star_name
 		:ra
 		:dec
+		:Duration
 		:Start
-		:gain
+		:Mid
+		:End
+		:deep_link = deep_link(;
+			ra = :ra_deci,
+			dec = :dec_deci,
+			g = :gain,
+			d = round(Int, 1.5 * :Duration_s),
+			t = round(Int, :unix_timestamp_ms),
+			scitag = join([
+				"e",
+				Dates.format(:Mid, fmt),
+				replace(:star_name, " " => ""),
+			]),
+		)
 	end
-end
+end |> pretty
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let
@@ -3230,22 +3273,25 @@ version = "1.4.1+1"
 # ╟─14998fe7-8e22-4cd4-87c6-9a5334d218ed
 # ╟─4a779bd1-bcf3-41e1-af23-ed00d29db46f
 # ╟─7f9c4c42-26fc-4d02-805f-97732032b272
-# ╟─399f53c5-b654-4330-9ead-4d795917b03b
+# ╠═399f53c5-b654-4330-9ead-4d795917b03b
+# ╟─c5e95837-fd89-4da2-b480-13f5ed788fb6
+# ╠═edda8d09-ec46-4a0b-b1b2-b1289ee5456e
+# ╟─29197489-441c-440d-9ce2-3dbd17fa53fc
+# ╠═f2c89a20-09d5-47f4-8f83-e59477723d95
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
-# ╟─6cec1700-f2de-4e80-b26d-b23b5f7f1823
+# ╠═6cec1700-f2de-4e80-b26d-b23b5f7f1823
 # ╟─95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 # ╟─a5f3915c-6eed-480d-9aed-8fdd052a324a
 # ╠═8a39fbbb-6b5b-4744-a875-469c289242fb
 # ╠═3f548bb1-37b0-48b7-a35c-d7701405a64e
-# ╠═31c23e2b-1a2d-41aa-81c1-22868e241f7e
-# ╠═cf4aa798-197a-477e-bc5f-221b76c615e2
-# ╠═d359625e-5a95-49aa-86e4-bc65299dd92a
-# ╠═267c0321-04c7-48a4-94df-a58acc62cd03
-# ╟─2ea12676-7b5e-444e-8025-5bf9c05d0e2d
+# ╟─31c23e2b-1a2d-41aa-81c1-22868e241f7e
 # ╟─fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
-# ╠═3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╟─2ea12676-7b5e-444e-8025-5bf9c05d0e2d
+# ╟─d359625e-5a95-49aa-86e4-bc65299dd92a
+# ╟─829cde81-be03-4a9f-a853-28f84923d493
 # ╟─1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 # ╟─9c482134-6336-4e72-9d30-87080ebae671
 # ╟─f290d98e-5a8a-44f2-bee5-b93738abe9af
