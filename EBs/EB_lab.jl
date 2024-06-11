@@ -661,6 +661,9 @@ if !isempty(username)
 	1. Large change in brightness (at least half a mag)
 	2. Fairly short period (period < 3 days)
 	3. Includes an ephemeris (the `other_info` column must include this link)
+
+	!!! note
+		We also prioritize dimmer targets (V > 9.0). The reason for this is that we are taking a timeseries over the course of hours, which would lead to an unfeasable number of total science frames taken if the exposure time for each one needed to be dialed down for bright targets. Instead, we fix our exposure time to the maximum on eVscopes (4 seconds), and select targets that would not be overexposed at this level.
 	
 	Lastly, we select the columns that we care about and make some visual transforms for convenience (e.g., including units, converting decimal RA and Dec to `[h m s]`, and `[° ' "]` format, respectively, for easy copy-pasting into the Unistellar app):
 	"""
