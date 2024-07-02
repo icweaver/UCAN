@@ -525,7 +525,27 @@ end
 
 # ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # Place an aperture with radius 24 px at the source extracted location for visualization purposes
-ap = CircularAperture.(sources.y, sources.x, 24);
+aps_test = CircularAperture.(sources.y, sources.x, 48);
+
+# ╔═╡ 942b2a62-e6c3-4c64-8142-316172840e57
+let
+	p = hplot(img_test)
+
+	shapes = [
+		circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
+			line_color = :lightgreen,
+		)
+		for ap in aps_test
+	]
+
+	layout = Layout(;
+		shapes,
+		xaxis = attr(title="X"),
+		yaxis = attr(title="Y"),
+	)
+
+	plot(p, layout)
+end
 
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
@@ -564,10 +584,13 @@ function get_aps(img, pixel_left, pixel_right, aperture_size)
 end
 
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
+# ╠═╡ disabled = true
+#=╠═╡
 aps = [
 	get_aps(img, pixel_left, pixel_right, 24)
 	for img in imgs_sci
 ];
+  ╠═╡ =#
 
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
 md"""
@@ -586,6 +609,7 @@ Not bad! Now we can sum up the flux in the target aperture for each frame to cre
 """
 
 # ╔═╡ 050b8516-b375-4f1f-906f-6362034b6564
+#=╠═╡
 begin
 	times = String[]
 	fluxes = Float64[]
@@ -596,8 +620,10 @@ begin
 		push!(fluxes, phot.aperture_sum)
 	end
 end
+  ╠═╡ =#
 
 # ╔═╡ 6470b357-4dc6-4b2b-9760-93d64bab13e9
+#=╠═╡
 let
 	layout = PlutoPlotly.Layout(
 		xaxis = PlutoPlotly.attr(title="Date (UTC)"),
@@ -609,6 +635,7 @@ let
 	
 	PlutoPlotly.plot(sc, layout)
 end
+  ╠═╡ =#
 
 # ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
 md"""
@@ -1085,12 +1112,6 @@ plot_img(img; clims=clims) = implot(img;
 	title = header(img)["DATE-OBS"],
 	clims,
 )
-
-# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
-let
-	plot_img(img_test - img_dark)
-	Plots.plot!(ap; color=:lightgreen)
-end
 
 # ╔═╡ 5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 md"""
@@ -2768,7 +2789,7 @@ version = "17.4.0+2"
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╟─087bb2d6-f2c7-4290-aab7-793e43dbc8e7
-# ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╟─942b2a62-e6c3-4c64-8142-316172840e57
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
