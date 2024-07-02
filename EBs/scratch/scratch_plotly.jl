@@ -81,7 +81,7 @@ frames(imgs) = [
 preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
 
 # ╔═╡ 889b4500-959d-4acc-9b5e-2b46066fe782
-df_sci = fitscollection("data/TRANSIT/ut20240325/sci"; abspath=false)
+df_sci = fitscollection("../data/TRANSIT/ut20240325/sci"; abspath=false);
 
 # ╔═╡ 11fab64b-6bfb-40ff-8c07-49f5c179b519
 imgs_sci = [load(f.path) for f in eachrow(df_sci)];
@@ -90,7 +90,7 @@ imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 preview(imgs_sci)
 
 # ╔═╡ e4c64b7b-611c-4978-bb5e-bc553d7c45e7
-img = load("data/TRANSIT/ut20240325/sci/mgcc3f_2024-03-25T05-36-57.945_TRANSIT.fits");
+img = first(df_sci.path)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

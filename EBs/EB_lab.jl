@@ -282,6 +282,89 @@ Plots.plot(
 	aspect_ratio = 1,
 )
 
+# ╔═╡ 1d3e0403-8866-43e8-a567-3d8535ec0476
+
+
+# ╔═╡ a8bb8cd5-cebe-4cba-809f-49a404c6e718
+sliders(imgs) = [
+    attr(
+        active = 0,
+        minorticklen = 0,
+        # pad_t = 10,
+        steps = [
+            attr(
+                method = "animate",
+                label = "Frame $(i)",
+                args = [
+                    ["frame_$(i)"],
+                    attr(
+                        mode = "immediate",
+                        transition = attr(duration = 0),
+                        frame = attr(duration=5, redraw=true),
+                    ),
+                ],
+            ) for (i, img) in enumerate(imgs)
+        ],
+    ),
+]
+
+# ╔═╡ dffdaf70-2658-48cb-bcba-7725b74ce279
+timestamp(img) = header(img)["DATE-OBS"]
+
+# ╔═╡ 260c25b7-2339-419c-afa7-8fa888ec5d33
+layout(imgs) = Layout(
+    width = 500,
+    height = 500,
+    sliders = sliders(imgs),
+	title = timestamp(first(imgs)),
+	xaxis = attr(title="X"),
+	yaxis = attr(title="Y"),
+)
+
+# ╔═╡ 2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
+restrict2(img) = (AstroImages.restrict ∘ AstroImages.restrict)(img)
+
+# ╔═╡ 1cb4ac8c-6266-4ee1-aba8-55224bd26b02
+function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
+	img_small = restrict2(img)
+	heatmap(;
+		x = img_small.dims[1].val,
+		y = img_small.dims[2].val,
+		z = permutedims(img_small.data),
+		zmin,
+		zmax,
+		colorbar = attr(; title)
+	)
+end
+
+# ╔═╡ 708fb840-5852-44c8-8d6a-0536984a8157
+let
+	p = make_subplots(;
+		cols = 2,
+		shared_yaxes = true,
+		horizontal_spacing = 0.02,
+		column_titles = ["science image", "dark subtracted"],
+	)
+
+	add_trace!(p, hplot(img_sci); col=1)
+	add_trace!(p, hplot(img_sci - img_dark); col=2)
+end
+
+# ╔═╡ b07660a3-ad01-4862-b055-816d02e8893c
+trace(imgs) = [hplot(first(imgs))]
+
+# ╔═╡ bc502e12-969b-404a-951e-d253dae2d1f3
+frames(imgs) = [
+    frame(
+        data = [hplot(img)],
+        layout = attr(title_text=header(img)["DATE-OBS"]),
+        name = "frame_$(i)",
+    ) for (i, img) in enumerate(imgs)
+]
+
+# ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
+preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
+
 # ╔═╡ 6a648c52-4682-44d7-9634-eaa663e665fe
 md"""
 !!! note
@@ -307,6 +390,11 @@ imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 # ╔═╡ 48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
 # Subtract master dark off of each frame
 imgs_sci_dark = [img .- img_dark for img in imgs_sci];
+
+# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
+Plots.@gif for img in imgs_sci_dark
+	plot_img(img)
+end fps=2;
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
@@ -452,6 +540,12 @@ aps = [
 md"""
 Let's place the apertures onto our movie from earlier to double check how we did:
 """
+
+# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+Plots.@gif for (ap, img) in zip(aps, imgs_sci_dark)
+	plot_img(img)
+	Plots.plot!(ap; color=:lightgreen)
+end fps=2
 
 # ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
 md"""
@@ -959,11 +1053,6 @@ plot_img(img; clims=clims) = implot(img;
 	clims,
 )
 
-# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-Plots.@gif for img in imgs_sci_dark
-	plot_img(img)
-end fps=2;
-
 # ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
 new_img; img_test = rand(imgs_sci); plot_img(img_test - img_dark)
 
@@ -1009,12 +1098,6 @@ let
 	plot_img(img_test - img_dark)
 	Plots.plot!(ap; color=:lightgreen)
 end
-
-# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-Plots.@gif for (ap, img) in zip(aps, imgs_sci_dark)
-	plot_img(img)
-	Plots.plot!(ap; color=:lightgreen)
-end fps=2
 
 # ╔═╡ 5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 md"""
@@ -2658,6 +2741,16 @@ version = "17.4.0+2"
 # ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═9b0f6aac-d3c1-4b4e-8cfc-956891af1999
+# ╠═708fb840-5852-44c8-8d6a-0536984a8157
+# ╠═1d3e0403-8866-43e8-a567-3d8535ec0476
+# ╟─1cb4ac8c-6266-4ee1-aba8-55224bd26b02
+# ╟─b07660a3-ad01-4862-b055-816d02e8893c
+# ╟─bc502e12-969b-404a-951e-d253dae2d1f3
+# ╟─a8bb8cd5-cebe-4cba-809f-49a404c6e718
+# ╟─260c25b7-2339-419c-afa7-8fa888ec5d33
+# ╟─dffdaf70-2658-48cb-bcba-7725b74ce279
+# ╟─e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
+# ╟─2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
 # ╟─6a648c52-4682-44d7-9634-eaa663e665fe
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
