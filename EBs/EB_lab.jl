@@ -330,7 +330,8 @@ function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
 		z = permutedims(img_small.data),
 		zmin,
 		zmax,
-		colorbar = attr(; title)
+		colorbar = attr(; title),
+		colorscale = :Cividis,
 	)
 end
 
@@ -2760,7 +2761,7 @@ version = "17.4.0+2"
 # ╟─b07660a3-ad01-4862-b055-816d02e8893c
 # ╟─bc502e12-969b-404a-951e-d253dae2d1f3
 # ╟─a8bb8cd5-cebe-4cba-809f-49a404c6e718
-# ╟─260c25b7-2339-419c-afa7-8fa888ec5d33
+# ╠═260c25b7-2339-419c-afa7-8fa888ec5d33
 # ╟─dffdaf70-2658-48cb-bcba-7725b74ce279
 # ╟─e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
 # ╟─2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
