@@ -14,6 +14,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 935c0d65-1418-4c65-a096-4a46d9813db4
+using AstroImages: restrict
+
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -167,7 +170,7 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
-df_sci = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
+df_sci = fitscollection("../data/TRANSIT/ut20240325/sci"; abspath=false)
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
@@ -266,20 +269,37 @@ The sensor calibration procedure automatically returns a median combined master 
 """
 
 # ╔═╡ 96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
-img_dark = load("data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
-
-# ╔═╡ 58904104-9143-4d5c-8013-de41580f2fbf
-imview(img_sci.data - img_dark.data;
-	clims = (0, 1_000),
-	contrast = 1.0,
-	bias = 0.0,
-	stretch = identity,
-)
+img_dark = load("../data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits")
 
 # ╔═╡ edf446f0-3643-445a-a4b3-b6fa945ded9a
 md"""
 Here we can see the thermal noise from our sensor and underlying gradient encoded in the bias. We can now subtract it from each science frame to have a final calibrated image. Here is a before and after of our example science frame from earlier:
 """
+
+# ╔═╡ 83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
+function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
+	heatmap(;
+		x = img.dims[1].val,
+		y = img.dims[2].val,
+		z = permutedims(img).data,
+		zmin,
+		zmax,
+		colorbar = attr(; title),
+		colorscale = :Cividis,
+	)
+end
+
+# ╔═╡ b07660a3-ad01-4862-b055-816d02e8893c
+trace(imgs) = [hplot(first(imgs))]
+
+# ╔═╡ bc502e12-969b-404a-951e-d253dae2d1f3
+frames(imgs) = [
+    frame(
+        data = [hplot(img)],
+        layout = attr(title_text=header(img)["DATE-OBS"]),
+        name = "frame_$(i)",
+    ) for (i, img) in enumerate(imgs)
+]
 
 # ╔═╡ a8bb8cd5-cebe-4cba-809f-49a404c6e718
 sliders(imgs) = [
@@ -317,28 +337,11 @@ layout(imgs) = Layout(
 	yaxis = attr(title="Y"),
 )
 
+# ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
+preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
+
 # ╔═╡ 2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
-restrict2(img) = (AstroImages.restrict ∘ AstroImages.restrict)(img)
-
-# ╔═╡ 1cb4ac8c-6266-4ee1-aba8-55224bd26b02
-function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
-	img_small = restrict2(img)
-	heatmap(;
-		x = img_small.dims[1].val,
-		y = img_small.dims[2].val,
-		z = permutedims(img_small.data),
-		zmin,
-		zmax,
-		colorbar = attr(; title),
-		colorscale = :Cividis,
-	)
-end
-
-# ╔═╡ 97cfd1ec-656e-475f-97cf-de25d36d6ea5
-let
-	yee = img_sci - img_dark
-	plot(hplot(yee; zmin=4_000, zmax=18_000), layout([yee]))
-end
+r2(img) = (restrict ∘ restrict)(img)
 
 # ╔═╡ 708fb840-5852-44c8-8d6a-0536984a8157
 let
@@ -350,24 +353,9 @@ let
 		column_titles = ["science image", "dark subtracted"],
 	)
 
-	add_trace!(p, hplot(img_sci); col=1)
-	add_trace!(p, hplot(img_sci - img_dark); col=2)
+	add_trace!(p, hplot(r2(img_sci)); col=1)
+	add_trace!(p, hplot(r2(img_sci) - r2(img_dark)); col=2)
 end
-
-# ╔═╡ b07660a3-ad01-4862-b055-816d02e8893c
-trace(imgs) = [hplot(first(imgs))]
-
-# ╔═╡ bc502e12-969b-404a-951e-d253dae2d1f3
-frames(imgs) = [
-    frame(
-        data = [hplot(img)],
-        layout = attr(title_text=header(img)["DATE-OBS"]),
-        name = "frame_$(i)",
-    ) for (i, img) in enumerate(imgs)
-]
-
-# ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
-preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
 
 # ╔═╡ 6a648c52-4682-44d7-9634-eaa663e665fe
 md"""
@@ -391,12 +379,8 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
 imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 
-# ╔═╡ 48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
-# Subtract master dark off of each frame
-imgs_sci_dark = [img - img_dark for img in imgs_sci];
-
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-preview(imgs_sci)
+preview(r2(img) - r2(img_dark) for img in imgs_sci)
 
 # ╔═╡ fde17dd7-4f60-408b-8eb6-c02f47c8f5db
 let
@@ -2757,24 +2741,22 @@ version = "17.4.0+2"
 # ╟─2b32512b-63df-4a48-8e72-bf20aa75a845
 # ╟─06dae98b-b134-4893-99d7-d1d67dade7cd
 # ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
-# ╠═97cfd1ec-656e-475f-97cf-de25d36d6ea5
-# ╠═58904104-9143-4d5c-8013-de41580f2fbf
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═708fb840-5852-44c8-8d6a-0536984a8157
-# ╟─1cb4ac8c-6266-4ee1-aba8-55224bd26b02
+# ╟─83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
 # ╟─b07660a3-ad01-4862-b055-816d02e8893c
 # ╟─bc502e12-969b-404a-951e-d253dae2d1f3
 # ╟─a8bb8cd5-cebe-4cba-809f-49a404c6e718
 # ╟─260c25b7-2339-419c-afa7-8fa888ec5d33
 # ╟─dffdaf70-2658-48cb-bcba-7725b74ce279
 # ╟─e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
-# ╠═2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
+# ╟─2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
 # ╟─6a648c52-4682-44d7-9634-eaa663e665fe
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
-# ╠═48e012f5-7d1b-4b12-8aef-beb4b0c8e1d4
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
+# ╠═935c0d65-1418-4c65-a096-4a46d9813db4
 # ╠═fde17dd7-4f60-408b-8eb6-c02f47c8f5db
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7

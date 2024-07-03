@@ -14,6 +14,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 6f085345-40ff-4784-8c9c-4c83434b14d4
+using AstroImages: restrict
+
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -328,6 +331,12 @@ Now that we have some science frames to work with, the next step is to begin cou
 md"""
 Before applying this scheme to all of our frames, let's test it out on a random image (`img_test`) selected from our time series:
 """
+
+# ╔═╡ 65bc9289-18b3-497f-a0a1-1b8460e85af7
+(1:10)[11]
+
+# ╔═╡ 6a59da0a-31e0-45d6-9326-c48c47f7c987
+yee = restrict(img_sci);
 
 # ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
 msg_background_est = md"""
@@ -945,6 +954,12 @@ md"""
 
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
 const clims = (150, 700);
+
+# ╔═╡ 9c31c4f0-6f20-43cf-ae29-533276d439e0
+implot(restrict(img_sci - img_dark).data; clims)
+
+# ╔═╡ 953378b3-1f47-42c2-9b85-baa5ebd6e31b
+implot(restrict(img_sci.data - img_dark.data); clims)
 
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents(; depth=4)
@@ -3236,6 +3251,11 @@ version = "1.4.1+1"
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
 # ╟─ba008023-7a79-45ea-b547-23071a12a2f5
 # ╠═667116b0-2b87-46ca-80aa-51361e8cde27
+# ╠═9c31c4f0-6f20-43cf-ae29-533276d439e0
+# ╠═953378b3-1f47-42c2-9b85-baa5ebd6e31b
+# ╠═65bc9289-18b3-497f-a0a1-1b8460e85af7
+# ╠═6a59da0a-31e0-45d6-9326-c48c47f7c987
+# ╠═6f085345-40ff-4784-8c9c-4c83434b14d4
 # ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
