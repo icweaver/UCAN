@@ -413,6 +413,9 @@ Ok, it looks like there is only one candidate left! Let's place an aperture (`ap
 # ╔═╡ 087bb2d6-f2c7-4290-aab7-793e43dbc8e7
 @bind new_img Button("New frame")
 
+# ╔═╡ 8afda715-8abe-4435-9201-f4d67458c16e
+r2(img) = (restrict ∘ restrict)(img)
+
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
 Alright, it looks like this approach successfully identified our target star! We look next at applying this procedure to all of our frames. Feel free to hit the `New frame` button to verify that this scheme works on other sample science frames.
@@ -3271,6 +3274,7 @@ version = "1.4.1+1"
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╟─087bb2d6-f2c7-4290-aab7-793e43dbc8e7
 # ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╠═8afda715-8abe-4435-9201-f4d67458c16e
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48

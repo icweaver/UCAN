@@ -354,7 +354,7 @@ let
 	)
 
 	add_trace!(p, hplot(r2(img_sci)); col=1)
-	add_trace!(p, hplot(r2(img_sci) - r2(img_dark)); col=2)
+	add_trace!(p, hplot(img_sci - img_dark); col=2)
 end
 
 # ╔═╡ 6a648c52-4682-44d7-9634-eaa663e665fe
@@ -380,7 +380,7 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-preview(r2(img) - r2(img_dark) for img in imgs_sci)
+preview(r2(img) for img in imgs_sci)
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
@@ -482,7 +482,7 @@ new_img; img_test = rand(imgs_sci);
 
 # ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
 # Step 1
-clipped = sigma_clip(img_test - img_dark, 1; fill=:clamp)
+clipped = sigma_clip(img_test, 1; fill=:clamp)
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 # The size of our mesh in pixels (a square with side length = `box_size`)
@@ -538,7 +538,7 @@ function plot_aps(img, aps)
 end
 
 # ╔═╡ 85b2e8c8-4345-4f38-8d30-58a0d948cc9a
-plot_aps(img_test, aps_test)
+plot_aps(r2(img_test), aps_test)
 
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
@@ -600,8 +600,8 @@ begin
 	times = String[]
 	fluxes = Float64[]
 	
-	for (ap, img) in zip(aps, imgs_sci)
-		phot = first(photometry(ap, img))
+	for (ap, img) in zip(aps_sci, imgs_sci)
+		phot = photometry(ap, img)
 		push!(times, header(img)["DATE-OBS"])
 		push!(fluxes, phot.aperture_sum)
 	end
@@ -619,24 +619,6 @@ let
 	
 	PlutoPlotly.plot(sc, layout)
 end
-
-# ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
-md"""
-!!! note "Why so verbose?"
-	We use the package [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) here instead of Plots.jl so that we can create a nice interactive plot of our light curve
-	
-	The cumbersome PlutoPlotly qualifiers are being used because we are using multiple plotting packages in this notebook for demonstration purposes. They can be dropped for convenience if just using one package by doing
-	
-	```julia
-	using PlutoPlotly
-	```
-	
-	instead of
-	
-	```julia
-	using PlutoPlotly: PlutoPlotly
-	```
-""" |> msg
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 md"""
@@ -2738,7 +2720,7 @@ version = "17.4.0+2"
 # ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═708fb840-5852-44c8-8d6a-0536984a8157
-# ╟─83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
+# ╠═83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
 # ╟─b07660a3-ad01-4862-b055-816d02e8893c
 # ╟─bc502e12-969b-404a-951e-d253dae2d1f3
 # ╟─a8bb8cd5-cebe-4cba-809f-49a404c6e718
@@ -2782,7 +2764,6 @@ version = "17.4.0+2"
 # ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
-# ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 # ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
