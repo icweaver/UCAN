@@ -4,11 +4,14 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ e5ce126f-23b7-441a-a0a9-9dd52df7d088
-using ImageShow: restrict
+# ╔═╡ ce01449e-4dbf-4f6d-af8d-016f88960609
+begin
+	using AstroImages, CCDReduction
+	using AstroImages: restrict
 
-# ╔═╡ 50b30a9a-37fc-11ef-3bbf-cdbd3c619c61
-using WGLMakie, ImageShow, AstroImages, CCDReduction
+	using WGLMakie
+	using Makie: Slider
+end
 
 # ╔═╡ 528d9fc6-2180-484b-bb22-27bf59cbdee9
 df_sci = fitscollection("../data/TRANSIT/ut20240325/sci"; abspath=false)
@@ -19,49 +22,37 @@ imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 # ╔═╡ e34a59ea-dea4-4776-b7e0-49ed1851cb4f
 img_sci = first(imgs_sci);
 
-# ╔═╡ 88b1afae-1a44-4604-b932-0e64f8c0bd60
-img_dark = load("../data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits");
-
-# ╔═╡ 1ba406af-feb8-464b-a9e3-032c91866a45
-imgs_sci_dark = [img .- img_dark for img in imgs_sci];
-
 # ╔═╡ bcc94aee-36c7-49e5-8a96-4a1c95cbab90
 function hplot(img; colorrange=(2_400, 3_200))
+	WGLMakie.Page()
+	
 	fig, ax, hm = heatmap(img;
 		colorrange,
 		axis = (; title=header(img)["DATE-OBS"]),
 	)
 
-	# apertures!(ax, aps)
-
 	Colorbar(fig[1, 2], hm; label="ADU")
 
-	fig
+	return fig, ax, hm
 end
 
-# ╔═╡ df6b1bc0-8b1f-4e7b-9eca-d81cb94dd5c1
-hplot(img_sci)
-
-# ╔═╡ 23bbf18e-70ac-4421-9356-f34124369794
-a = restrict(img_sci) - restrict(img_dark);
-
-# ╔═╡ 5d5c8ca1-3829-4780-ac70-323af52d17ea
-hplot(a)
-
-# ╔═╡ c82ca39a-a423-45df-8bd0-59f57a45aca0
-b = restrict(img_sci - img_dark);
-
-# ╔═╡ 7e93558f-1681-4f9d-b8b0-8e97c96112e9
-hplot(b)
-
-# ╔═╡ 1292248c-886a-44d6-98dc-c0ac3659547b
-c = img_sci - img_dark;
-
-# ╔═╡ 026540af-9f7f-4952-b2de-5ef6fcec8cd7
-hplot(c)
-
 # ╔═╡ c8298a64-acb0-4be1-9c62-72a97f631773
-restrict2(img) = (restrict ∘ restrict)(img)
+r2(img) = (restrict ∘ restrict)(img)
+
+# ╔═╡ 0c3cbce8-959f-4277-be49-1fe6e979a1ce
+fig, ax, hm = hplot(r2(img_sci));
+
+# ╔═╡ a68a60b0-1650-4fb7-8095-8432f27ee0b3
+frame_i = Slider(fig[2, 1], range=1:2:34)
+
+# ╔═╡ 112ce454-647e-45a2-88cb-9569122c8ecf
+img_i = @lift r2(imgs_sci[$(frame_i.value)])
+
+# ╔═╡ 4a3c9746-d5f7-4892-a588-8f0c8cacd880
+let
+	heatmap!(ax, r2(img_i.val); colorrange=(2_400, 3_200))
+	fig
+end
 
 # ╔═╡ 07f89dc0-5339-4df2-a55d-3e6d5100385d
 struct Ap
@@ -79,21 +70,6 @@ function apertures!(ax, aps; radius=25)
 	end
 end
 
-# ╔═╡ 40e8b699-1f06-4a66-938d-ed86e867b306
-# Animate
-
-# ╔═╡ 5e3adb06-73c5-4231-b5e0-42d2c99756d6
-frames = [rand(3, 4) for _ in 1:20]
-
-# ╔═╡ b31af602-091c-4ded-b83f-cbc96cd3e5a9
-let
-	fig, ax, hm = heatmap(first(frames))
-
-	Makie.Record(fig, frames; framerate=1) do frame
-		hm[3][] = frame
-	end
-end
-
 # ╔═╡ f58be396-c2e4-47a6-baa3-3403676d4f98
 begin
 	colormap = :cividis
@@ -101,19 +77,22 @@ begin
 	update_theme!(Heatmap=(; colormap), Image=(; colormap))
 end
 
+# ╔═╡ 50b30a9a-37fc-11ef-3bbf-cdbd3c619c61
+# using WGLMakie, ImageShow, AstroImages, CCDReduction
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
-ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 
 [compat]
 AstroImages = "~0.5.0"
 CCDReduction = "~0.2.2"
-ImageShow = "~0.3.8"
-WGLMakie = "~0.10.3"
+Makie = "~0.21.4"
+WGLMakie = "~0.10.4"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -122,7 +101,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "c86d886fee48bc757842f042e49b88dcca26a6db"
+project_hash = "17635fd959dd3932b9a2a629ea454808008ab05e"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -302,9 +281,9 @@ weakdeps = ["SparseArrays"]
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "59939d8a997469ee05c4b4944560a820f9ba0d73"
+git-tree-sha1 = "b8fe8546d52ca154ac556809e10c75e6e7430ac8"
 uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.4"
+version = "0.7.5"
 
 [[deps.ColorBrewer]]
 deps = ["Colors", "JSON", "Test"]
@@ -994,9 +973,9 @@ version = "0.5.13"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "e11b0666b457e3bb60119f2ed4d063d2b68954d3"
+git-tree-sha1 = "57a1a2b3d12e04f9e9fb77d61cd12571d5541c5f"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.3"
+version = "0.21.4"
 
 [[deps.MakieCore]]
 deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
@@ -1615,9 +1594,9 @@ version = "7.7.0+0"
 
 [[deps.WGLMakie]]
 deps = ["Bonito", "Colors", "FileIO", "FreeTypeAbstraction", "GeometryBasics", "Hyperscript", "LinearAlgebra", "Makie", "Observables", "PNGFiles", "PrecompileTools", "RelocatableFolders", "ShaderAbstractions", "StaticArrays"]
-git-tree-sha1 = "ba21aa663fb95ebf522377b62a9b4d85213f01e6"
+git-tree-sha1 = "88c6171696f9b9c8e48c2b0b36eba09f43c502ae"
 uuid = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
-version = "0.10.3"
+version = "0.10.4"
 
 [[deps.WidgetsBase]]
 deps = ["Observables"]
@@ -1782,25 +1761,17 @@ version = "3.5.0+0"
 # ╠═528d9fc6-2180-484b-bb22-27bf59cbdee9
 # ╠═8e55a11a-3641-4387-841a-659e202de79f
 # ╠═e34a59ea-dea4-4776-b7e0-49ed1851cb4f
-# ╠═88b1afae-1a44-4604-b932-0e64f8c0bd60
-# ╠═1ba406af-feb8-464b-a9e3-032c91866a45
 # ╠═bcc94aee-36c7-49e5-8a96-4a1c95cbab90
-# ╠═df6b1bc0-8b1f-4e7b-9eca-d81cb94dd5c1
-# ╠═5d5c8ca1-3829-4780-ac70-323af52d17ea
-# ╠═7e93558f-1681-4f9d-b8b0-8e97c96112e9
-# ╠═026540af-9f7f-4952-b2de-5ef6fcec8cd7
-# ╠═23bbf18e-70ac-4421-9356-f34124369794
-# ╠═c82ca39a-a423-45df-8bd0-59f57a45aca0
-# ╠═1292248c-886a-44d6-98dc-c0ac3659547b
-# ╠═c8298a64-acb0-4be1-9c62-72a97f631773
+# ╠═0c3cbce8-959f-4277-be49-1fe6e979a1ce
+# ╠═a68a60b0-1650-4fb7-8095-8432f27ee0b3
+# ╠═112ce454-647e-45a2-88cb-9569122c8ecf
+# ╠═4a3c9746-d5f7-4892-a588-8f0c8cacd880
+# ╟─c8298a64-acb0-4be1-9c62-72a97f631773
 # ╠═47bafb51-a326-4f51-abb1-ecdda652a3ce
 # ╠═07f89dc0-5339-4df2-a55d-3e6d5100385d
 # ╠═e3512fd5-81f7-4d29-9395-ccf97d9aedbe
-# ╠═40e8b699-1f06-4a66-938d-ed86e867b306
-# ╠═b31af602-091c-4ded-b83f-cbc96cd3e5a9
-# ╠═5e3adb06-73c5-4231-b5e0-42d2c99756d6
 # ╠═f58be396-c2e4-47a6-baa3-3403676d4f98
-# ╠═e5ce126f-23b7-441a-a0a9-9dd52df7d088
 # ╠═50b30a9a-37fc-11ef-3bbf-cdbd3c619c61
+# ╠═ce01449e-4dbf-4f6d-af8d-016f88960609
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
