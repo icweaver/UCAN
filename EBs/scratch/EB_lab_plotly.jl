@@ -382,11 +382,6 @@ imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 preview(r2(img) - r2(img_dark) for img in imgs_sci)
 
-# ╔═╡ fde17dd7-4f60-408b-8eb6-c02f47c8f5db
-let
-	plot(hplot(imgs_sci_dark[1]; zmin=2000, zmax=20_000))
-end
-
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
@@ -2757,7 +2752,6 @@ version = "17.4.0+2"
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╠═935c0d65-1418-4c65-a096-4a46d9813db4
-# ╠═fde17dd7-4f60-408b-8eb6-c02f47c8f5db
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
