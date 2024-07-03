@@ -14,9 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 935c0d65-1418-4c65-a096-4a46d9813db4
-using AstroImages: restrict
-
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -30,6 +27,7 @@ begin
 	
 	# Visualization and analysis
 	using AstroImages, AstroAngles, Photometry, ImageCore
+	using AstroImages: restrict
 	using PlutoPlotly
 	using Dates, Unitful 
 
@@ -327,6 +325,32 @@ sliders(imgs) = [
 # ╔═╡ dffdaf70-2658-48cb-bcba-7725b74ce279
 timestamp(img) = header(img)["DATE-OBS"]
 
+# ╔═╡ b34c43b6-ce91-429e-8fa9-5cf82665a8ce
+function frames(imgs, aps)
+	shapes = [
+		circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
+			line_color = :lightgreen,
+		)
+		for ap in aps
+	]
+	
+	return [
+		frame(
+	        data = [hplot(img)],
+	        layout = Layout(;
+				shapes,
+				width = 500,
+			    height = 500,
+				sliders = sliders(img),
+				title_text = timestamp(img),
+				xaxis = attr(title="X"),
+				yaxis = attr(title="Y"),
+			),
+			name = "frame_$(i)",
+	    ) for (i, img) in enumerate(imgs)
+	]
+end
+
 # ╔═╡ 260c25b7-2339-419c-afa7-8fa888ec5d33
 layout(imgs) = Layout(
     width = 500,
@@ -336,6 +360,9 @@ layout(imgs) = Layout(
 	xaxis = attr(title="X"),
 	yaxis = attr(title="Y"),
 )
+
+# ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
+preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
 
 # ╔═╡ 2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
 r2(img) = (restrict ∘ restrict)(img)
@@ -370,7 +397,7 @@ md"""
 
 # ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
 md"""
-Before defining what this phenomenon is, let's first see it in action. Here is a quick gif of all 34 frames of our science images shown in chronological order (note for the rest of this notebook that we will be using the default image orientation in the plotting software):
+Before defining what this phenomenon is, let's first see it in action. Here is a visualization of all 34 frames of our science images shown in chronological order (note for the rest of this notebook that we will be using the default image orientation in the plotting software):
 """
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
@@ -531,23 +558,17 @@ function plot_aps(img, aps)
 	plot(p, layout)
 end
 
-# ╔═╡ 73eb9748-af11-4305-a1a2-2c5cdecc4bb1
-frames(imgs, aps) = [
-    frame(
-        data = [hplot(img), plot_aps(img, [ap])],
-        layout = attr(title_text=header(img)["DATE-OBS"]),
-        name = "frame_$(i)",
-    ) for (i, (img, ap)) in enumerate(zip(imgs, aps))
-]
-
-# ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
-preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
-
-# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-preview(r2(img) for img in imgs_sci)
-
 # ╔═╡ 85b2e8c8-4345-4f38-8d30-58a0d948cc9a
 plot_aps(r2(img_test), aps_test)
+
+# ╔═╡ b22842a8-9e09-4e59-ab92-a3a16444f0e0
+preview(imgs, aps) = plot(trace(imgs), layout(imgs), frames(imgs, aps))
+
+# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
+preview(r2.(imgs_sci))
+
+# ╔═╡ 46f3cffc-b0c5-43b2-ab12-338bae4eff49
+hplot(trace(r2.(imgs_sci))
 
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
@@ -590,15 +611,6 @@ aps_sci = [
 	first(get_aps(img, pixel_left, pixel_right, 24))
 	for img in imgs_sci
 ];
-
-# ╔═╡ 4b9dc995-9441-4703-9152-2758c66d7479
-plot(trace(imgs_sci), layout(imgs_sci), frames(imgs_sci, aps_sci))
-
-# ╔═╡ 0f39fd99-ade5-4479-9233-11c616f3a31b
-aps_sci[1].y
-
-# ╔═╡ 8eeeb294-f186-443b-aed3-3d2571292f1f
-aps_sci
 
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
 md"""
@@ -2740,22 +2752,18 @@ version = "17.4.0+2"
 # ╠═708fb840-5852-44c8-8d6a-0536984a8157
 # ╟─83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
 # ╟─b07660a3-ad01-4862-b055-816d02e8893c
-# ╠═bc502e12-969b-404a-951e-d253dae2d1f3
-# ╠═73eb9748-af11-4305-a1a2-2c5cdecc4bb1
+# ╟─bc502e12-969b-404a-951e-d253dae2d1f3
+# ╠═b34c43b6-ce91-429e-8fa9-5cf82665a8ce
 # ╟─a8bb8cd5-cebe-4cba-809f-49a404c6e718
 # ╟─260c25b7-2339-419c-afa7-8fa888ec5d33
 # ╟─dffdaf70-2658-48cb-bcba-7725b74ce279
 # ╠═e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
-# ╠═4b9dc995-9441-4703-9152-2758c66d7479
-# ╠═0f39fd99-ade5-4479-9233-11c616f3a31b
-# ╠═8eeeb294-f186-443b-aed3-3d2571292f1f
 # ╟─2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
 # ╟─6a648c52-4682-44d7-9634-eaa663e665fe
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
-# ╠═935c0d65-1418-4c65-a096-4a46d9813db4
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
@@ -2776,7 +2784,9 @@ version = "17.4.0+2"
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╟─087bb2d6-f2c7-4290-aab7-793e43dbc8e7
 # ╠═85b2e8c8-4345-4f38-8d30-58a0d948cc9a
-# ╟─942b2a62-e6c3-4c64-8142-316172840e57
+# ╠═942b2a62-e6c3-4c64-8142-316172840e57
+# ╠═b22842a8-9e09-4e59-ab92-a3a16444f0e0
+# ╠═46f3cffc-b0c5-43b2-ab12-338bae4eff49
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
