@@ -16,19 +16,13 @@ end
 # ╔═╡ 528d9fc6-2180-484b-bb22-27bf59cbdee9
 df_sci = fitscollection("../data/TRANSIT/ut20240325/sci"; abspath=false)
 
-# ╔═╡ 8e55a11a-3641-4387-841a-659e202de79f
-imgs_sci = [load(f.path) for f in eachrow(df_sci)];
-
-# ╔═╡ e34a59ea-dea4-4776-b7e0-49ed1851cb4f
-img_sci = first(imgs_sci);
-
 # ╔═╡ bcc94aee-36c7-49e5-8a96-4a1c95cbab90
 function hplot(img; colorrange=(2_400, 3_200))
 	WGLMakie.Page()
 	
-	fig, ax, hm = heatmap(img;
+    fig, ax, hm = image(img;
 		colorrange,
-		axis = (; title=header(img)["DATE-OBS"]),
+		# axis = (; title=header(img)["DATE-OBS"]),
 	)
 
 	Colorbar(fig[1, 2], hm; label="ADU")
@@ -39,18 +33,25 @@ end
 # ╔═╡ c8298a64-acb0-4be1-9c62-72a97f631773
 r2(img) = (restrict ∘ restrict)(img)
 
+# ╔═╡ 8e55a11a-3641-4387-841a-659e202de79f
+# imgs_sci = [rand(1000:5000, 100, 200) for _ in 1:5];
+imgs_sci = [r2(load(f.path)) for f in eachrow(df_sci)];
+
+# ╔═╡ e34a59ea-dea4-4776-b7e0-49ed1851cb4f
+img_sci = first(imgs_sci);
+
 # ╔═╡ 0c3cbce8-959f-4277-be49-1fe6e979a1ce
-fig, ax, hm = hplot(r2(img_sci));
+fig, ax, hm = hplot(img_sci);
 
 # ╔═╡ a68a60b0-1650-4fb7-8095-8432f27ee0b3
-frame_i = Slider(fig[2, 1], range=1:2:34)
+frame_i = Slider(fig[2, 1], range=1:5)
 
 # ╔═╡ 112ce454-647e-45a2-88cb-9569122c8ecf
-img_i = @lift r2(imgs_sci[$(frame_i.value)])
+img_i = @lift imgs_sci[$(frame_i.value)]
 
 # ╔═╡ 4a3c9746-d5f7-4892-a588-8f0c8cacd880
 let
-	heatmap!(ax, r2(img_i.val); colorrange=(2_400, 3_200))
+	image!(ax, img_i; colormap=:reds, colorrange=(2_400, 3_200))
 	fig
 end
 
@@ -76,9 +77,6 @@ begin
 	set_theme!(theme_light())
 	update_theme!(Heatmap=(; colormap), Image=(; colormap))
 end
-
-# ╔═╡ 50b30a9a-37fc-11ef-3bbf-cdbd3c619c61
-# using WGLMakie, ImageShow, AstroImages, CCDReduction
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1766,12 +1764,11 @@ version = "3.5.0+0"
 # ╠═a68a60b0-1650-4fb7-8095-8432f27ee0b3
 # ╠═112ce454-647e-45a2-88cb-9569122c8ecf
 # ╠═4a3c9746-d5f7-4892-a588-8f0c8cacd880
-# ╟─c8298a64-acb0-4be1-9c62-72a97f631773
+# ╠═c8298a64-acb0-4be1-9c62-72a97f631773
 # ╠═47bafb51-a326-4f51-abb1-ecdda652a3ce
 # ╠═07f89dc0-5339-4df2-a55d-3e6d5100385d
 # ╠═e3512fd5-81f7-4d29-9395-ccf97d9aedbe
 # ╠═f58be396-c2e4-47a6-baa3-3403676d4f98
-# ╠═50b30a9a-37fc-11ef-3bbf-cdbd3c619c61
 # ╠═ce01449e-4dbf-4f6d-af8d-016f88960609
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
