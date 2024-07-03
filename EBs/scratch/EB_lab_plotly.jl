@@ -627,7 +627,13 @@ end
 
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
 aps_sci = [
-	first(get_aps(img, pixel_left, pixel_right, box_size))
+	first(get_aps(img, pixel_left, pixel_right, box_size)[1])
+	for img in imgs_sci
+];
+
+# ╔═╡ c526525a-72db-4bb2-a119-7ee8dc35ba2f
+aps_display = [
+	first(get_aps(img, pixel_left, pixel_right, box_size)[2])
 	for img in imgs_sci
 ];
 
@@ -637,7 +643,7 @@ Let's place the apertures onto our movie from earlier to double check how we did
 """
 
 # ╔═╡ dab4bba5-0316-4108-bf56-4533f6f4a36b
-preview(r2.(imgs_sci), aps_sci)
+preview(r2.(imgs_sci), aps_display)
 
 # ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
 md"""
@@ -2810,6 +2816,7 @@ version = "17.4.0+2"
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
+# ╠═c526525a-72db-4bb2-a119-7ee8dc35ba2f
 # ╟─bd10f1c9-4b0d-4a30-8917-016f22582d06
 # ╠═dab4bba5-0316-4108-bf56-4533f6f4a36b
 # ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
