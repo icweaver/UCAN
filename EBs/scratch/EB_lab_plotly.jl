@@ -337,9 +337,6 @@ layout(imgs) = Layout(
 	yaxis = attr(title="Y"),
 )
 
-# ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
-preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
-
 # ╔═╡ 2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
 r2(img) = (restrict ∘ restrict)(img)
 
@@ -354,7 +351,7 @@ let
 	)
 
 	add_trace!(p, hplot(r2(img_sci)); col=1)
-	add_trace!(p, hplot(img_sci - img_dark); col=2)
+	add_trace!(p, hplot(r2(img_sci) - r2(img_dark)); col=2)
 end
 
 # ╔═╡ 6a648c52-4682-44d7-9634-eaa663e665fe
@@ -378,9 +375,6 @@ Before defining what this phenomenon is, let's first see it in action. Here is a
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
 imgs_sci = [load(f.path) for f in eachrow(df_sci)];
-
-# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-preview(r2(img) for img in imgs_sci)
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
@@ -537,6 +531,21 @@ function plot_aps(img, aps)
 	plot(p, layout)
 end
 
+# ╔═╡ 73eb9748-af11-4305-a1a2-2c5cdecc4bb1
+frames(imgs, aps) = [
+    frame(
+        data = [hplot(img), plot_aps(img, [ap])],
+        layout = attr(title_text=header(img)["DATE-OBS"]),
+        name = "frame_$(i)",
+    ) for (i, (img, ap)) in enumerate(zip(imgs, aps))
+]
+
+# ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
+preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
+
+# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
+preview(r2(img) for img in imgs_sci)
+
 # ╔═╡ 85b2e8c8-4345-4f38-8d30-58a0d948cc9a
 plot_aps(r2(img_test), aps_test)
 
@@ -581,6 +590,15 @@ aps_sci = [
 	first(get_aps(img, pixel_left, pixel_right, 24))
 	for img in imgs_sci
 ];
+
+# ╔═╡ 4b9dc995-9441-4703-9152-2758c66d7479
+plot(trace(imgs_sci), layout(imgs_sci), frames(imgs_sci, aps_sci))
+
+# ╔═╡ 0f39fd99-ade5-4479-9233-11c616f3a31b
+aps_sci[1].y
+
+# ╔═╡ 8eeeb294-f186-443b-aed3-3d2571292f1f
+aps_sci
 
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
 md"""
@@ -2720,13 +2738,17 @@ version = "17.4.0+2"
 # ╠═96c3de3b-9c81-42f8-b1d3-7d6a78b4f198
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═708fb840-5852-44c8-8d6a-0536984a8157
-# ╠═83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
+# ╟─83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
 # ╟─b07660a3-ad01-4862-b055-816d02e8893c
-# ╟─bc502e12-969b-404a-951e-d253dae2d1f3
+# ╠═bc502e12-969b-404a-951e-d253dae2d1f3
+# ╠═73eb9748-af11-4305-a1a2-2c5cdecc4bb1
 # ╟─a8bb8cd5-cebe-4cba-809f-49a404c6e718
 # ╟─260c25b7-2339-419c-afa7-8fa888ec5d33
 # ╟─dffdaf70-2658-48cb-bcba-7725b74ce279
-# ╟─e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
+# ╠═e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
+# ╠═4b9dc995-9441-4703-9152-2758c66d7479
+# ╠═0f39fd99-ade5-4479-9233-11c616f3a31b
+# ╠═8eeeb294-f186-443b-aed3-3d2571292f1f
 # ╟─2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
 # ╟─6a648c52-4682-44d7-9634-eaa663e665fe
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
