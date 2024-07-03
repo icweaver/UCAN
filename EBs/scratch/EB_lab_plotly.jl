@@ -313,7 +313,7 @@ sliders(imgs) = [
                     ["frame_$(i)"],
                     attr(
                         mode = "immediate",
-                        transition = attr(duration = 0),
+                        transition = attr(duration=0),
                         frame = attr(duration=5, redraw=true),
                     ),
                 ],
@@ -337,17 +337,16 @@ function frames(imgs, aps)
 	return [
 		frame(
 	        data = [hplot(img)],
-	        layout = Layout(;
-				shapes,
+	        layout = attr(;
+				shapes = [shape],
 				width = 500,
 			    height = 500,
-				sliders = sliders(img),
 				title_text = timestamp(img),
 				xaxis = attr(title="X"),
 				yaxis = attr(title="Y"),
 			),
 			name = "frame_$(i)",
-	    ) for (i, img) in enumerate(imgs)
+	    ) for (i, (img, shape)) in enumerate(zip(imgs, shapes))
 	]
 end
 
@@ -360,6 +359,26 @@ layout(imgs) = Layout(
 	xaxis = attr(title="X"),
 	yaxis = attr(title="Y"),
 )
+
+# ╔═╡ 9cadc82a-f384-4cfd-9f0d-86e13333fb47
+function layout(imgs, aps)
+	shapes = [
+		circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
+			line_color = :lightgreen,
+		)
+		for ap in aps
+	]
+	
+	return Layout(
+	    width = 500,
+	    height = 500,
+		shapes = [first(shapes)],
+	    sliders = sliders(imgs),
+		title = timestamp(first(imgs)),
+		xaxis = attr(title="X"),
+		yaxis = attr(title="Y"),
+	)
+end
 
 # ╔═╡ e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
 preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
@@ -562,13 +581,10 @@ end
 plot_aps(r2(img_test), aps_test)
 
 # ╔═╡ b22842a8-9e09-4e59-ab92-a3a16444f0e0
-preview(imgs, aps) = plot(trace(imgs), layout(imgs), frames(imgs, aps))
+preview(imgs, aps) = plot(trace(imgs), layout(imgs, aps), frames(imgs, aps))
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 preview(r2.(imgs_sci))
-
-# ╔═╡ 46f3cffc-b0c5-43b2-ab12-338bae4eff49
-hplot(trace(r2.(imgs_sci))
 
 # ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 md"""
@@ -583,16 +599,16 @@ Now that we have the building blocks for identifying our source target in place,
 """
 
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
-function get_aps(img, pixel_left, pixel_right, aperture_size)
+function get_aps(img, pixel_left, pixel_right, box_size; aperture_size=48)
 	# Clip image
 	clipped = sigma_clip(img, 1, fill=NaN)
 	
 	# Subtract background
-	bkg_f, bkg_rms_f = estimate_background(clipped, aperture_size)
+	bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
 	subt = img - bkg_f
 	
 	# Extract target source
-	sources_all = extract_sources(PeakMesh(), subt, img_dark, true)
+	sources_all = extract_sources(PeakMesh(), subt, img_dark)
 	candidates = filter(sources_all) do source
 		pixel_left ≤ source.y ≤ pixel_right
 	end
@@ -602,13 +618,16 @@ function get_aps(img, pixel_left, pixel_right, aperture_size)
 		candidate.value == max_val
 	end
 	
-	# Place aperture
-	aps = CircularAperture.(sources.y, sources.x, aperture_size);
+	# Place apertures
+	aps_calc = CircularAperture.(sources.y, sources.x, box_size)
+	aps_display = CircularAperture.(sources.y, sources.x, aperture_size)
+
+	return aps_calc, aps_display
 end
 
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
 aps_sci = [
-	first(get_aps(img, pixel_left, pixel_right, 24))
+	first(get_aps(img, pixel_left, pixel_right, box_size))
 	for img in imgs_sci
 ];
 
@@ -617,8 +636,8 @@ md"""
 Let's place the apertures onto our movie from earlier to double check how we did:
 """
 
-# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-plot_aps(imgs_sci[10], [aps_sci[10]])
+# ╔═╡ dab4bba5-0316-4108-bf56-4533f6f4a36b
+preview(r2.(imgs_sci), aps_sci)
 
 # ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
 md"""
@@ -2751,11 +2770,12 @@ version = "17.4.0+2"
 # ╟─edf446f0-3643-445a-a4b3-b6fa945ded9a
 # ╠═708fb840-5852-44c8-8d6a-0536984a8157
 # ╟─83ae834c-c8b4-4cf2-b12b-4efb74f44a2e
-# ╟─b07660a3-ad01-4862-b055-816d02e8893c
-# ╟─bc502e12-969b-404a-951e-d253dae2d1f3
+# ╠═b07660a3-ad01-4862-b055-816d02e8893c
+# ╠═bc502e12-969b-404a-951e-d253dae2d1f3
 # ╠═b34c43b6-ce91-429e-8fa9-5cf82665a8ce
-# ╟─a8bb8cd5-cebe-4cba-809f-49a404c6e718
-# ╟─260c25b7-2339-419c-afa7-8fa888ec5d33
+# ╠═a8bb8cd5-cebe-4cba-809f-49a404c6e718
+# ╠═260c25b7-2339-419c-afa7-8fa888ec5d33
+# ╠═9cadc82a-f384-4cfd-9f0d-86e13333fb47
 # ╟─dffdaf70-2658-48cb-bcba-7725b74ce279
 # ╠═e507ba1d-1136-4a6d-9fc7-b3c1f3f5f6e6
 # ╟─2a0976ba-4b56-4a6b-9df8-5b5931cd0fb2
@@ -2786,13 +2806,12 @@ version = "17.4.0+2"
 # ╠═85b2e8c8-4345-4f38-8d30-58a0d948cc9a
 # ╠═942b2a62-e6c3-4c64-8142-316172840e57
 # ╠═b22842a8-9e09-4e59-ab92-a3a16444f0e0
-# ╠═46f3cffc-b0c5-43b2-ab12-338bae4eff49
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
 # ╟─bd10f1c9-4b0d-4a30-8917-016f22582d06
-# ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+# ╠═dab4bba5-0316-4108-bf56-4533f6f4a36b
 # ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
