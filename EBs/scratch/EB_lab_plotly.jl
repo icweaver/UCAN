@@ -221,24 +221,27 @@ and compare it to our corresponding [finder chart](https://astro.swarthmore.edu/
 # ╔═╡ 74197e45-3b80-44ad-b940-f2544f2f9b54
 Resource("https://github.com/icweaver/UCAN/blob/main/EBs/data/finder_WUMa.jpg?raw=true")
 
-# ╔═╡ a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
+# ╔═╡ 609873f9-2726-4438-8df6-c01cc97a1e2a
 md"""
-!!! note "Why did we reverse the image?"
-	For easier comparison, we flipped our science frame image over the vertical axis so that it would be in the same orientation as our finder chart.
-
 We have a match! Here is the associated header information for our science frame:
 """
 
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
 header(img_sci)
 
-# ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
+# ╔═╡ a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 md"""
-It looks like this image is $(size(img_sci, 1)) x $(size(img_sci, 2)) pixels, with the ADU counts for each pixel stored as a $(eltype(img_sci)) to reduce memory storage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
+!!! note "Why did we reverse the image?"
+	For easier comparison, we flipped our science frame image over the vertical axis so that it would be in the same orientation as our finder chart.
 """
 
 # ╔═╡ f6197e8e-3132-4ab5-86d7-32572e337c58
-size(img_sci), eltype(img_sci)
+size_sci, eltype_sci = size(img_sci), eltype(img_sci)
+
+# ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
+md"""
+It looks like this image is $(first(size_sci)) x $(last(size_sci)) pixels, with the ADU counts for each pixel stored as a $(eltype_sci) to reduce memory storage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
+"""
 
 # ╔═╡ b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 md"""
@@ -2765,10 +2768,11 @@ version = "17.4.0+2"
 # ╠═dbe812e2-a795-4caa-842d-07da5eabcade
 # ╟─9d2b2434-7bd9-42c4-b986-34969101b285
 # ╟─74197e45-3b80-44ad-b940-f2544f2f9b54
-# ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
+# ╟─609873f9-2726-4438-8df6-c01cc97a1e2a
 # ╠═7d7cd508-be27-4f52-bc13-91c702450167
-# ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
+# ╟─a6de852c-01e6-49a2-bc78-8d1b6eb51c0c
 # ╠═f6197e8e-3132-4ab5-86d7-32572e337c58
+# ╟─5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 # ╟─b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 # ╟─2b32512b-63df-4a48-8e72-bf20aa75a845
 # ╟─06dae98b-b134-4893-99d7-d1d67dade7cd
