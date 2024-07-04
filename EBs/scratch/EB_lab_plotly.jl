@@ -43,28 +43,6 @@ In this lab we will observe an eclipsing binary in real time and explore how to 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level.
 """
 
-# ╔═╡ f0678404-72db-4bfd-9a44-ef0b66f3a64f
-md"""
-With this requisite information out of the way, let's get started!
-"""
-
-# ╔═╡ 49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
-msg_adding_colors = md"""
-##### Adding colors in Julia 🎨
-This makes magenta!
-
-```julia
-using ImageCore
-
-RGB(1, 0, 0) + RGB(0, 0, 1)
-```
-
-$(RGB(1, 0, 0) + RGB(0, 0, 1))
-""";
-
-# ╔═╡ 84d9ed94-11cb-4272-8bd3-d420c50f990d
-msg(x; title="Details") = details(title, x);
-
 # ╔═╡ 14e0627f-ada1-4689-9bc6-c877b81aa582
 cm"""
 !!! note "Using this notebook"
@@ -94,6 +72,28 @@ cm"""
 
 	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined. For more examples of using these notebooks for Unistellar science, check out our recent [Spectroscopy Lab](https://icweaver.github.io/UCAN/spectroscopy/notebook.html)!
 """
+
+# ╔═╡ f0678404-72db-4bfd-9a44-ef0b66f3a64f
+md"""
+With this requisite information out of the way, let's get started!
+"""
+
+# ╔═╡ 49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
+msg_adding_colors = md"""
+##### Adding colors in Julia 🎨
+This makes magenta!
+
+```julia
+using ImageCore
+
+RGB(1, 0, 0) + RGB(0, 0, 1)
+```
+
+$(RGB(1, 0, 0) + RGB(0, 0, 1))
+""";
+
+# ╔═╡ 84d9ed94-11cb-4272-8bd3-d420c50f990d
+msg(x; title="Details") = details(title, x);
 
 # ╔═╡ aa005b55-626e-41e0-8fe1-137bd7dd5599
 md"""
@@ -849,125 +849,6 @@ if !isempty(username)
 	"""
 end
 
-# ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
-md"""
-#### Convenience functions
-"""
-
-# ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
-function to_hms(ra_deci)
-	hms = round.(deg2hms(ra_deci); digits=2)
-	format_angle(hms; delim=["h ", "m ", "s"])
-end
-
-# ╔═╡ 77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
-function to_dms(ra_deci)
-	dms = round.(deg2dms(ra_deci); digits=2)
-	format_angle(dms; delim=["° ", "' ", "\""])
-end
-
-# ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
-function get_url(s)
-	url = @chain s begin
-		split("Ephemeris info ")
-		last
-		split("]]")
-		first
-	end
-end
-
-# ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
-function ephem(url)
-	st = scrape_tables(url)
-	ephem_blob = st[3].rows
-	if length(ephem_blob[2]) != 4
-		error("Expected ephemeris to have Epoch, Start, Mid, and End. Received: ", ephem_blob[2])
-	end
-	ephem_title, ephem_data... = filter(x -> length(x) == 4, ephem_blob)
-	return ephem_title, ephem_data
-end
-
-# ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
-function deep_link(;
-	mission = "transit",
-	ra = 0.0,
-	dec = 0.0,
-	c = 4_000,
-	et = 4_000,
-	g = 0.0,
-	d = 0.0,
-	t = 0.0,
-	scitag = "scitag",
-)
-	link = join([
-		"unistellar://science/$(mission)?ra=$(ra)",
-		"dec=$(dec)",
-		"c=$(c)",
-		"et=$(et)",
-		"g=$(g)",
-		"d=$(d)",
-		"t=$(t)",
-		"scitag=$(scitag)",
-	], '&')
-
-	Markdown.parse("[link]($(link))")
-end
-
-# ╔═╡ 829cde81-be03-4a9f-a853-28f84923d493
-# Make the table view a bit nicer in the browser
-pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
-	maximum_columns_width = "max-width",
-	show_subheader = false,
-	header_alignment = :c,
-)
-
-# ╔═╡ edda8d09-ec46-4a0b-b1b2-b1289ee5456e
-first(df_all, 10) |> pretty
-
-# ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
-md"""
-### Determining observation parameters
-
-Once a target has been found, here's how we might estimate an observing setup for it based on the [Unistellar Exposure Time and Gain Calculator](https://docs.google.com/spreadsheets/d/1niBg5LOkWyR8lCCOOcIo6OHt5kwlc3vnsBsazo7YfXQ/edit#gid=0).
-"""
-
-# ╔═╡ 9c482134-6336-4e72-9d30-87080ebae671
-@bind target PlutoUI.combine() do Child
-	cm"""
-	!!! tip "Observation inputs"
-		Enter your target's visual magnitude and desired exposure time (in milliseconds) below:
-	
-		
-		|``V_\mathrm{mag}``|``t_\mathrm{exp}``|
-		|------------------|------------------|
-		|$(Child(:v_mag, NumberField(1:0.1:20; default=11.7)))|$(Child(:t_exp, NumberField(100:100:4_000; default=3_200))) (ms)
-	"""
-end
-
-# ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
-# Keep these values untouched
-const baseline = (
-	v_mag = 11.7, # V (mag)
-	t_exp = 3200.0, # Exptime (ms)
-	gain = 25.0, # Gain (dB)
-	peak_px = 3000, # Peak Pixel ADU
-)
-
-# ╔═╡ 3c601844-3bb9-422c-ab1e-b40f7e7cb0df
-function flux_factor(target, baseline)
-	f_mag = (target.v_mag - baseline.v_mag) / -2.5 |> exp10
-	f_exp = target.t_exp / baseline.t_exp
-	return f_mag * f_exp 
-end
-
-# ╔═╡ f26f890b-5924-497c-85a3-eff924d0470b
-# Maximum gain
-max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
-
-# ╔═╡ 95a67d04-0a32-4e55-ac2f-d004ecc9ca84
-# Recommended gain
-rec_gain(g) = Int(round(g, RoundDown) - 1.0)
-
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 if !isempty(username)
 	df_candidates = @chain df_all begin
@@ -1027,9 +908,6 @@ if !isempty(username)
 	end
 end;
 
-# ╔═╡ 4042bc32-1a14-4408-974d-7405fd8c8ccc
-df_candidates |> pretty
-
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
 	md"""
@@ -1045,6 +923,44 @@ end
 
 # ╔═╡ 3f548bb1-37b0-48b7-a35c-d7701405a64e
 df_selected = @rsubset df_candidates :star_name == star_name;
+
+# ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
+md"""
+#### Convenience functions
+"""
+
+# ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
+function to_hms(ra_deci)
+	hms = round.(deg2hms(ra_deci); digits=2)
+	format_angle(hms; delim=["h ", "m ", "s"])
+end
+
+# ╔═╡ 77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
+function to_dms(ra_deci)
+	dms = round.(deg2dms(ra_deci); digits=2)
+	format_angle(dms; delim=["° ", "' ", "\""])
+end
+
+# ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
+function get_url(s)
+	url = @chain s begin
+		split("Ephemeris info ")
+		last
+		split("]]")
+		first
+	end
+end
+
+# ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
+function ephem(url)
+	st = scrape_tables(url)
+	ephem_blob = st[3].rows
+	if length(ephem_blob[2]) != 4
+		error("Expected ephemeris to have Epoch, Start, Mid, and End. Received: ", ephem_blob[2])
+	end
+	ephem_title, ephem_data... = filter(x -> length(x) == 4, ephem_blob)
+	return ephem_title, ephem_data
+end
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
 df_ephem = let
@@ -1072,6 +988,46 @@ df_ephem = let
 		end
 	end
 end;
+
+# ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
+function deep_link(;
+	mission = "transit",
+	ra = 0.0,
+	dec = 0.0,
+	c = 4_000,
+	et = 4_000,
+	g = 0.0,
+	d = 0.0,
+	t = 0.0,
+	scitag = "scitag",
+)
+	link = join([
+		"unistellar://science/$(mission)?ra=$(ra)",
+		"dec=$(dec)",
+		"c=$(c)",
+		"et=$(et)",
+		"g=$(g)",
+		"d=$(d)",
+		"t=$(t)",
+		"scitag=$(scitag)",
+	], '&')
+
+	Markdown.parse("[link]($(link))")
+end
+
+# ╔═╡ 829cde81-be03-4a9f-a853-28f84923d493
+# Make the table view a bit nicer in the browser
+pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
+	maximum_columns_width = "max-width",
+	show_subheader = false,
+	header_alignment = :c,
+)
+
+# ╔═╡ edda8d09-ec46-4a0b-b1b2-b1289ee5456e
+first(df_all, 10) |> pretty
+
+# ╔═╡ 4042bc32-1a14-4408-974d-7405fd8c8ccc
+df_candidates |> pretty
 
 # ╔═╡ 31c23e2b-1a2d-41aa-81c1-22868e241f7e
 if !isempty(username)
@@ -1101,6 +1057,50 @@ if !isempty(username)
 
 	df_obs |> pretty
 end
+
+# ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
+md"""
+### Determining observation parameters
+
+Once a target has been found, here's how we might estimate an observing setup for it based on the [Unistellar Exposure Time and Gain Calculator](https://docs.google.com/spreadsheets/d/1niBg5LOkWyR8lCCOOcIo6OHt5kwlc3vnsBsazo7YfXQ/edit#gid=0).
+"""
+
+# ╔═╡ 9c482134-6336-4e72-9d30-87080ebae671
+@bind target PlutoUI.combine() do Child
+	cm"""
+	!!! tip "Observation inputs"
+		Enter your target's visual magnitude and desired exposure time (in milliseconds) below:
+	
+		
+		|``V_\mathrm{mag}``|``t_\mathrm{exp}``|
+		|------------------|------------------|
+		|$(Child(:v_mag, NumberField(1:0.1:20; default=11.7)))|$(Child(:t_exp, NumberField(100:100:4_000; default=3_200))) (ms)
+	"""
+end
+
+# ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
+# Keep these values untouched
+const baseline = (
+	v_mag = 11.7, # V (mag)
+	t_exp = 3200.0, # Exptime (ms)
+	gain = 25.0, # Gain (dB)
+	peak_px = 3000, # Peak Pixel ADU
+)
+
+# ╔═╡ 3c601844-3bb9-422c-ab1e-b40f7e7cb0df
+function flux_factor(target, baseline)
+	f_mag = (target.v_mag - baseline.v_mag) / -2.5 |> exp10
+	f_exp = target.t_exp / baseline.t_exp
+	return f_mag * f_exp 
+end
+
+# ╔═╡ f26f890b-5924-497c-85a3-eff924d0470b
+# Maximum gain
+max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
+
+# ╔═╡ 95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+# Recommended gain
+rec_gain(g) = Int(round(g, RoundDown) - 1.0)
 
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let

@@ -4,17 +4,98 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 8976f423-fc10-4ce0-8450-ecfddc486483
-using PlutoPlotly, AstroImages
-
-# ╔═╡ 6c0e97c5-5ff8-4975-aab3-8c623f296906
-using AstroImages: restrict
-
 # ╔═╡ d6391acb-55a1-4b5d-9587-f5d7ba45800e
-using CCDReduction
+begin
+	using AstroImages, CCDReduction
+	using AstroImages: restrict
+	using PlutoPlotly
+end
+
+# ╔═╡ 889b4500-959d-4acc-9b5e-2b46066fe782
+df_sci = fitscollection("../data/TRANSIT/ut20240325/sci"; abspath=false);
+
+# ╔═╡ 44f51751-7faf-435c-9dce-07da28c97a43
+imgs_sci = [load(f.path) for f in eachrow(df_sci)];
+# imgs_sci = [reshape(range(1, 10*n, 600), 20, 30) for n in 600:610];
+# imgs_sci = [AstroImage(rand(50, 80)) for _ in 1:10];
+
+# ╔═╡ 70164594-7447-48fc-a239-42bf1ec06a12
+get_shapes(aps; line_color=:lightgreen) = [
+	circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
+		line_color,
+	)
+	for ap in aps
+]
+
+# ╔═╡ 2b1ce152-5722-4c7f-83e1-94aa7749e8b8
+struct Ap
+	x
+	y
+	r
+end
+
+# ╔═╡ 4c8cf719-7c3b-4776-9352-ae96d8f8fda4
+aps = [Ap(rand(1:1500), rand(1:2000), 48) for _ in 1:length(imgs_sci)];
+
+# ╔═╡ f0052a69-ca65-4dce-9308-39f72612ea23
+r2(img) = (restrict ∘ restrict)(img)
+
+# ╔═╡ 72d4ee08-48af-41cd-9006-21aa6c255ba9
+function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
+	img_small = r2(img)
+	heatmap(;
+		x = img_small.dims[1].val,
+		y = img_small.dims[2].val,
+		z = img_small.data,
+		zmin,
+		zmax,
+		colorbar = attr(; title)
+	)
+end
+
+# ╔═╡ 7b5bebd8-7fb6-4a29-b23e-0cbc60870b5e
+timestamp(img) = header(img)["DATE-OBS"]
+
+# ╔═╡ db183baa-cfab-4b13-b20e-3d4dbb45f4cb
+get_trace(imgs) = [hplot(first(imgs))]
+
+# ╔═╡ 46e92f74-fe83-4195-857f-00fb863bf79c
+function get_layout(imgs, aps)
+	l = get_layout(imgs)
+	shapes = get_shapes(aps)
+	relayout!(l; shapes)
+end
+
+# ╔═╡ 9237c0f4-75e4-4e5d-9f3a-25224ea05cc2
+get_frames(imgs) = [
+    frame(
+        data = [hplot(img)],
+        layout = attr(title_text=timestamp(img)),
+        name = "frame_$(i)",
+    ) for (i, img) in enumerate(imgs)
+]
+
+# ╔═╡ 1bd9b7cb-7cb6-4b35-9e59-c5f25ec34aa3
+function get_frames(imgs, aps)
+	shapes = get_shapes(aps)
+	return [
+		frame(
+	        data = [hplot(img)],
+	        layout = attr(;
+				shapes = [shape],
+				width = 500,
+			    height = 500,
+				title_text = timestamp(img),
+				xaxis = attr(title="X"),
+				yaxis = attr(title="Y"),
+			),
+			name = "frame_$(i)",
+	    ) for (i, (img, shape)) in enumerate(zip(imgs, shapes))
+	]
+end
 
 # ╔═╡ ecb1dcda-f192-469d-be71-25a5987fcf91
-sliders(imgs) = [
+get_sliders(imgs) = [
     attr(
         active = 0,
         minorticklen = 0,
@@ -36,61 +117,28 @@ sliders(imgs) = [
     ),
 ]
 
-# ╔═╡ 7b5bebd8-7fb6-4a29-b23e-0cbc60870b5e
-timestamp(img) = header(img)["DATE-OBS"]
-
 # ╔═╡ e2ea5e37-cb20-495a-987b-543aa4b36889
-layout(imgs) = Layout(
+get_layout(imgs) = Layout(
     width = 500,
     height = 500,
-    sliders = sliders(imgs),
+    sliders = get_sliders(imgs),
 	title = timestamp(first(imgs)),
 	xaxis = attr(title="X"),
 	yaxis = attr(title="Y"),
 )
 
-# ╔═╡ f0052a69-ca65-4dce-9308-39f72612ea23
-restrict2(img) = (restrict ∘ restrict)(img)
-
-# ╔═╡ 72d4ee08-48af-41cd-9006-21aa6c255ba9
-function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
-	img_small = restrict2(img)
-	heatmap(;
-		x = img_small.dims[1].val,
-		y = img_small.dims[2].val,
-		z = img_small.data,
-		zmin,
-		zmax,
-		colorbar = attr(; title)
-	)
-end
-
-# ╔═╡ db183baa-cfab-4b13-b20e-3d4dbb45f4cb
-trace(imgs) = [hplot(first(imgs))]
-
-# ╔═╡ 9237c0f4-75e4-4e5d-9f3a-25224ea05cc2
-frames(imgs) = [
-    frame(
-        data = [hplot(img)],
-        layout = attr(title_text=header(img)["DATE-OBS"]),
-        name = "frame_$(i)",
-    ) for (i, img) in enumerate(imgs)
-]
-
 # ╔═╡ 1643b759-0e41-417d-a56d-7ce0f0fff06b
-preview(imgs) = plot(trace(imgs), layout(imgs), frames(imgs))
+preview(imgs) = plot(get_trace(imgs), get_layout(imgs), get_frames(imgs))
 
-# ╔═╡ 889b4500-959d-4acc-9b5e-2b46066fe782
-df_sci = fitscollection("../data/TRANSIT/ut20240325/sci"; abspath=false);
-
-# ╔═╡ 11fab64b-6bfb-40ff-8c07-49f5c179b519
-imgs_sci = [load(f.path) for f in eachrow(df_sci)];
+# ╔═╡ c89a5622-4292-44b7-8206-6143e58f0d3c
+preview(imgs, aps) = plot(
+	get_trace(imgs, aps), 
+	get_layout(imgs, aps),
+	get_frames(imgs, aps),
+)
 
 # ╔═╡ 5dd83301-555a-4610-b462-99d35f9f0524
 preview(imgs_sci)
-
-# ╔═╡ e4c64b7b-611c-4978-bb5e-bc553d7c45e7
-img = first(df_sci.path)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -471,9 +519,9 @@ deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.Interfaces]]
-git-tree-sha1 = "3a6d577f06ee9851c32ee03489b95db84f62505d"
+git-tree-sha1 = "6a73550de045ce0165fbcec85b9bba7764e9f209"
 uuid = "85a1e053-f937-4924-92a5-1367d23b7b87"
-version = "0.3.0"
+version = "0.3.1"
 
 [[deps.IntervalSets]]
 git-tree-sha1 = "dba9ddf07f77f60450fe5d2e2beb9854d9a49bd0"
@@ -1021,20 +1069,23 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╠═8976f423-fc10-4ce0-8450-ecfddc486483
-# ╟─72d4ee08-48af-41cd-9006-21aa6c255ba9
-# ╟─db183baa-cfab-4b13-b20e-3d4dbb45f4cb
-# ╟─9237c0f4-75e4-4e5d-9f3a-25224ea05cc2
-# ╟─ecb1dcda-f192-469d-be71-25a5987fcf91
-# ╟─e2ea5e37-cb20-495a-987b-543aa4b36889
-# ╟─7b5bebd8-7fb6-4a29-b23e-0cbc60870b5e
-# ╟─1643b759-0e41-417d-a56d-7ce0f0fff06b
-# ╠═5dd83301-555a-4610-b462-99d35f9f0524
-# ╠═f0052a69-ca65-4dce-9308-39f72612ea23
 # ╠═889b4500-959d-4acc-9b5e-2b46066fe782
-# ╠═11fab64b-6bfb-40ff-8c07-49f5c179b519
-# ╠═6c0e97c5-5ff8-4975-aab3-8c623f296906
+# ╠═44f51751-7faf-435c-9dce-07da28c97a43
+# ╠═5dd83301-555a-4610-b462-99d35f9f0524
+# ╠═72d4ee08-48af-41cd-9006-21aa6c255ba9
+# ╠═70164594-7447-48fc-a239-42bf1ec06a12
+# ╠═2b1ce152-5722-4c7f-83e1-94aa7749e8b8
+# ╠═4c8cf719-7c3b-4776-9352-ae96d8f8fda4
+# ╟─f0052a69-ca65-4dce-9308-39f72612ea23
+# ╟─7b5bebd8-7fb6-4a29-b23e-0cbc60870b5e
+# ╠═db183baa-cfab-4b13-b20e-3d4dbb45f4cb
+# ╠═e2ea5e37-cb20-495a-987b-543aa4b36889
+# ╠═46e92f74-fe83-4195-857f-00fb863bf79c
+# ╠═9237c0f4-75e4-4e5d-9f3a-25224ea05cc2
+# ╠═1bd9b7cb-7cb6-4b35-9e59-c5f25ec34aa3
+# ╠═ecb1dcda-f192-469d-be71-25a5987fcf91
+# ╠═1643b759-0e41-417d-a56d-7ce0f0fff06b
+# ╠═c89a5622-4292-44b7-8206-6143e58f0d3c
 # ╠═d6391acb-55a1-4b5d-9587-f5d7ba45800e
-# ╠═e4c64b7b-611c-4978-bb5e-bc553d7c45e7
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
