@@ -19,13 +19,11 @@ imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 # imgs_sci = [reshape(range(1, 10*n, 600), 20, 30) for n in 600:610];
 # imgs_sci = [AstroImage(rand(50, 80)) for _ in 1:10];
 
-# ╔═╡ 70164594-7447-48fc-a239-42bf1ec06a12
-get_shapes(aps; line_color=:lightgreen) = [
-	circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
-		line_color,
-	)
-	for ap in aps
-]
+# ╔═╡ 18ac3d63-6c17-4cca-a67c-2e07d8a2ae4b
+img_test = rand(imgs_sci);
+
+# ╔═╡ fd74d9b7-dcdb-42a5-b92c-4a022011277e
+img_dark = load("../data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits");
 
 # ╔═╡ 2b1ce152-5722-4c7f-83e1-94aa7749e8b8
 struct Ap
@@ -41,8 +39,13 @@ aps = [Ap(rand(1:1500), rand(1:2000), 48) for _ in 1:length(imgs_sci)];
 r2(img) = (restrict ∘ restrict)(img)
 
 # ╔═╡ 72d4ee08-48af-41cd-9006-21aa6c255ba9
-function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
-	img_small = r2(img)
+function htrace(img; zmin=2_400, zmax=3_200, title="ADU", restrict=true)
+	if restrict
+		img_small = r2(img)
+	else
+		img_small = img
+	end
+	
 	heatmap(;
 		x = img_small.dims[1].val,
 		y = img_small.dims[2].val,
@@ -53,11 +56,33 @@ function hplot(img; zmin=2_400, zmax=3_200, title="ADU")
 	)
 end
 
+# ╔═╡ 3b36a703-8d74-4790-ae8a-6ba13628786e
+let
+	p = make_subplots(;
+		cols = 2,
+		shared_xaxes = "rows",
+		shared_yaxes = true,
+		horizontal_spacing = 0.02,
+		column_titles = ["science image", "dark subtracted"],
+	)
+
+	add_trace!(p, htrace(img_test); col=1)
+	add_trace!(p, htrace(r2(img_test) - r2(img_dark); restrict=false); col=2)
+end
+
+# ╔═╡ 70164594-7447-48fc-a239-42bf1ec06a12
+get_shapes(aps; line_color=:lightgreen) = [
+	circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
+		line_color,
+	)
+	for ap in aps
+]
+
 # ╔═╡ 7b5bebd8-7fb6-4a29-b23e-0cbc60870b5e
 timestamp(img) = header(img)["DATE-OBS"]
 
 # ╔═╡ db183baa-cfab-4b13-b20e-3d4dbb45f4cb
-get_trace(imgs) = [hplot(first(imgs))]
+get_trace(imgs) = [htrace(first(imgs))]
 
 # ╔═╡ 46e92f74-fe83-4195-857f-00fb863bf79c
 function get_layout(imgs, aps)
@@ -69,7 +94,7 @@ end
 # ╔═╡ 9237c0f4-75e4-4e5d-9f3a-25224ea05cc2
 get_frames(imgs) = [
     frame(
-        data = [hplot(img)],
+        data = [htrace(img)],
         layout = attr(title_text=timestamp(img)),
         name = "frame_$(i)",
     ) for (i, img) in enumerate(imgs)
@@ -130,7 +155,7 @@ preview(imgs, aps) = plot(
 	get_frames(imgs, aps),
 )
 
-# ╔═╡ 5dd83301-555a-4610-b462-99d35f9f0524
+# ╔═╡ 1d025fce-b7a2-4ca3-9f0b-0b6e94e1ceeb
 preview(imgs_sci, aps)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1064,21 +1089,24 @@ version = "17.4.0+2"
 # ╔═╡ Cell order:
 # ╠═889b4500-959d-4acc-9b5e-2b46066fe782
 # ╠═44f51751-7faf-435c-9dce-07da28c97a43
-# ╠═72d4ee08-48af-41cd-9006-21aa6c255ba9
-# ╠═70164594-7447-48fc-a239-42bf1ec06a12
+# ╠═18ac3d63-6c17-4cca-a67c-2e07d8a2ae4b
+# ╠═fd74d9b7-dcdb-42a5-b92c-4a022011277e
 # ╠═2b1ce152-5722-4c7f-83e1-94aa7749e8b8
 # ╠═4c8cf719-7c3b-4776-9352-ae96d8f8fda4
+# ╠═3b36a703-8d74-4790-ae8a-6ba13628786e
+# ╠═1d025fce-b7a2-4ca3-9f0b-0b6e94e1ceeb
 # ╟─f0052a69-ca65-4dce-9308-39f72612ea23
+# ╟─72d4ee08-48af-41cd-9006-21aa6c255ba9
+# ╟─70164594-7447-48fc-a239-42bf1ec06a12
 # ╟─7b5bebd8-7fb6-4a29-b23e-0cbc60870b5e
-# ╠═db183baa-cfab-4b13-b20e-3d4dbb45f4cb
-# ╠═e2ea5e37-cb20-495a-987b-543aa4b36889
-# ╠═46e92f74-fe83-4195-857f-00fb863bf79c
-# ╠═9237c0f4-75e4-4e5d-9f3a-25224ea05cc2
-# ╠═1bd9b7cb-7cb6-4b35-9e59-c5f25ec34aa3
 # ╟─ecb1dcda-f192-469d-be71-25a5987fcf91
-# ╠═1643b759-0e41-417d-a56d-7ce0f0fff06b
-# ╠═c89a5622-4292-44b7-8206-6143e58f0d3c
-# ╠═5dd83301-555a-4610-b462-99d35f9f0524
+# ╟─db183baa-cfab-4b13-b20e-3d4dbb45f4cb
+# ╟─e2ea5e37-cb20-495a-987b-543aa4b36889
+# ╟─46e92f74-fe83-4195-857f-00fb863bf79c
+# ╟─9237c0f4-75e4-4e5d-9f3a-25224ea05cc2
+# ╟─1bd9b7cb-7cb6-4b35-9e59-c5f25ec34aa3
+# ╟─1643b759-0e41-417d-a56d-7ce0f0fff06b
+# ╟─c89a5622-4292-44b7-8206-6143e58f0d3c
 # ╠═d6391acb-55a1-4b5d-9587-f5d7ba45800e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
