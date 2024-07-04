@@ -34,6 +34,21 @@ struct Ap
 	r
 end
 
+# ╔═╡ 4bc58950-c797-4ab9-b3e9-df59117392a0
+let	
+	fig = plot(heatmap(z=rand(20, 30)))
+
+	circ = get_shapes([Ap(15, 10, 4)])
+
+	add_shape!(fig, first(circ))
+
+	# relayout(hm)
+
+	# plot(hm)
+
+	fig
+end
+
 # ╔═╡ 4c8cf719-7c3b-4776-9352-ae96d8f8fda4
 aps = [Ap(rand(1:1500), rand(1:2000), 48) for _ in 1:length(imgs_sci)];
 
@@ -62,7 +77,7 @@ get_trace(imgs) = [hplot(first(imgs))]
 # ╔═╡ 46e92f74-fe83-4195-857f-00fb863bf79c
 function get_layout(imgs, aps)
 	l = get_layout(imgs)
-	shapes = get_shapes(aps)
+	shapes = first(get_shapes(aps))
 	relayout!(l; shapes)
 end
 
@@ -76,18 +91,13 @@ get_frames(imgs) = [
 ]
 
 # ╔═╡ 1bd9b7cb-7cb6-4b35-9e59-c5f25ec34aa3
-function get_frames(imgs, aps)
-	shapes = get_shapes(aps)
+function get_frames(imgs, shapes)
 	return [
 		frame(
 	        data = [hplot(img)],
 	        layout = attr(;
 				shapes = [shape],
-				width = 500,
-			    height = 500,
 				title_text = timestamp(img),
-				xaxis = attr(title="X"),
-				yaxis = attr(title="Y"),
 			),
 			name = "frame_$(i)",
 	    ) for (i, (img, shape)) in enumerate(zip(imgs, shapes))
@@ -132,13 +142,13 @@ preview(imgs) = plot(get_trace(imgs), get_layout(imgs), get_frames(imgs))
 
 # ╔═╡ c89a5622-4292-44b7-8206-6143e58f0d3c
 preview(imgs, aps) = plot(
-	get_trace(imgs, aps), 
+	get_trace(imgs), 
 	get_layout(imgs, aps),
 	get_frames(imgs, aps),
 )
 
 # ╔═╡ 5dd83301-555a-4610-b462-99d35f9f0524
-preview(imgs_sci)
+preview(imgs_sci, aps)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1073,6 +1083,7 @@ version = "17.4.0+2"
 # ╠═44f51751-7faf-435c-9dce-07da28c97a43
 # ╠═5dd83301-555a-4610-b462-99d35f9f0524
 # ╠═72d4ee08-48af-41cd-9006-21aa6c255ba9
+# ╠═4bc58950-c797-4ab9-b3e9-df59117392a0
 # ╠═70164594-7447-48fc-a239-42bf1ec06a12
 # ╠═2b1ce152-5722-4c7f-83e1-94aa7749e8b8
 # ╠═4c8cf719-7c3b-4776-9352-ae96d8f8fda4
