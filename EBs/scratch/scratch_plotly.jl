@@ -35,6 +35,12 @@ end
 # ╔═╡ 4c8cf719-7c3b-4776-9352-ae96d8f8fda4
 aps = [Ap(rand(1:1500), rand(1:2000), 48) for _ in 1:length(imgs_sci)];
 
+# ╔═╡ 0af10133-674e-4758-9115-edd2117cd196
+begin
+hm = heatmap(z=rand(10, 20); colorscale=:Cividis)
+plot(hm)
+end
+
 # ╔═╡ f0052a69-ca65-4dce-9308-39f72612ea23
 r2(img) = (restrict ∘ restrict)(img)
 
@@ -81,8 +87,41 @@ get_shapes(aps; line_color=:lightgreen) = [
 # ╔═╡ 7b5bebd8-7fb6-4a29-b23e-0cbc60870b5e
 timestamp(img) = header(img)["DATE-OBS"]
 
+# ╔═╡ ecb1dcda-f192-469d-be71-25a5987fcf91
+get_sliders(imgs) = [
+    attr(
+        active = 0,
+        minorticklen = 0,
+        # pad_t = 10,
+        steps = [
+            attr(
+                method = "animate",
+                label = "Frame $(i)",
+                args = [
+                    ["frame_$(i)"],
+                    attr(
+                        mode = "immediate",
+                        transition = attr(duration = 0),
+                        frame = attr(duration=5, redraw=true),
+                    ),
+                ],
+            ) for (i, img) in enumerate(imgs)
+        ],
+    ),
+]
+
 # ╔═╡ db183baa-cfab-4b13-b20e-3d4dbb45f4cb
 get_trace(imgs) = [htrace(first(imgs))]
+
+# ╔═╡ e2ea5e37-cb20-495a-987b-543aa4b36889
+get_layout(imgs) = Layout(
+    width = 500,
+    height = 500,
+    sliders = get_sliders(imgs),
+	title = timestamp(first(imgs)),
+	xaxis = attr(title="X"),
+	yaxis = attr(title="Y"),
+)
 
 # ╔═╡ 46e92f74-fe83-4195-857f-00fb863bf79c
 function get_layout(imgs, aps)
@@ -111,39 +150,6 @@ function get_frames(imgs, aps)
 	
 	return frames
 end
-
-# ╔═╡ ecb1dcda-f192-469d-be71-25a5987fcf91
-get_sliders(imgs) = [
-    attr(
-        active = 0,
-        minorticklen = 0,
-        # pad_t = 10,
-        steps = [
-            attr(
-                method = "animate",
-                label = "Frame $(i)",
-                args = [
-                    ["frame_$(i)"],
-                    attr(
-                        mode = "immediate",
-                        transition = attr(duration = 0),
-                        frame = attr(duration=5, redraw=true),
-                    ),
-                ],
-            ) for (i, img) in enumerate(imgs)
-        ],
-    ),
-]
-
-# ╔═╡ e2ea5e37-cb20-495a-987b-543aa4b36889
-get_layout(imgs) = Layout(
-    width = 500,
-    height = 500,
-    sliders = get_sliders(imgs),
-	title = timestamp(first(imgs)),
-	xaxis = attr(title="X"),
-	yaxis = attr(title="Y"),
-)
 
 # ╔═╡ 1643b759-0e41-417d-a56d-7ce0f0fff06b
 preview(imgs) = plot(get_trace(imgs), get_layout(imgs), get_frames(imgs))
@@ -1095,6 +1101,7 @@ version = "17.4.0+2"
 # ╠═4c8cf719-7c3b-4776-9352-ae96d8f8fda4
 # ╠═3b36a703-8d74-4790-ae8a-6ba13628786e
 # ╠═1d025fce-b7a2-4ca3-9f0b-0b6e94e1ceeb
+# ╠═0af10133-674e-4758-9115-edd2117cd196
 # ╟─f0052a69-ca65-4dce-9308-39f72612ea23
 # ╟─72d4ee08-48af-41cd-9006-21aa6c255ba9
 # ╟─70164594-7447-48fc-a239-42bf1ec06a12

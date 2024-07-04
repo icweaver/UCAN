@@ -340,12 +340,15 @@ Now that we have an estimate for the background flux in our image, we can pass b
 By default, each box is 3 x 3  pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the master dark frame as our `error` and the default `nsigma=3.0` above the background estimate subtracted science image to define our source criteria. Please feel free to experiment with different criteria to see how the different choices can affect our final list of extracted sources.
 """
 
+# ╔═╡ 823f9107-130f-4333-9f90-307dad4eb99f
+img_dark = load("data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits");
+
 # ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
 pixel_left, pixel_right = 700, 1_200;
 
 # ╔═╡ 05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 md"""
-But which one of these potential candidates is our target star? Based on the GIF of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
+But which one of these potential candidates is our target star? Based on the visualization of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
 """
 
 # ╔═╡ 9517c714-8214-47be-beb0-80f8e8fa483a
@@ -915,9 +918,6 @@ md"""
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
 const clims = (150, 700);
 
-# ╔═╡ 9c31c4f0-6f20-43cf-ae29-533276d439e0
-implot(restrict(img_sci - img_dark).data; clims)
-
 # ╔═╡ a984c96d-273e-4d6d-bab8-896f14a79103
 TableOfContents(; depth=4)
 
@@ -926,7 +926,12 @@ TableOfContents(; depth=4)
 r2(img) = (restrict ∘ restrict)(img)
 
 # ╔═╡ e35d4be7-366d-4ca5-a89a-5de24e4c6677
-function htrace(img; zmin=2_400, zmax=3_200, title="ADU", restrict=true)
+function htrace(img;
+	zmin = 2_400,
+	zmax = 3_200,
+	title = "ADU",
+	restrict = true,
+)
 	if restrict
 		img_small = r2(img)
 	else
@@ -939,13 +944,14 @@ function htrace(img; zmin=2_400, zmax=3_200, title="ADU", restrict=true)
 		z = img_small.data,
 		zmin,
 		zmax,
-		colorbar = attr(; title)
+		colorbar = attr(; title),
+		colorscale = :Cividis,
 	)
 end
 
 # ╔═╡ a3bcad72-0e6c-43f8-a08d-777a154190d8
 get_shapes(aps; line_color=:lightgreen) = [
-	circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
+	circle(ap.y - ap.r/2, ap.y + ap.r/2, ap.x - ap.r/2, ap.x + ap.r/2;
 		line_color,
 	)
 	for ap in aps
@@ -996,11 +1002,11 @@ function plot_img(img; restrict=true)
 end
 
 # ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
-new_img; img_test = rand(imgs_sci); plot_img(img_test - img_dark)
+new_img; img_test = rand(imgs_sci); plot_img(img_test)
 
 # ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
 # Step 1
-clipped = sigma_clip(img_test - img_dark, 1; fill=:clamp)
+clipped = sigma_clip(img_test, 1; fill=:clamp)
 
 # ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
 # The size of our mesh in pixels (a square with side length = `box_size`)
@@ -1037,8 +1043,9 @@ ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
-	plot_img(img_test - img_dark)
-	Plots.plot!(ap; color=:lightgreen)
+	fig = plot_img(img_test)
+	add_shape!(fig, get_shapes(ap)[1])
+	fig
 end
 
 # ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
@@ -2746,7 +2753,6 @@ version = "17.4.0+2"
 # ╟─e20e02e7-f744-4694-9499-1866ebd617fc
 # ╟─ba008023-7a79-45ea-b547-23071a12a2f5
 # ╠═667116b0-2b87-46ca-80aa-51361e8cde27
-# ╠═9c31c4f0-6f20-43cf-ae29-533276d439e0
 # ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
 # ╠═c8b8ad4b-8445-408f-8245-d73284a85749
 # ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
@@ -2754,6 +2760,7 @@ version = "17.4.0+2"
 # ╟─fbc0be60-2a3b-4938-b262-7df938e59333
 # ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
 # ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
+# ╠═823f9107-130f-4333-9f90-307dad4eb99f
 # ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
 # ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
 # ╠═00cd8162-c165-4724-9478-b9f2999c3343
@@ -2814,7 +2821,7 @@ version = "17.4.0+2"
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
-# ╠═21e828e5-00e4-40ce-bff5-60a17439bf44
+# ╟─21e828e5-00e4-40ce-bff5-60a17439bf44
 # ╟─e35d4be7-366d-4ca5-a89a-5de24e4c6677
 # ╟─a3bcad72-0e6c-43f8-a08d-777a154190d8
 # ╟─8da80446-84d7-44bb-8122-874b4c9514f4
