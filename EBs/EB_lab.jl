@@ -414,13 +414,13 @@ end
 
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
 aps = [
-	get_aps(img, pixel_left, pixel_right, 24)
+	get_aps(img, pixel_left, pixel_right, 24) |> first
 	for img in imgs_sci
 ];
 
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
 md"""
-Let's place the apertures onto our movie from earlier to double check how we did:
+Let's place the apertures onto our visualizer from earlier to double check how we did:
 """
 
 # ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
@@ -434,7 +434,7 @@ begin
 	fluxes = Float64[]
 	
 	for (ap, img) in zip(aps, imgs_sci)
-		phot = first(photometry(ap, img))
+		phot = photometry(ap, img)
 		push!(times, header(img)["DATE-OBS"])
 		push!(fluxes, phot.aperture_sum)
 	end
@@ -1048,12 +1048,6 @@ let
 	fig
 end
 
-# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-Plots.@gif for (ap, img) in zip(aps, imgs_sci_dark)
-	plot_img(img)
-	Plots.plot!(ap; color=:lightgreen)
-end fps=2
-
 # ╔═╡ d18b9608-ed8c-4c86-aeaf-8ca1a001a84c
 get_layout(imgs) = Layout(
     width = 500,
@@ -1104,6 +1098,9 @@ preview(imgs, aps) = plot(
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 preview(imgs_sci)
+
+# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+preview(imgs_sci, aps)
 
 # ╔═╡ 5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 md"""
