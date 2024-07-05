@@ -33,6 +33,29 @@ imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 # ╔═╡ 53a015a5-e049-4ee6-9a11-1dc6965d5f11
 img_sci = first(imgs_sci);
 
+# ╔═╡ 1ae62a33-dee5-40d0-b7f7-964ba5f5696b
+get_sliders(imgs) = [
+    attr(
+        active = 0,
+        minorticklen = 0,
+        # pad_t = 10,
+        steps = [
+            attr(
+                method = "animate",
+                label = "Frame $(i)",
+                args = [
+                    ["frame_$(i)"],
+                    attr(
+                        mode = "immediate",
+                        transition = attr(duration = 0),
+                        frame = attr(duration=5, redraw=true),
+                    ),
+                ],
+            ) for (i, img) in enumerate(imgs)
+        ],
+    ),
+]
+
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
 ap_target = CircularAperture(664, 510, 20);
 
@@ -96,6 +119,15 @@ function htrace(img;
 	)
 end
 
+# ╔═╡ 42d08a66-06a7-4108-b2ea-6d39262a49c2
+get_frames(imgs) = [
+    frame(
+        data = [htrace(img)],
+        layout = attr(title_text=timestamp(img)),
+        name = "frame_$(i)",
+    ) for (i, img) in enumerate(imgs)
+]
+
 # ╔═╡ 2ba90b91-5de2-44a2-954f-a73b1561e762
 function plot_img(img; restrict=true)
 	hm = htrace(img; restrict)
@@ -133,6 +165,7 @@ let
 	p = plot_img(img_sci)
 	add_shape!(p, circ_target)
 	add_shape!(p, circ_comp1)
+	relayout!(p, sliders=get_sliders(imgs_sci))
 	p
 end
 
@@ -1729,6 +1762,8 @@ version = "17.4.0+2"
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
 # ╠═32b72397-271b-4606-9660-15b756b1ca47
+# ╠═42d08a66-06a7-4108-b2ea-6d39262a49c2
+# ╠═1ae62a33-dee5-40d0-b7f7-964ba5f5696b
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
