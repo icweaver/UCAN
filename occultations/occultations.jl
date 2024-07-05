@@ -56,11 +56,14 @@ get_sliders(imgs) = [
     ),
 ]
 
+# ╔═╡ 6d4bf257-213b-493c-9406-de00e3cadd79
+sliders= get_sliders(imgs_sci)
+
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
-ap_target = CircularAperture(664, 510, 20);
+ap_target = CircularAperture(674, 500, 20);
 
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp1 = CircularAperture(143, 577, 20);
+ap_comp1 = CircularAperture(153, 567, 20);
 
 # ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 aperture_sum(aps) = [ap.aperture_sum for ap in aps]
@@ -119,11 +122,14 @@ function htrace(img;
 	)
 end
 
+# ╔═╡ 618c518b-2175-459c-aaf8-7b6cb0a5f036
+trace = htrace(img_sci)
+
 # ╔═╡ 42d08a66-06a7-4108-b2ea-6d39262a49c2
-get_frames(imgs) = [
+get_frames(imgs, shapes) = [
     frame(
         data = [htrace(img)],
-        layout = attr(title_text=timestamp(img)),
+        layout = attr(; title_text=timestamp(img), shapes),
         name = "frame_$(i)",
     ) for (i, img) in enumerate(imgs)
 ]
@@ -160,14 +166,25 @@ circ_target = circ(ap_target);
 # ╔═╡ 3ba4245a-ad63-4550-aaa9-4a1381a28f68
 circ_comp1 = circ(ap_comp1; line_color=:orange);
 
+# ╔═╡ fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
+shapes = [circ_target, circ_comp1]
+
+# ╔═╡ 4a41462e-01f8-4626-8b05-d140a69528fd
+layout = Layout(;
+    width = 500,
+    height = 500,
+	title = timestamp(img_sci),
+	xaxis = attr(title="X"),
+	yaxis = attr(title="Y"),
+	sliders,
+	shapes,
+)
+
+# ╔═╡ 5b90222b-81bc-4be6-96d1-70291957635f
+frames = get_frames(imgs_sci, shapes)
+
 # ╔═╡ 32b72397-271b-4606-9660-15b756b1ca47
-let
-	p = plot_img(img_sci)
-	add_shape!(p, circ_target)
-	add_shape!(p, circ_comp1)
-	relayout!(p, sliders=get_sliders(imgs_sci))
-	p
-end
+plot(trace, layout, frames)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1762,13 +1779,18 @@ version = "17.4.0+2"
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
 # ╠═32b72397-271b-4606-9660-15b756b1ca47
+# ╠═618c518b-2175-459c-aaf8-7b6cb0a5f036
+# ╠═4a41462e-01f8-4626-8b05-d140a69528fd
+# ╠═6d4bf257-213b-493c-9406-de00e3cadd79
 # ╠═42d08a66-06a7-4108-b2ea-6d39262a49c2
-# ╠═1ae62a33-dee5-40d0-b7f7-964ba5f5696b
+# ╠═5b90222b-81bc-4be6-96d1-70291957635f
+# ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
+# ╟─1ae62a33-dee5-40d0-b7f7-964ba5f5696b
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
 # ╠═3ba4245a-ad63-4550-aaa9-4a1381a28f68
-# ╟─d36ff8f2-8c11-4cec-a467-d97e19725268
+# ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
 # ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
