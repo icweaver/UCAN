@@ -37,42 +37,34 @@ img_sci = first(imgs_sci);
 ap_target = CircularAperture(664, 510, 20);
 
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp = CircularAperture(143, 577, 20);
+ap_comp1 = CircularAperture(143, 577, 20);
+
+# ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
+aperture_sum(aps) = [ap.aperture_sum for ap in aps]
 
 # ╔═╡ d36ff8f2-8c11-4cec-a467-d97e19725268
-photometry_target = photometry.(Ref(ap_target), imgs_sci) |> DataFrame
+df_phot = let
+	# Run photometry
+	phot_target = photometry.(Ref(ap_target), imgs_sci)
+	phot_comp1 = photometry.(Ref(ap_comp1), imgs_sci)
 
-# ╔═╡ 51ef16ec-8160-4960-91a3-15dc226214a7
-photometry_comp = photometry.(Ref(ap_comp), imgs_sci) |> DataFrame
-
-# ╔═╡ cc5c6552-d38a-491b-bfe9-69cc8342c596
-t = df_sci."DATE-OBS"
-
-# ╔═╡ edf96ed8-adc9-43d6-bc91-43acfc4d2165
-f_div = photometry_target.aperture_sum #./ photometry_comp.aperture_sum
-
-# ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-scatter(x=t, y=f_div; mode=:markers) |> plot
-
-# ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
-function circ(ap; line_color=:lightgreen)
-	circle(
-		ap.x - ap.r/2, # x_min
-		ap.x + ap.r/2, # x_max
-		ap.y - ap.r/2, # y_min
-		ap.y + ap.r/2; # y_max
-		line_color,
+	# Store results
+	DataFrame(
+		time = df_sci."DATE-OBS",
+		target = aperture_sum(phot_target),
+		comp1 = aperture_sum(phot_comp1),
 	)
 end
 
-# ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
-circ_target = circ(ap_target);
-
-# ╔═╡ 3ba4245a-ad63-4550-aaa9-4a1381a28f68
-circ_comp = circ(ap_comp; line_color=:orange);
+# ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
+scatter(df_phot; x=:time, y=:target, mode=:markers) |> plot
 
 # ╔═╡ 1831c578-5ff8-4094-8f57-67c39aff80c8
+# Set nice colorbar limit for visualizations
 const zmin, zmax = AstroImages.PlotUtils.zscale(img_sci)
+
+# ╔═╡ 70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
+timestamp(img) = header(img)["DATE-OBS"]
 
 # ╔═╡ 1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
 # Helpful for preventing ginormous plot objects
@@ -104,9 +96,6 @@ function htrace(img;
 	)
 end
 
-# ╔═╡ 70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-timestamp(img) = header(img)["DATE-OBS"]
-
 # ╔═╡ 2ba90b91-5de2-44a2-954f-a73b1561e762
 function plot_img(img; restrict=true)
 	hm = htrace(img; restrict)
@@ -122,11 +111,28 @@ function plot_img(img; restrict=true)
 	plot(hm, l)
 end
 
+# ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
+function circ(ap; line_color=:lightgreen)
+	circle(
+		ap.x - ap.r/2, # x_min
+		ap.x + ap.r/2, # x_max
+		ap.y - ap.r/2, # y_min
+		ap.y + ap.r/2; # y_max
+		line_color,
+	)
+end
+
+# ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
+circ_target = circ(ap_target);
+
+# ╔═╡ 3ba4245a-ad63-4550-aaa9-4a1381a28f68
+circ_comp1 = circ(ap_comp1; line_color=:orange);
+
 # ╔═╡ 32b72397-271b-4606-9660-15b756b1ca47
 let
 	p = plot_img(img_sci)
 	add_shape!(p, circ_target)
-	add_shape!(p, circ_comp)
+	add_shape!(p, circ_comp1)
 	p
 end
 
@@ -1727,17 +1733,15 @@ version = "17.4.0+2"
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
 # ╠═3ba4245a-ad63-4550-aaa9-4a1381a28f68
-# ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
-# ╠═51ef16ec-8160-4960-91a3-15dc226214a7
-# ╠═cc5c6552-d38a-491b-bfe9-69cc8342c596
-# ╠═edf96ed8-adc9-43d6-bc91-43acfc4d2165
+# ╟─d36ff8f2-8c11-4cec-a467-d97e19725268
+# ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-# ╠═84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
-# ╠═7289692b-1a85-4a84-b7cc-fea1e46c9f31
-# ╠═2ba90b91-5de2-44a2-954f-a73b1561e762
+# ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
+# ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
-# ╠═70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
+# ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
+# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
