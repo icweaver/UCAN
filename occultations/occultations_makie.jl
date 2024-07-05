@@ -65,7 +65,12 @@ df_phot = let
 end
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-scatter(df_phot; x=:time, y=:target, mode=:markers) |> plot
+let
+	fig, ax, sc = scatter(df_phot.time, df_phot.target)
+	ax.yrectzoom = false 
+	DataInspector(fig)
+	fig
+end
 
 # ╔═╡ 1831c578-5ff8-4094-8f57-67c39aff80c8
 # Set nice colorbar limit for visualizations
@@ -99,16 +104,9 @@ let
 	DataInspector(hm)
 	Colorbar(fig[1, 2], hm)
 
+	# Apertures
 	apertures!(ax, [ap_target, ap_comp1])
 	
-	fig
-end
-
-# ╔═╡ a0bda836-6bc5-40f3-b540-35450d5fa028
-let
-	data = AstroImage(rand(40, 20))
-	fig, ax, hm = heatmap(r2(data))
-	DataInspector(fig; text="hi")
 	fig
 end
 
@@ -163,12 +161,6 @@ function circ(ap; line_color=:lightgreen)
 		line_color,
 	)
 end
-
-# ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
-circ_target = circ(ap_target);
-
-# ╔═╡ 3ba4245a-ad63-4550-aaa9-4a1381a28f68
-circ_comp1 = circ(ap_comp1; line_color=:orange);
 
 # ╔═╡ 84ec1fe6-d650-46d4-8c2c-f01413dca296
 begin
@@ -2346,12 +2338,9 @@ version = "3.5.0+0"
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
 # ╠═0cad0ff8-5c21-4dec-8f89-e288d00dec9a
 # ╠═19f440ce-c1be-4655-ada6-fa7c8bc9d74d
-# ╠═1408a942-0657-4c88-80d8-a1c9141658f6
+# ╟─1408a942-0657-4c88-80d8-a1c9141658f6
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
-# ╠═a0bda836-6bc5-40f3-b540-35450d5fa028
-# ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
-# ╠═3ba4245a-ad63-4550-aaa9-4a1381a28f68
 # ╟─d36ff8f2-8c11-4cec-a467-d97e19725268
 # ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
