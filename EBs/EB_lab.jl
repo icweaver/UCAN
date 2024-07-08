@@ -42,6 +42,28 @@ In this lab we will observe an eclipsing binary in real time and explore how to 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level.
 """
 
+# ╔═╡ f0678404-72db-4bfd-9a44-ef0b66f3a64f
+md"""
+With this requisite information out of the way, let's get started!
+"""
+
+# ╔═╡ 49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
+msg_adding_colors = md"""
+##### Adding colors in Julia 🎨
+This makes magenta!
+
+```julia
+using ImageCore
+
+RGB(1, 0, 0) + RGB(0, 0, 1)
+```
+
+$(RGB(1, 0, 0) + RGB(0, 0, 1))
+""";
+
+# ╔═╡ 84d9ed94-11cb-4272-8bd3-d420c50f990d
+msg(x; title="Details") = details(title, x);
+
 # ╔═╡ 14e0627f-ada1-4689-9bc6-c877b81aa582
 cm"""
 !!! note "Using this notebook"
@@ -71,28 +93,6 @@ cm"""
 
 	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined. For more examples of using these notebooks for Unistellar science, check out our recent [Spectroscopy Lab](https://icweaver.github.io/UCAN/spectroscopy/notebook.html)!
 """
-
-# ╔═╡ f0678404-72db-4bfd-9a44-ef0b66f3a64f
-md"""
-With this requisite information out of the way, let's get started!
-"""
-
-# ╔═╡ 49e1559e-bb19-4e8e-a9a9-67cb2c2d6931
-msg_adding_colors = md"""
-##### Adding colors in Julia 🎨
-This makes magenta!
-
-```julia
-using ImageCore
-
-RGB(1, 0, 0) + RGB(0, 0, 1)
-```
-
-$(RGB(1, 0, 0) + RGB(0, 0, 1))
-""";
-
-# ╔═╡ 84d9ed94-11cb-4272-8bd3-d420c50f990d
-msg(x; title="Details") = details(title, x);
 
 # ╔═╡ aa005b55-626e-41e0-8fe1-137bd7dd5599
 md"""
@@ -278,6 +278,11 @@ md"""
 Before defining what this phenomenon is, let's first see it in action. Drag the slider below to scroll through each of our science frames. (Note for the rest of this notebook that we will be using the default image orientation in the plotting software):
 """
 
+# ╔═╡ c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
+md"""
+Frame number: $(frame_slider = @bind frame_i Slider(1:length(imgs_sci); show_value=true))
+"""
+
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
@@ -421,6 +426,11 @@ aps = [
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
 md"""
 Let's place the apertures onto our visualizer from earlier to double check how we did:
+"""
+
+# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+md"""
+Frame number: $(frame_slider)
 """
 
 # ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
@@ -642,6 +652,133 @@ if !isempty(username)
 	"""
 end
 
+# ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
+md"""
+#### Convenience functions
+"""
+
+# ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
+function to_hms(ra_deci)
+	hms = round.(deg2hms(ra_deci); digits=2)
+	format_angle(hms; delim=["h ", "m ", "s"])
+end
+
+# ╔═╡ 77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
+function to_dms(ra_deci)
+	dms = round.(deg2dms(ra_deci); digits=2)
+	format_angle(dms; delim=["° ", "' ", "\""])
+end
+
+# ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
+function get_url(s)
+	url = @chain s begin
+		split("Ephemeris info ")
+		last
+		split("]]")
+		first
+	end
+end
+
+# ╔═╡ 1e5596fb-7dca-408b-afbd-6ca2e2487d75
+get_shapes(aps; line_color=:lightgreen) = [
+	circle(ap.x - ap.r/2, ap.x + ap.r/2, ap.y - ap.r/2, ap.y + ap.r/2;
+		line_color,
+	)
+	for ap in aps
+]
+
+# ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
+function ephem(url)
+	st = scrape_tables(url)
+	ephem_blob = st[3].rows
+	if length(ephem_blob[2]) != 4
+		error("Expected ephemeris to have Epoch, Start, Mid, and End. Received: ", ephem_blob[2])
+	end
+	ephem_title, ephem_data... = filter(x -> length(x) == 4, ephem_blob)
+	return ephem_title, ephem_data
+end
+
+# ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
+function deep_link(;
+	mission = "transit",
+	ra = 0.0,
+	dec = 0.0,
+	c = 4_000,
+	et = 4_000,
+	g = 0.0,
+	d = 0.0,
+	t = 0.0,
+	scitag = "scitag",
+)
+	link = join([
+		"unistellar://science/$(mission)?ra=$(ra)",
+		"dec=$(dec)",
+		"c=$(c)",
+		"et=$(et)",
+		"g=$(g)",
+		"d=$(d)",
+		"t=$(t)",
+		"scitag=$(scitag)",
+	], '&')
+
+	Markdown.parse("[link]($(link))")
+end
+
+# ╔═╡ 829cde81-be03-4a9f-a853-28f84923d493
+# Make the table view a bit nicer in the browser
+pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
+	maximum_columns_width = "max-width",
+	show_subheader = false,
+	header_alignment = :c,
+)
+
+# ╔═╡ edda8d09-ec46-4a0b-b1b2-b1289ee5456e
+first(df_all, 10) |> pretty
+
+# ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
+md"""
+### Determining observation parameters
+
+Once a target has been found, here's how we might estimate an observing setup for it based on the [Unistellar Exposure Time and Gain Calculator](https://docs.google.com/spreadsheets/d/1niBg5LOkWyR8lCCOOcIo6OHt5kwlc3vnsBsazo7YfXQ/edit#gid=0).
+"""
+
+# ╔═╡ 9c482134-6336-4e72-9d30-87080ebae671
+@bind target PlutoUI.combine() do Child
+	cm"""
+	!!! tip "Observation inputs"
+		Enter your target's visual magnitude and desired exposure time (in milliseconds) below:
+	
+		
+		|``V_\mathrm{mag}``|``t_\mathrm{exp}``|
+		|------------------|------------------|
+		|$(Child(:v_mag, NumberField(1:0.1:20; default=11.7)))|$(Child(:t_exp, NumberField(100:100:4_000; default=3_200))) (ms)
+	"""
+end
+
+# ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
+# Keep these values untouched
+const baseline = (
+	v_mag = 11.7, # V (mag)
+	t_exp = 3200.0, # Exptime (ms)
+	gain = 25.0, # Gain (dB)
+	peak_px = 3000, # Peak Pixel ADU
+)
+
+# ╔═╡ 3c601844-3bb9-422c-ab1e-b40f7e7cb0df
+function flux_factor(target, baseline)
+	f_mag = (target.v_mag - baseline.v_mag) / -2.5 |> exp10
+	f_exp = target.t_exp / baseline.t_exp
+	return f_mag * f_exp 
+end
+
+# ╔═╡ f26f890b-5924-497c-85a3-eff924d0470b
+# Maximum gain
+max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
+
+# ╔═╡ 95a67d04-0a32-4e55-ac2f-d004ecc9ca84
+# Recommended gain
+rec_gain(g) = Int(round(g, RoundDown) - 1.0)
+
 # ╔═╡ 6cec1700-f2de-4e80-b26d-b23b5f7f1823
 if !isempty(username)
 	df_candidates = @chain df_all begin
@@ -701,6 +838,9 @@ if !isempty(username)
 	end
 end;
 
+# ╔═╡ 4042bc32-1a14-4408-974d-7405fd8c8ccc
+df_candidates |> pretty
+
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
 	md"""
@@ -716,44 +856,6 @@ end
 
 # ╔═╡ 3f548bb1-37b0-48b7-a35c-d7701405a64e
 df_selected = @rsubset df_candidates :star_name == star_name;
-
-# ╔═╡ fd7a53d1-2c6d-4d6a-b546-5c766c9a39d7
-md"""
-#### Convenience functions
-"""
-
-# ╔═╡ 46e6bba9-0c83-47b7-be17-f41301efa18e
-function to_hms(ra_deci)
-	hms = round.(deg2hms(ra_deci); digits=2)
-	format_angle(hms; delim=["h ", "m ", "s"])
-end
-
-# ╔═╡ 77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
-function to_dms(ra_deci)
-	dms = round.(deg2dms(ra_deci); digits=2)
-	format_angle(dms; delim=["° ", "' ", "\""])
-end
-
-# ╔═╡ 3242f19a-83f7-4db6-b2ea-6ca3403e1039
-function get_url(s)
-	url = @chain s begin
-		split("Ephemeris info ")
-		last
-		split("]]")
-		first
-	end
-end
-
-# ╔═╡ 2ea12676-7b5e-444e-8025-5bf9c05d0e2d
-function ephem(url)
-	st = scrape_tables(url)
-	ephem_blob = st[3].rows
-	if length(ephem_blob[2]) != 4
-		error("Expected ephemeris to have Epoch, Start, Mid, and End. Received: ", ephem_blob[2])
-	end
-	ephem_title, ephem_data... = filter(x -> length(x) == 4, ephem_blob)
-	return ephem_title, ephem_data
-end
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
 df_ephem = let
@@ -781,46 +883,6 @@ df_ephem = let
 		end
 	end
 end;
-
-# ╔═╡ d359625e-5a95-49aa-86e4-bc65299dd92a
-function deep_link(;
-	mission = "transit",
-	ra = 0.0,
-	dec = 0.0,
-	c = 4_000,
-	et = 4_000,
-	g = 0.0,
-	d = 0.0,
-	t = 0.0,
-	scitag = "scitag",
-)
-	link = join([
-		"unistellar://science/$(mission)?ra=$(ra)",
-		"dec=$(dec)",
-		"c=$(c)",
-		"et=$(et)",
-		"g=$(g)",
-		"d=$(d)",
-		"t=$(t)",
-		"scitag=$(scitag)",
-	], '&')
-
-	Markdown.parse("[link]($(link))")
-end
-
-# ╔═╡ 829cde81-be03-4a9f-a853-28f84923d493
-# Make the table view a bit nicer in the browser
-pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
-	maximum_columns_width = "max-width",
-	show_subheader = false,
-	header_alignment = :c,
-)
-
-# ╔═╡ edda8d09-ec46-4a0b-b1b2-b1289ee5456e
-first(df_all, 10) |> pretty
-
-# ╔═╡ 4042bc32-1a14-4408-974d-7405fd8c8ccc
-df_candidates |> pretty
 
 # ╔═╡ 31c23e2b-1a2d-41aa-81c1-22868e241f7e
 if !isempty(username)
@@ -851,50 +913,6 @@ if !isempty(username)
 	df_obs |> pretty
 end
 
-# ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
-md"""
-### Determining observation parameters
-
-Once a target has been found, here's how we might estimate an observing setup for it based on the [Unistellar Exposure Time and Gain Calculator](https://docs.google.com/spreadsheets/d/1niBg5LOkWyR8lCCOOcIo6OHt5kwlc3vnsBsazo7YfXQ/edit#gid=0).
-"""
-
-# ╔═╡ 9c482134-6336-4e72-9d30-87080ebae671
-@bind target PlutoUI.combine() do Child
-	cm"""
-	!!! tip "Observation inputs"
-		Enter your target's visual magnitude and desired exposure time (in milliseconds) below:
-	
-		
-		|``V_\mathrm{mag}``|``t_\mathrm{exp}``|
-		|------------------|------------------|
-		|$(Child(:v_mag, NumberField(1:0.1:20; default=11.7)))|$(Child(:t_exp, NumberField(100:100:4_000; default=3_200))) (ms)
-	"""
-end
-
-# ╔═╡ f290d98e-5a8a-44f2-bee5-b93738abe9af
-# Keep these values untouched
-const baseline = (
-	v_mag = 11.7, # V (mag)
-	t_exp = 3200.0, # Exptime (ms)
-	gain = 25.0, # Gain (dB)
-	peak_px = 3000, # Peak Pixel ADU
-)
-
-# ╔═╡ 3c601844-3bb9-422c-ab1e-b40f7e7cb0df
-function flux_factor(target, baseline)
-	f_mag = (target.v_mag - baseline.v_mag) / -2.5 |> exp10
-	f_exp = target.t_exp / baseline.t_exp
-	return f_mag * f_exp 
-end
-
-# ╔═╡ f26f890b-5924-497c-85a3-eff924d0470b
-# Maximum gain
-max_gain(baseline, f) = baseline.gain - log10(f) / log10(1.122)
-
-# ╔═╡ 95a67d04-0a32-4e55-ac2f-d004ecc9ca84
-# Recommended gain
-rec_gain(g) = Int(round(g, RoundDown) - 1.0)
-
 # ╔═╡ 90b6ef16-7853-46e1-bbd6-cd1a904c442a
 let
 	f_factor = flux_factor(target, baseline)
@@ -914,6 +932,12 @@ md"""
 md"""
 ### Convenience functions and settings
 """
+
+# ╔═╡ ab2bac2b-b2ba-4eaa-8444-439485627bad
+const width = round(Int, size(img_sci, 1) / 4) + 100
+
+# ╔═╡ 48f4cdf3-b3d7-4cd6-8071-78292fec0db9
+const height = round(Int, width * size(img_sci, 2) / size(img_sci, 1))
 
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
 const clims = (150, 700);
@@ -937,6 +961,8 @@ function htrace(img;
 	else
 		img_small = img
 	end
+
+	img_small = permutedims(img_small)
 	
 	heatmap(;
 		x = img_small.dims[1].val,
@@ -950,59 +976,45 @@ function htrace(img;
 end
 
 # ╔═╡ a3bcad72-0e6c-43f8-a08d-777a154190d8
-get_shapes(aps; line_color=:lightgreen) = [
-	circle(ap.y - ap.r/2, ap.y + ap.r/2, ap.x - ap.r/2, ap.x + ap.r/2;
+function circ(ap; line_color=:lightgreen)
+	circle(
+		ap.x - ap.r/2, # x_min
+		ap.x + ap.r/2, # x_max
+		ap.y - ap.r/2, # y_min
+		ap.y + ap.r/2; # y_max
 		line_color,
 	)
-	for ap in aps
-]
+end
 
 # ╔═╡ 8da80446-84d7-44bb-8122-874b4c9514f4
 timestamp(img) = header(img)["DATE-OBS"]
 
-# ╔═╡ e68b84e3-02dd-46d2-9e1c-3dbe75c1f3ed
-get_sliders(imgs) = [
-    attr(
-        active = 0,
-        minorticklen = 0,
-        # pad_t = 10,
-        steps = [
-            attr(
-                method = "animate",
-                label = "Frame $(i)",
-                args = [
-                    ["frame_$(i)"],
-                    attr(
-                        mode = "immediate",
-                        transition = attr(duration = 0),
-                        frame = attr(duration=5, redraw=true),
-                    ),
-                ],
-            ) for (i, img) in enumerate(imgs)
-        ],
-    ),
-]
-
-# ╔═╡ 91117038-cd7b-4005-b621-4adf8082c89d
-get_trace(imgs) = [htrace(first(imgs))]
-
 # ╔═╡ 24256769-2274-4b78-8445-88ec4536c407
-function plot_img(img; restrict=true)
+function plot_img(i, img; restrict=true)
 	hm = htrace(img; restrict)
 	
-	l = Layout(
-		width = 500,
-	    height = 500,
-		title = timestamp(img),
-		xaxis = attr(title="X"),
-		yaxis = attr(title="Y"),
+	l = Layout(;
+		width,
+		height,
+		title = string("Frame $(i): ", timestamp(img)),
+		xaxis = attr(title="X", constrain=:domain),
+		yaxis = attr(title="Y", scaleanchor=:x, constrain=:domain),
 	)
 
 	plot(hm, l)
 end
 
+# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
+plot_img(frame_i, imgs_sci[frame_i])
+
 # ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
-new_img; img_test = rand(imgs_sci); plot_img(img_test)
+begin
+	# Updates this cell every time the button below is pressed
+	new_img
+	rand_frame_i = rand(1:length(imgs_sci))
+	img_test = imgs_sci[rand_frame_i]
+	plot_img(rand_frame_i, img_test)
+end;
 
 # ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
 # Step 1
@@ -1043,64 +1055,17 @@ ap = CircularAperture.(sources.y, sources.x, 24);
 
 # ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 let
-	fig = plot_img(img_test)
+	fig = plot_img(rand_frame_i, img_test)
 	add_shape!(fig, get_shapes(ap)[1])
 	fig
 end
 
-# ╔═╡ d18b9608-ed8c-4c86-aeaf-8ca1a001a84c
-get_layout(imgs) = Layout(
-    width = 500,
-    height = 500,
-    sliders = get_sliders(imgs),
-	title = timestamp(first(imgs)),
-	xaxis = attr(title="X"),
-	yaxis = attr(title="Y"),
-)
-
-# ╔═╡ 97cc3a52-71aa-4145-a6ec-fedf092f0e3f
-function get_layout(imgs, aps)
-	shapes = [first(get_shapes(aps))]
-	l = get_layout(imgs)
-	relayout!(l; shapes)
+# ╔═╡ fbbba3ba-3d51-4b11-8c91-87a56bd6e0ec
+let
+	p = plot_img(frame_i, imgs_sci[frame_i])
+	relayout!(p; shapes=get_shapes([aps[frame_i]]))
+	p
 end
-
-# ╔═╡ 73071a0a-de5f-4beb-8441-1fc40ca7af50
-get_frames(imgs) = [
-    frame(
-        data = [htrace(img)],
-        layout = attr(title_text=timestamp(img)),
-        name = "frame_$(i)",
-    ) for (i, img) in enumerate(imgs)
-]
-
-# ╔═╡ 7908d524-d147-4b53-9e6b-1b66e8e6db94
-function get_frames(imgs, aps)
-	frames = get_frames(imgs)
-	shapes = get_shapes(aps)
-	
-	for (frame, shape) in zip(frames, shapes)
-		frame.layout = attr(shapes=[shape])
-	end
-	
-	return frames
-end
-
-# ╔═╡ 5f3dd2ae-3180-4753-af46-fb13dace938d
-preview(imgs) = plot(get_trace(imgs), get_layout(imgs), get_frames(imgs))
-
-# ╔═╡ 07a76008-2fae-49b4-811d-a94e966a23cc
-preview(imgs, aps) = plot(
-	get_trace(imgs), 
-	get_layout(imgs, aps),
-	get_frames(imgs, aps),
-)
-
-# ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-preview(imgs_sci)
-
-# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-preview(imgs_sci, aps)
 
 # ╔═╡ 5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 md"""
@@ -2744,6 +2709,7 @@ version = "17.4.0+2"
 # ╟─a1cb55ef-a33c-4506-bea4-aa6124026b75
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─e34ee85f-bd37-421d-aa3b-499259554083
+# ╟─c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
@@ -2765,13 +2731,14 @@ version = "17.4.0+2"
 # ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
 # ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
 # ╟─087bb2d6-f2c7-4290-aab7-793e43dbc8e7
-# ╠═8f0abb7d-4c5e-485d-9037-6b01de4a0e08
+# ╟─8f0abb7d-4c5e-485d-9037-6b01de4a0e08
 # ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
 # ╟─bd10f1c9-4b0d-4a30-8917-016f22582d06
-# ╠═75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+# ╟─75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
+# ╠═fbbba3ba-3d51-4b11-8c91-87a56bd6e0ec
 # ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
 # ╠═050b8516-b375-4f1f-906f-6362034b6564
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
@@ -2804,6 +2771,7 @@ version = "17.4.0+2"
 # ╟─46e6bba9-0c83-47b7-be17-f41301efa18e
 # ╟─77544f9e-6053-4ed6-aa9a-4e7a54ca41d9
 # ╟─3242f19a-83f7-4db6-b2ea-6ca3403e1039
+# ╟─1e5596fb-7dca-408b-afbd-6ca2e2487d75
 # ╟─2ea12676-7b5e-444e-8025-5bf9c05d0e2d
 # ╟─d359625e-5a95-49aa-86e4-bc65299dd92a
 # ╟─829cde81-be03-4a9f-a853-28f84923d493
@@ -2816,21 +2784,15 @@ version = "17.4.0+2"
 # ╟─95a67d04-0a32-4e55-ac2f-d004ecc9ca84
 # ╟─7d99f9b9-f4ea-4d4b-99b2-608bc491f05c
 # ╟─2baf0cba-7ef9-4dd5-bc68-bcdac7753b30
+# ╠═ab2bac2b-b2ba-4eaa-8444-439485627bad
+# ╠═48f4cdf3-b3d7-4cd6-8071-78292fec0db9
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╟─21e828e5-00e4-40ce-bff5-60a17439bf44
 # ╟─e35d4be7-366d-4ca5-a89a-5de24e4c6677
 # ╟─a3bcad72-0e6c-43f8-a08d-777a154190d8
 # ╟─8da80446-84d7-44bb-8122-874b4c9514f4
-# ╟─e68b84e3-02dd-46d2-9e1c-3dbe75c1f3ed
-# ╟─91117038-cd7b-4005-b621-4adf8082c89d
 # ╟─24256769-2274-4b78-8445-88ec4536c407
-# ╟─d18b9608-ed8c-4c86-aeaf-8ca1a001a84c
-# ╟─97cc3a52-71aa-4145-a6ec-fedf092f0e3f
-# ╟─73071a0a-de5f-4beb-8441-1fc40ca7af50
-# ╟─7908d524-d147-4b53-9e6b-1b66e8e6db94
-# ╟─5f3dd2ae-3180-4753-af46-fb13dace938d
-# ╟─07a76008-2fae-49b4-811d-a94e966a23cc
 # ╟─5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
