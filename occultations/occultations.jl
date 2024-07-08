@@ -23,20 +23,16 @@ begin
 	using CCDReduction, DataFramesMeta
 
 	# Visualization and analysis
-	using AstroImages, PlutoPlotly, AstroAngles, Photometry 
+	using AstroImages, PlutoPlotly, Photometry 
 	using AstroImages: restrict
-	using Dates, Unitful, Measurements
-	using PhysicalConstants: CODATA2018 as c 
+	using Dates, Unitful, UnitfulAstro, Measurements
 
 	AstroImages.set_cmap!(:cividis)
 end;
 
-# ╔═╡ 330e6803-a46f-4f4a-8010-0fe2941a5c46
-using UnitfulAstro
-
 # ╔═╡ d7f0393d-e2fa-44ea-a812-8f85820e661e
 md"""
-# Asteroid hunting 🔭
+# 🔭 Asteroid hunting
 
 Let's catch an asteroid passing by and estimate how big it is!
 """
@@ -95,7 +91,9 @@ I went for a fairly tight aperture around our target to boost the S/N of our fin
 # ╔═╡ c7c9966e-d1f7-4a29-a53c-662794d06d74
 md"""
 !!! tip "Plotting aside"
-	I opted to use [plotly](https://plotly.com/javascript/) for our visualizations because it as a javascript library that integrates very well this notebook via [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl). I've included the helper functions I wrote to make these visualizations below:
+	I opted to use [plotly](https://plotly.com/javascript/) for our visualizations because it as a javascript library that integrates very well this notebook via [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl). I've included the helper functions I wrote to make these visualizations below.
+
+	Another fantastic choice is [Makie.jl](https://docs.makie.org/v0.21/), which is more composable, modern, and simpler to develop with. Unfortunately, its web support still has a few rough edges, but they are quickly being ironed out.
 """
 
 # ╔═╡ 43eb7424-5861-46be-b670-dcec6125d963
@@ -103,9 +101,44 @@ md"""
 ### Plotly helper functions
 """
 
+# ╔═╡ 1831c578-5ff8-4094-8f57-67c39aff80c8
+# Set nice colorbar limit for visualizations
+const zmin, zmax = AstroImages.PlotUtils.zscale(img_sci)
+
 # ╔═╡ 1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
 # Helpful for preventing ginormous plot objects
 r2(img) = (restrict ∘ restrict)(img)
+
+# ╔═╡ 7289692b-1a85-4a84-b7cc-fea1e46c9f31
+# Plotly heatmap trace of img
+function htrace(img;
+	zmin = 0,
+	zmax = zmax,
+	title = "ADU",
+	restrict = true,
+)
+	# Reduce image, creates an offset array with different axis limits
+	if restrict
+		img_small = r2(img)
+	else
+		img_small = img
+	end
+	
+	# Account for plotly orientation convention
+	img_small = permutedims(img_small)
+	
+	# dims is used here to convert back from an offset array
+	# to a simple array that JS can ingest
+	heatmap(;
+		x = img_small.dims[1].val,
+		y = img_small.dims[2].val,
+		z = img_small.data,
+		zmin,
+		zmax,
+		colorbar = attr(; title),
+		colorscale = :Cividis,
+	)
+end
 
 # ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # Julia photometry aperture object --> plotly shape object
@@ -174,7 +207,7 @@ end
 
 # ╔═╡ ec96a17a-34d2-41d1-a036-7977ffee3450
 md"""
-Below is resulting light curve for our target. The occultation signal is quite striking:
+Below is the resulting light curve for our target. The occultation signal is quite striking:
 """
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
@@ -184,40 +217,86 @@ scatter(df_phot; x=:t, y=:f_target, mode=:markers) |> plot
 # Optional comparison star division
 # scatter(df_phot; x=:t, y=:f_div1, mode=:markers) |> plot
 
-# ╔═╡ 1831c578-5ff8-4094-8f57-67c39aff80c8
-# Set nice colorbar limit for visualizations
-const zmin, zmax = AstroImages.PlotUtils.zscale(img_sci)
+# ╔═╡ 041fd375-92a5-4204-bfdc-5409a04ba141
+md"""
+We now have everything we need to make a size estimate for this asteroid!
+"""
 
-# ╔═╡ 7289692b-1a85-4a84-b7cc-fea1e46c9f31
-# Plotly heatmap trace of img
-function htrace(img;
-	zmin = 0,
-	zmax = zmax,
-	title = "ADU",
-	restrict = true,
-)
-	# Reduce image, creates an offset array with different axis limits
-	if restrict
-		img_small = r2(img)
-	else
-		img_small = img
-	end
-	
-	# Account for plotly orientation convention
-	img_small = permutedims(img_small)
-	
-	# dims is used here to convert back from an offset array
-	# to a simple array that JS can ingest
-	heatmap(;
-		x = img_small.dims[1].val,
-		y = img_small.dims[2].val,
-		z = img_small.data,
-		zmin,
-		zmax,
-		colorbar = attr(; title),
-		colorscale = :Cividis,
-	)
-end
+# ╔═╡ 977c59a8-25ed-47c9-a929-53c5c056d959
+md"""
+## Size estimation 📐
+
+Given the following system parameters that we know about the [Sun's mass](https://en.wikipedia.org/wiki/Solar_mass) and [general location of the asteroid belt](https://en.wikipedia.org/wiki/Asteroid_belt#Orbits):
+"""
+
+# ╔═╡ 97322d18-9784-4faf-aa88-9d54b9e67d68
+GMsun = (1 ± 0.00007)u"GMsun"
+
+# ╔═╡ 00595567-ea76-4bd5-8467-4f16e86a9855
+r = (2.7 ± 0.5)u"AU"
+
+# ╔═╡ b4caa011-8492-426e-9efd-fc8fff7914d7
+md"""
+we can back out the asteroid's rough size ``(d_\mathrm{asteroid})`` based on our timing measurements:
+
+```math
+\displaylines{
+d_\mathrm{asteroid} = v_\mathrm{asteroid}\Delta t \\
+= \sqrt{\frac{G M_\mathrm{sun}}{r}} \Delta t
+}
+```
+"""
+
+# ╔═╡ afbe8ecd-6e20-478c-96c7-603db59959c7
+# Estimated from graph
+Δt = (5 ± 0.5)u"s" 
+
+# ╔═╡ 66bb240c-65a3-486f-8435-2841d2b9cc6a
+v = √(GMsun / r) |> u"km/s"
+
+# ╔═╡ 131f35b8-54f0-47e7-a19f-d3fb73f42337
+d_asteroid = v * Δt |> u"km"
+
+# ╔═╡ e03244d5-0691-431b-9f13-2d03fdb5a4ee
+md"""
+Alright, it looks like we have a size estimate of $(d_asteroid) for our mystery asteroid. Scroll over the box below to see how we did.
+"""
+
+# ╔═╡ 66a1bc55-a265-421b-99a0-9cfe44d2eb7e
+md"""
+!!! hint "Mystery asteroid"
+	Name: [389 Industria](https://en.wikipedia.org/wiki/389_Industria)
+
+	Location: Asteroid belt, central region
+
+	Diameter: 79 km
+"""
+
+# ╔═╡ 2914603e-6b55-48a5-a269-8c44cde31237
+md"""
+!!! tip "Pedagogy aside"
+	To get our estimates above, I used the following background information:
+
+	* The target probably lives in the asteroid belt
+	* The asteroid belt roughly spans from 2.2 AU - 3.2 AU from the Sun
+	* Units and error propagation can be handled nicely for us in the following packages: [Unitful.jl](https://painterqubits.github.io/Unitful.jl/stable/), [UnitfulAstro.jl](http://juliaastro.org/UnitfulAstro.jl/stable/), [Measurements.jl](https://juliaphysics.github.io/Measurements.jl/stable/)
+"""
+
+# ╔═╡ 5254850c-38f3-4fd4-9aa1-cbfd17a8dc1e
+r
+
+# ╔═╡ af286593-ab89-453e-b036-6b4e5b5073cf
+2.7 + 0.5
+
+# ╔═╡ 99273ce1-548e-43f1-ad42-31ebd2db34e7
+md"""
+## Notebook setup 🔧
+"""
+
+# ╔═╡ fa066775-a63b-49c8-a368-0d033fb01a6e
+md"""
+### Convenience functions
+"""
 
 # ╔═╡ 70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
 timestamp(img) = header(img)["DATE-OBS"]
@@ -286,43 +365,20 @@ md"""
 	`pretty`: Uses `pretty_table` function from [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) for nice HTML table formatting in the notebook
 """ |> msg
 
+# ╔═╡ e9eb1a0f-553b-4477-8323-900191d469ee
+md"""
+### Packages
+"""
+
 # ╔═╡ c650df98-efe6-40a3-8b7f-8923f511f51f
 TableOfContents()
 
-# ╔═╡ 3a219a2d-09cc-4bd1-a13b-72eca2197752
-md"""
-Given the following system parameters that we know about the [Sun's mass](https://en.wikipedia.org/wiki/Solar_mass) and [general location of the asteroid belt](https://en.wikipedia.org/wiki/Asteroid_belt#Orbits):
-"""
+# ╔═╡ 330e6803-a46f-4f4a-8010-0fe2941a5c46
 
-# ╔═╡ 97322d18-9784-4faf-aa88-9d54b9e67d68
-GMsun = (1 ± 0.00007)u"GMsun"
-
-# ╔═╡ 00595567-ea76-4bd5-8467-4f16e86a9855
-r = (2.7 ± 0.5)u"AU"
-
-# ╔═╡ b4caa011-8492-426e-9efd-fc8fff7914d7
-md"""
-we can back out the asteroid's rough size based on our timing measurements:
-"""
-
-# ╔═╡ afbe8ecd-6e20-478c-96c7-603db59959c7
-Δt = (5 ± 0.5)u"s" 
-
-# ╔═╡ 66bb240c-65a3-486f-8435-2841d2b9cc6a
-v = √(GMsun / r) |> u"km/s"
-
-# ╔═╡ 131f35b8-54f0-47e7-a19f-d3fb73f42337
-d_asteroid = v * Δt |> u"km"
-
-# ╔═╡ e03244d5-0691-431b-9f13-2d03fdb5a4ee
-md"""
-Not too bad! Reported values for this asteroid place its diameter in the 80 km class range.
-"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-AstroAngles = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
@@ -330,21 +386,18 @@ DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
-PhysicalConstants = "5ad8b20f-a522-5ce9-bfc9-ddf1d5bda6ab"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
 
 [compat]
-AstroAngles = "~0.1.3"
 AstroImages = "~0.5.0"
 CCDReduction = "~0.2.2"
 CommonMark = "~0.8.12"
 DataFramesMeta = "~0.15.2"
 Measurements = "~2.11.0"
 Photometry = "~0.9.3"
-PhysicalConstants = "~0.2.3"
 PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.59"
 Unitful = "~1.20.0"
@@ -357,7 +410,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "8ec6f04a8d8f7edfb93b1790e1e662790bc421ef"
+project_hash = "b7c161905e8b130c9fef2d5c35c86535ed36400c"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -624,11 +677,6 @@ deps = ["Crayons", "JSON", "PrecompileTools", "URIs"]
 git-tree-sha1 = "532c4185d3c9037c0237546d817858b23cf9e071"
 uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 version = "0.8.12"
-
-[[deps.CommonSolve]]
-git-tree-sha1 = "0eee5eb66b1cf62cd6ad1b460238e60e4b09400c"
-uuid = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
-version = "0.2.4"
 
 [[deps.CommonSubexpressions]]
 deps = ["MacroTools", "Test"]
@@ -1379,12 +1427,6 @@ git-tree-sha1 = "c0de60f4eaea165a909f64f1e487981eab9adda9"
 uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 version = "0.9.3"
 
-[[deps.PhysicalConstants]]
-deps = ["Measurements", "Roots", "Unitful"]
-git-tree-sha1 = "cd4da9d1890bc2204b08fe95ebafa55e9366ae4e"
-uuid = "5ad8b20f-a522-5ce9-bfc9-ddf1d5bda6ab"
-version = "0.2.3"
-
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
@@ -1535,24 +1577,6 @@ deps = ["Logging", "MacroTools"]
 git-tree-sha1 = "754aeae612461da54756b83e9baf8583f910c0ae"
 uuid = "c5292f4c-5179-55e1-98c5-05642aab7184"
 version = "0.6.9"
-
-[[deps.Roots]]
-deps = ["Accessors", "ChainRulesCore", "CommonSolve", "Printf"]
-git-tree-sha1 = "1ab580704784260ee5f45bffac810b152922747b"
-uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "2.1.5"
-
-    [deps.Roots.extensions]
-    RootsForwardDiffExt = "ForwardDiff"
-    RootsIntervalRootFindingExt = "IntervalRootFinding"
-    RootsSymPyExt = "SymPy"
-    RootsSymPyPythonCallExt = "SymPyPythonCall"
-
-    [deps.Roots.weakdeps]
-    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-    IntervalRootFinding = "d2bf35a9-74e0-55ec-b149-d360ff49b807"
-    SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
-    SymPyPythonCall = "bc8888f7-b21e-4b7c-a06a-5d9c9496438c"
 
 [[deps.Rotations]]
 deps = ["LinearAlgebra", "Quaternions", "Random", "StaticArrays"]
@@ -1957,12 +1981,8 @@ version = "17.4.0+2"
 # ╟─ec96a17a-34d2-41d1-a036-7977ffee3450
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 # ╠═03c78946-bd54-471e-af3c-05fc3a03ba0c
-# ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-# ╠═e728e458-24dd-4f5d-bdf3-be9d34e4cc14
-# ╠═fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
-# ╠═40272038-3af6-11ef-148a-8be0002c4bda
-# ╠═c650df98-efe6-40a3-8b7f-8923f511f51f
-# ╟─3a219a2d-09cc-4bd1-a13b-72eca2197752
+# ╟─041fd375-92a5-4204-bfdc-5409a04ba141
+# ╟─977c59a8-25ed-47c9-a929-53c5c056d959
 # ╠═97322d18-9784-4faf-aa88-9d54b9e67d68
 # ╠═00595567-ea76-4bd5-8467-4f16e86a9855
 # ╟─b4caa011-8492-426e-9efd-fc8fff7914d7
@@ -1970,6 +1990,18 @@ version = "17.4.0+2"
 # ╠═66bb240c-65a3-486f-8435-2841d2b9cc6a
 # ╠═131f35b8-54f0-47e7-a19f-d3fb73f42337
 # ╟─e03244d5-0691-431b-9f13-2d03fdb5a4ee
+# ╟─66a1bc55-a265-421b-99a0-9cfe44d2eb7e
+# ╟─2914603e-6b55-48a5-a269-8c44cde31237
+# ╠═5254850c-38f3-4fd4-9aa1-cbfd17a8dc1e
+# ╠═af286593-ab89-453e-b036-6b4e5b5073cf
+# ╟─99273ce1-548e-43f1-ad42-31ebd2db34e7
+# ╟─fa066775-a63b-49c8-a368-0d033fb01a6e
+# ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
+# ╟─e728e458-24dd-4f5d-bdf3-be9d34e4cc14
+# ╠═fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
+# ╟─e9eb1a0f-553b-4477-8323-900191d469ee
+# ╠═40272038-3af6-11ef-148a-8be0002c4bda
+# ╠═c650df98-efe6-40a3-8b7f-8923f511f51f
 # ╠═330e6803-a46f-4f4a-8010-0fe2941a5c46
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
