@@ -43,7 +43,7 @@ Let's catch an asteroid passing by and estimate how big it is!
 
 # ╔═╡ d9431fb9-2713-4982-b342-988e01445fed
 md"""
-# Data inspection 🔎
+## Data inspection 🔎
 
 Here's what we got to work with:
 """
@@ -52,35 +52,10 @@ Here's what we got to work with:
 df_sci = let
 	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
-end;
+end; # Semicolon hides automatic output
 
-# ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
-msg(x; title="Details") = details(title, x);
-
-# ╔═╡ 7654e284-65ac-4a12-afdb-ca318aa9fda9
-md"""
-!!! note ""
-	`fitscollection`: Function from [CCDReductions.jl](http://juliaastro.org/CCDReduction.jl/stable/) to quickly summarize fits header info
-
-!!! note ""
-	`@transform`: Macro from [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to make changes to our data frames. In this case, converting one of the columns from string format to DateTime format
-
-!!! note ""
-	`|>`: Also known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to the next. For example,
-
-	```julia
-	sqrt(sum([1, 4, 5, 6])) # 4.0
-	```
-
-	is equivalent to:
-
-	```julia
-	[1, 4, 5, 6] |> sum |> sqrt # 4.0
-	```
-
-!!! note ""
-	`pretty`: Uses `pretty_table` function from [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) for nice HTML table formatting in the notebook
-""" |> msg
+# ╔═╡ 0f99c61f-9514-46a4-809b-7cc56cb5a122
+df_sci
 
 # ╔═╡ 23a4ed9c-f75c-4fb3-ae34-035ca943fc94
 md"""
@@ -88,7 +63,22 @@ It looks like we have $(nrow(df_sci)) science frames of our "mystery" target gat
 """
 
 # ╔═╡ bb936bb4-42a4-4e8c-af2e-137bc8d23715
-extrema(df_sci.:"DATE-OBS")
+t_start, t_end = extrema(df_sci.:"DATE-OBS")
+
+# ╔═╡ 0ea1caa7-8b16-47b3-a20f-3e5d02903198
+md"""
+or about:
+"""
+
+# ╔═╡ 968bb800-5d85-4599-9a8a-95d9f689ee36
+(t_end - t_start) |> canonicalize
+
+# ╔═╡ 9ae8f585-61b8-4ab1-a337-bfd616ac9855
+md"""
+For simplicity, we're just gonna pop a static aperture over our target star, so no need to reextract our sources each frame like in the [Eclipsing Binary lab](https://icweaver.github.io/UCAN/EBs/EB_lab.html). Field rotation was also a worry there, but we can get around these issues by just WCS stacking our frames. I did this ahead of time in AstroImageJ, which chewed through the data in 10s of seconds, so it seems fairly doable to do this in the same night of our observations too. 
+
+In the local version of this notebook, we can scrub through each frame to see how our stacking did. Below is just a static version for the website, where the target is in the green aperture near the center of the frame, and a sample comparison star is in the orange aperture:
+"""
 
 # ╔═╡ a4a703be-1c6e-4643-a173-1e738e667652
 # Aligned with AstroImageJ
@@ -100,11 +90,62 @@ img_sci = first(imgs_sci);
 # ╔═╡ 355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 @bind frame_i Slider(1:length(imgs_sci); show_value=true)
 
+# ╔═╡ 499b6851-28da-4068-a505-789bdce31371
+md"""
+I went for a fairly tight aperture around our target to boost the S/N of our final light curve.
+"""
+
+# ╔═╡ c7c9966e-d1f7-4a29-a53c-662794d06d74
+md"""
+!!! tip "Plotting aside"
+	I opted to use [plotly](https://plotly.com/javascript/) for our visualizations because it as a javascript library that integrates very well with this notebook via [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl). For anyone interested in web programming, I've included the helper functions I wrote to make these visualizations below:
+"""
+
+# ╔═╡ 43eb7424-5861-46be-b670-dcec6125d963
+md"""
+### Plotly helper functions
+"""
+
+# ╔═╡ 1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
+# Helpful for preventing ginormous plot objects
+r2(img) = (restrict ∘ restrict)(img)
+
+# ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
+# Julia photometry aperture object --> plotly shape object
+function circ(ap; line_color=:lightgreen)
+	circle(
+		ap.x - ap.r/2, # x_min
+		ap.x + ap.r/2, # x_max
+		ap.y - ap.r/2, # y_min
+		ap.y + ap.r/2; # y_max
+		line_color,
+	)
+end
+
+# ╔═╡ 48cf49ce-26e7-424c-a2cb-59aabfba8576
+md"""
+Ok, let's get back to the science stuff and do some photometry next!
+"""
+
+# ╔═╡ 484c9b8d-339f-45c3-a52a-01c5dec1b46d
+md"""
+## Aperture photometry 🔾
+"""
+
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
 ap_target = CircularAperture(670, 510, 14);
 
+# ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
+circ_target = circ(ap_target);
+
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
 ap_comp1 = CircularAperture(147, 577, 14);
+
+# ╔═╡ 3ba4245a-ad63-4550-aaa9-4a1381a28f68
+circ_comp1 = circ(ap_comp1; line_color=:orange);
+
+# ╔═╡ fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
+shapes = [circ_target, circ_comp1]
 
 # ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 aperture_sum(aps) = [ap.aperture_sum for ap in aps]
@@ -135,28 +176,26 @@ scatter(df_phot; x=:t, y=:f_div1, mode=:markers) |> plot
 # Set nice colorbar limit for visualizations
 const zmin, zmax = AstroImages.PlotUtils.zscale(img_sci)
 
-# ╔═╡ 70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-timestamp(img) = header(img)["DATE-OBS"]
-
-# ╔═╡ 1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
-# Helpful for preventing ginormous plot objects
-r2(img) = (restrict ∘ restrict)(img)
-
 # ╔═╡ 7289692b-1a85-4a84-b7cc-fea1e46c9f31
+# Plotly heatmap trace of img
 function htrace(img;
 	zmin = 0,
 	zmax = zmax,
 	title = "ADU",
 	restrict = true,
 )
+	# Reduce image, creates an offset array with different axis limits
 	if restrict
 		img_small = r2(img)
 	else
 		img_small = img
 	end
 	
+	# Account for plotly orientation convention
 	img_small = permutedims(img_small)
 	
+	# dims is used here to convert back from an offset array
+	# to a simple array that JS can ingest
 	heatmap(;
 		x = img_small.dims[1].val,
 		y = img_small.dims[2].val,
@@ -168,7 +207,11 @@ function htrace(img;
 	)
 end
 
+# ╔═╡ 70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
+timestamp(img) = header(img)["DATE-OBS"]
+
 # ╔═╡ 2ba90b91-5de2-44a2-954f-a73b1561e762
+# Combines plotly trace and layout into a plot object
 function plot_img(i, img; restrict=true)
 	hm = htrace(img; restrict)
 	
@@ -184,26 +227,6 @@ function plot_img(i, img; restrict=true)
 	plot(hm, l)
 end
 
-# ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
-function circ(ap; line_color=:lightgreen)
-	circle(
-		ap.x - ap.r/2, # x_min
-		ap.x + ap.r/2, # x_max
-		ap.y - ap.r/2, # y_min
-		ap.y + ap.r/2; # y_max
-		line_color,
-	)
-end
-
-# ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
-circ_target = circ(ap_target);
-
-# ╔═╡ 3ba4245a-ad63-4550-aaa9-4a1381a28f68
-circ_comp1 = circ(ap_comp1; line_color=:orange);
-
-# ╔═╡ fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
-shapes = [circ_target, circ_comp1]
-
 # ╔═╡ b49df71d-c470-466e-b845-8a004a3c6cd3
 let
 	p = plot_img(frame_i, imgs_sci[frame_i])
@@ -215,12 +238,41 @@ end
 # Make the table view a bit nicer in the browser
 pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
 	maximum_columns_width = "max-width",
-	show_subheader = false,
+	# show_subheader = false,
 	header_alignment = :c,
 )
 
 # ╔═╡ ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
+# Just show the first 10 rows
 first(df_sci, 10) |> pretty
+
+# ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
+msg(x; title="Details") = details(title, x);
+
+# ╔═╡ 7654e284-65ac-4a12-afdb-ca318aa9fda9
+md"""
+!!! note ""
+	`fitscollection`: Function from [CCDReductions.jl](http://juliaastro.org/CCDReduction.jl/stable/) to quickly summarize fits header info
+
+!!! note ""
+	`@transform`: Macro from [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to make changes to our data frames. In this case, converting one of the columns from string format to DateTime format so we can work with dates later
+
+!!! note ""
+	`|>`: Also known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to the next. For example,
+
+	```julia
+	sqrt(sum([1, 4, 5, 6])) # 4.0
+	```
+
+	is equivalent to:
+
+	```julia
+	[1, 4, 5, 6] |> sum |> sqrt # 4.0
+	```
+
+!!! note ""
+	`pretty`: Uses `pretty_table` function from [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) for nice HTML table formatting in the notebook
+""" |> msg
 
 # ╔═╡ c650df98-efe6-40a3-8b7f-8923f511f51f
 TableOfContents()
@@ -1861,31 +1913,40 @@ version = "17.4.0+2"
 # ╟─d7f0393d-e2fa-44ea-a812-8f85820e661e
 # ╟─d9431fb9-2713-4982-b342-988e01445fed
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
+# ╠═0f99c61f-9514-46a4-809b-7cc56cb5a122
 # ╠═ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
-# ╠═7654e284-65ac-4a12-afdb-ca318aa9fda9
-# ╠═fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
-# ╠═23a4ed9c-f75c-4fb3-ae34-035ca943fc94
+# ╟─7654e284-65ac-4a12-afdb-ca318aa9fda9
+# ╟─23a4ed9c-f75c-4fb3-ae34-035ca943fc94
 # ╠═bb936bb4-42a4-4e8c-af2e-137bc8d23715
+# ╟─0ea1caa7-8b16-47b3-a20f-3e5d02903198
+# ╠═968bb800-5d85-4599-9a8a-95d9f689ee36
+# ╟─9ae8f585-61b8-4ab1-a337-bfd616ac9855
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
-# ╠═355eb355-7db5-4df0-a5ee-9cbc599e1d6b
-# ╠═b49df71d-c470-466e-b845-8a004a3c6cd3
-# ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
+# ╟─355eb355-7db5-4df0-a5ee-9cbc599e1d6b
+# ╟─b49df71d-c470-466e-b845-8a004a3c6cd3
+# ╟─499b6851-28da-4068-a505-789bdce31371
+# ╟─c7c9966e-d1f7-4a29-a53c-662794d06d74
+# ╟─43eb7424-5861-46be-b670-dcec6125d963
+# ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
+# ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
+# ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
+# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
+# ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
+# ╟─484c9b8d-339f-45c3-a52a-01c5dec1b46d
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
 # ╠═3ba4245a-ad63-4550-aaa9-4a1381a28f68
+# ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
 # ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
 # ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 # ╠═03c78946-bd54-471e-af3c-05fc3a03ba0c
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-# ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
-# ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
-# ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
-# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╠═e728e458-24dd-4f5d-bdf3-be9d34e4cc14
+# ╠═fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╠═c650df98-efe6-40a3-8b7f-8923f511f51f
 # ╟─3a219a2d-09cc-4bd1-a13b-72eca2197752
