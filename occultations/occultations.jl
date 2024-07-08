@@ -4,6 +4,16 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
 # ╔═╡ 40272038-3af6-11ef-148a-8be0002c4bda
 begin
 	# Notebook UI
@@ -23,7 +33,7 @@ end;
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
 	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)
-	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
+	# @transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end
 
 # ╔═╡ a4a703be-1c6e-4643-a173-1e738e667652
@@ -33,31 +43,8 @@ imgs_sci = [load(f.path) for f in eachrow(df_sci)];
 # ╔═╡ 53a015a5-e049-4ee6-9a11-1dc6965d5f11
 img_sci = first(imgs_sci);
 
-# ╔═╡ 1ae62a33-dee5-40d0-b7f7-964ba5f5696b
-get_sliders(imgs) = [
-    attr(
-        active = 0,
-        minorticklen = 0,
-        # pad_t = 10,
-        steps = [
-            attr(
-                method = "animate",
-                label = "Frame $(i)",
-                args = [
-                    ["frame_$(i)"],
-                    attr(
-                        mode = "immediate",
-                        transition = attr(duration = 0),
-                        frame = attr(duration=5, redraw=true),
-                    ),
-                ],
-            ) for (i, img) in enumerate(imgs)
-        ],
-    ),
-]
-
-# ╔═╡ 6d4bf257-213b-493c-9406-de00e3cadd79
-sliders= get_sliders(imgs_sci)
+# ╔═╡ 355eb355-7db5-4df0-a5ee-9cbc599e1d6b
+@bind frame_i Slider(1:length(imgs_sci); show_value=true)
 
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
 ap_target = CircularAperture(674, 500, 20);
@@ -122,26 +109,14 @@ function htrace(img;
 	)
 end
 
-# ╔═╡ 618c518b-2175-459c-aaf8-7b6cb0a5f036
-trace = htrace(img_sci)
-
-# ╔═╡ 42d08a66-06a7-4108-b2ea-6d39262a49c2
-get_frames(imgs, shapes) = [
-    frame(
-        data = [htrace(img)],
-        layout = attr(; title_text=timestamp(img), shapes),
-        name = "frame_$(i)",
-    ) for (i, img) in enumerate(imgs)
-]
-
 # ╔═╡ 2ba90b91-5de2-44a2-954f-a73b1561e762
-function plot_img(img; restrict=true)
+function plot_img(i, img; restrict=true)
 	hm = htrace(img; restrict)
 	
 	l = Layout(
 		width = size(img, 1) / 2,
 	    height = size(img, 2) / 2,
-		title = timestamp(img),
+		title = string("Frame $(i): ", timestamp(img)),
 		xaxis = attr(title="X", constrain=:domain),
 		yaxis = attr(title="Y", scaleanchor=:x, constrain=:domain),
 	)
@@ -169,22 +144,12 @@ circ_comp1 = circ(ap_comp1; line_color=:orange);
 # ╔═╡ fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
 shapes = [circ_target, circ_comp1]
 
-# ╔═╡ 4a41462e-01f8-4626-8b05-d140a69528fd
-layout = Layout(;
-    width = 500,
-    height = 500,
-	title = timestamp(img_sci),
-	xaxis = attr(title="X"),
-	yaxis = attr(title="Y"),
-	sliders,
-	shapes,
-)
-
-# ╔═╡ 5b90222b-81bc-4be6-96d1-70291957635f
-frames = get_frames(imgs_sci, shapes)
-
-# ╔═╡ 32b72397-271b-4606-9660-15b756b1ca47
-plot(trace, layout, frames)
+# ╔═╡ b49df71d-c470-466e-b845-8a004a3c6cd3
+let
+	p = plot_img(frame_i, imgs_sci[frame_i])
+	relayout!(p; shapes)
+	p
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1778,14 +1743,9 @@ version = "17.4.0+2"
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
-# ╠═32b72397-271b-4606-9660-15b756b1ca47
-# ╠═618c518b-2175-459c-aaf8-7b6cb0a5f036
-# ╠═4a41462e-01f8-4626-8b05-d140a69528fd
-# ╠═6d4bf257-213b-493c-9406-de00e3cadd79
-# ╠═42d08a66-06a7-4108-b2ea-6d39262a49c2
-# ╠═5b90222b-81bc-4be6-96d1-70291957635f
+# ╠═355eb355-7db5-4df0-a5ee-9cbc599e1d6b
+# ╠═b49df71d-c470-466e-b845-8a004a3c6cd3
 # ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
-# ╟─1ae62a33-dee5-40d0-b7f7-964ba5f5696b
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
@@ -1794,11 +1754,11 @@ version = "17.4.0+2"
 # ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
-# ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-# ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
+# ╠═70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
+# ╠═7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
-# ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
-# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
+# ╠═2ba90b91-5de2-44a2-954f-a73b1561e762
+# ╠═84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

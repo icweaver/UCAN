@@ -65,12 +65,13 @@ df_phot = let
 end
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-let
-	fig, ax, sc = scatter(df_phot.time, df_phot.target)
-	ax.yrectzoom = false 
-	DataInspector(fig)
-	fig
-end
+# let
+# 	WGLMakie.Page()
+# 	fig, ax, sc = scatter(df_phot.time, df_phot.target)
+# 	ax.yrectzoom = false 
+# 	DataInspector(fig)
+# 	fig
+# end
 
 # ╔═╡ 1831c578-5ff8-4094-8f57-67c39aff80c8
 # Set nice colorbar limit for visualizations
@@ -2346,9 +2347,9 @@ version = "3.5.0+0"
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-# ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
+# ╠═7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
-# ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
+# ╠═2ba90b91-5de2-44a2-954f-a73b1561e762
 # ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╠═84ec1fe6-d650-46d4-8c2c-f01413dca296
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
