@@ -37,20 +37,23 @@ df_sci = let
 end
 
 # ╔═╡ a4a703be-1c6e-4643-a173-1e738e667652
-# The semicolon hides automatic output
-imgs_sci = [load(f.path) for f in eachrow(df_sci)];
+# Aligned with AstroImageJ
+imgs_sci = [load("data/eVscope-zzdq7q_aligned.fits", i) for i in 1:nrow(df_sci)];
 
 # ╔═╡ 53a015a5-e049-4ee6-9a11-1dc6965d5f11
 img_sci = first(imgs_sci);
+
+# ╔═╡ a9e5d4bd-3a13-4b35-b49b-48a4e2c09267
+wcs(img_sci)
 
 # ╔═╡ 355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 @bind frame_i Slider(1:length(imgs_sci); show_value=true)
 
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
-ap_target = CircularAperture(674, 500, 20);
+ap_target = CircularAperture(670, 510, 14);
 
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp1 = CircularAperture(153, 567, 20);
+ap_comp1 = CircularAperture(425, 132, 14);
 
 # ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 aperture_sum(aps) = [ap.aperture_sum for ap in aps]
@@ -124,6 +127,7 @@ function plot_img(i, img; restrict=true)
 		title = string("Frame $(i): ", timestamp(img)),
 		xaxis = attr(title="X", constrain=:domain),
 		yaxis = attr(title="Y", scaleanchor=:x, constrain=:domain),
+		uirevision = 1,
 	)
 
 	plot(hm, l)
@@ -1748,6 +1752,7 @@ version = "17.4.0+2"
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
+# ╠═a9e5d4bd-3a13-4b35-b49b-48a4e2c09267
 # ╠═355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 # ╠═b49df71d-c470-466e-b845-8a004a3c6cd3
 # ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
