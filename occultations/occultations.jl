@@ -68,7 +68,9 @@ or about:
 
 # ╔═╡ 9ae8f585-61b8-4ab1-a337-bfd616ac9855
 md"""
-For simplicity, we're just gonna pop a static aperture over our sources, so no need to reextract/fit each frame like in the [Eclipsing Binary lab](https://icweaver.github.io/UCAN/EBs/EB_lab.html). Field rotation was also a worry there, but we can get around these issues by just WCS stacking our frames. I did this ahead of time in AstroImageJ, which chewed through the data (~ 3 GB) in tens of seconds, so it seems fairly doable to do this in the same night of our observations too. 
+For simplicity, we're just gonna pop a static aperture over our sources, so no need to reextract/fit each frame like in
+the [Eclipsing Binary lab](https://icweaver.github.io/UCAN/EBs/EB_lab.html). Field rotation was also a worry there, but
+we can get around these issues by just WCS stacking our frames. We did this ahead of time in [AstroImageJ](https://www.astro.louisville.edu/software/astroimagej/), which chewed through the data (~ 3 GB) in tens of seconds, so it seems fairly doable to do this in the same night of our observations too. 
 
 In the local version of this notebook, we can scrub through each frame to see how our stacking did. Below is just a static version for the website, where the target is in the green aperture near the center of the frame, and a sample comparison star is in the orange aperture:
 """
@@ -85,13 +87,15 @@ img_sci = first(imgs_sci);
 
 # ╔═╡ 499b6851-28da-4068-a505-789bdce31371
 md"""
-I went for a fairly tight aperture around our target to boost the S/N of our final light curve.
+We went for a fairly tight aperture around our target to boost the S/N of our final light curve.
 """
 
 # ╔═╡ c7c9966e-d1f7-4a29-a53c-662794d06d74
 md"""
 !!! tip "Plotting aside"
-	I opted to use [plotly](https://plotly.com/javascript/) for our visualizations because it as a javascript library that integrates very well this notebook via [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl). I've included the helper functions I wrote to make these visualizations below.
+	We opted to use [plotly](https://plotly.com/javascript/) for our visualizations because it as a javascript library
+    that integrates very well this notebook via [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl). We've
+    included the helper functions used to make these visualizations below.
 
 	Another fantastic choice is [Makie.jl](https://docs.makie.org/v0.21/), which is more composable, modern, and simpler to develop with. Unfortunately, its web support still has a few rough edges, but they are quickly being ironed out.
 """
@@ -211,7 +215,15 @@ Below is the resulting light curve for our target. The occultation signal is qui
 """
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-scatter(df_phot; x=:t, y=:f_target, mode=:markers) |> plot
+let
+	sc = scatter(df_phot; x=:t, y=:f_target, mode=:markers)
+	l = Layout(;
+		xaxis = attr(title="Time (UTC)"),
+		yaxis = attr(title="Counts"),
+		title = "Target light curve",
+	)
+	plot(sc, l)
+end
 
 # ╔═╡ 03c78946-bd54-471e-af3c-05fc3a03ba0c
 # Optional comparison star division
@@ -240,10 +252,10 @@ md"""
 we can back out the asteroid's rough size ``(d_\mathrm{asteroid})`` based on our timing measurements:
 
 ```math
-\displaylines{
-d_\mathrm{asteroid} = v_\mathrm{asteroid}\Delta t \\
-= \sqrt{\frac{G M_\mathrm{sun}}{r}} \Delta t
-}
+\begin{align}
+d_\mathrm{asteroid} &= v_\mathrm{asteroid}\Delta t \\
+					&= \sqrt{\frac{G M_\mathrm{sun}}{r}} \Delta t \quad .
+\end{align}
 ```
 """
 
@@ -275,18 +287,13 @@ md"""
 # ╔═╡ 2914603e-6b55-48a5-a269-8c44cde31237
 md"""
 !!! tip "Pedagogy aside"
-	To get our estimates above, I used the following background information:
+	To get our estimates above, we used the following background information:
 
 	* The target probably lives in the asteroid belt
 	* The asteroid belt roughly spans from 2.2 AU - 3.2 AU from the Sun
 	* Units and error propagation can be handled nicely for us in the following packages: [Unitful.jl](https://painterqubits.github.io/Unitful.jl/stable/), [UnitfulAstro.jl](http://juliaastro.org/UnitfulAstro.jl/stable/), [Measurements.jl](https://juliaphysics.github.io/Measurements.jl/stable/)
+	* We were only sampling over a single chord, so getting different answers than the published result is to be expected
 """
-
-# ╔═╡ 5254850c-38f3-4fd4-9aa1-cbfd17a8dc1e
-r
-
-# ╔═╡ af286593-ab89-453e-b036-6b4e5b5073cf
-2.7 + 0.5
 
 # ╔═╡ 99273ce1-548e-43f1-ad42-31ebd2db34e7
 md"""
@@ -372,9 +379,6 @@ md"""
 
 # ╔═╡ c650df98-efe6-40a3-8b7f-8923f511f51f
 TableOfContents()
-
-# ╔═╡ 330e6803-a46f-4f4a-8010-0fe2941a5c46
-
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1992,8 +1996,6 @@ version = "17.4.0+2"
 # ╟─e03244d5-0691-431b-9f13-2d03fdb5a4ee
 # ╟─66a1bc55-a265-421b-99a0-9cfe44d2eb7e
 # ╟─2914603e-6b55-48a5-a269-8c44cde31237
-# ╠═5254850c-38f3-4fd4-9aa1-cbfd17a8dc1e
-# ╠═af286593-ab89-453e-b036-6b4e5b5073cf
 # ╟─99273ce1-548e-43f1-ad42-31ebd2db34e7
 # ╟─fa066775-a63b-49c8-a368-0d033fb01a6e
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
@@ -2002,6 +2004,5 @@ version = "17.4.0+2"
 # ╟─e9eb1a0f-553b-4477-8323-900191d469ee
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╠═c650df98-efe6-40a3-8b7f-8923f511f51f
-# ╠═330e6803-a46f-4f4a-8010-0fe2941a5c46
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
