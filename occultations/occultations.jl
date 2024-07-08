@@ -62,15 +62,20 @@ df_phot = let
 	phot_comp1 = photometry.(Ref(ap_comp1), imgs_sci)
 
 	# Store results
-	DataFrame(
-		time = df_sci."DATE-OBS",
-		target = aperture_sum(phot_target),
-		comp1 = aperture_sum(phot_comp1),
+	df = DataFrame(
+		t = df_sci."DATE-OBS",
+		f_target = aperture_sum(phot_target),
+		f_comp1 = aperture_sum(phot_comp1),
 	)
+
+	@transform! df :f_div1 = :f_target ./ :f_comp1
 end
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-scatter(df_phot; x=:time, y=:target, mode=:markers) |> plot
+scatter(df_phot; x=:t, y=:f_target, mode=:markers) |> plot
+
+# ╔═╡ 03c78946-bd54-471e-af3c-05fc3a03ba0c
+scatter(df_phot; x=:t, y=:f_div1, mode=:markers) |> plot
 
 # ╔═╡ 1831c578-5ff8-4094-8f57-67c39aff80c8
 # Set nice colorbar limit for visualizations
@@ -1753,6 +1758,7 @@ version = "17.4.0+2"
 # ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
 # ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
+# ╠═03c78946-bd54-471e-af3c-05fc3a03ba0c
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╠═70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
 # ╠═7289692b-1a85-4a84-b7cc-fea1e46c9f31
