@@ -66,6 +66,19 @@ md"""
 	`@transform`: Macro from [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to make changes to our data frames. In this case, converting one of the columns from string format to DateTime format
 
 !!! note ""
+	`|>`: Also known as the [pipe operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping), this is a convenient way to pass the output of one function as input to the next. For example,
+
+	```julia
+	sqrt(sum([1, 4, 5, 6])) # 4.0
+	```
+
+	is equivalent to:
+
+	```julia
+	[1, 4, 5, 6] |> sum |> sqrt # 4.0
+	```
+
+!!! note ""
 	`pretty`: Uses `pretty_table` function from [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) for nice HTML table formatting in the notebook
 """ |> msg
 
