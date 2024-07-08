@@ -464,22 +464,7 @@ let
 end
 
 # ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
-md"""
-!!! note "Why so verbose?"
-	We use the package [PlutoPlotly.jl](https://github.com/JuliaPluto/PlutoPlotly.jl) here instead of Plots.jl so that we can create a nice interactive plot of our light curve
-	
-	The cumbersome PlutoPlotly qualifiers are being used because we are using multiple plotting packages in this notebook for demonstration purposes. They can be dropped for convenience if just using one package by doing
-	
-	```julia
-	using PlutoPlotly
-	```
-	
-	instead of
-	
-	```julia
-	using PlutoPlotly: PlutoPlotly
-	```
-""" |> msg
+
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 md"""
@@ -999,6 +984,7 @@ function plot_img(i, img; restrict=true)
 		title = string("Frame $(i): ", timestamp(img)),
 		xaxis = attr(title="X", constrain=:domain),
 		yaxis = attr(title="Y", scaleanchor=:x, constrain=:domain),
+		uirevision = 1,
 	)
 
 	plot(hm, l)
@@ -2757,7 +2743,7 @@ version = "17.4.0+2"
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─c5e95837-fd89-4da2-b480-13f5ed788fb6
 # ╠═edda8d09-ec46-4a0b-b1b2-b1289ee5456e
-# ╟─29197489-441c-440d-9ce2-3dbd17fa53fc
+# ╠═29197489-441c-440d-9ce2-3dbd17fa53fc
 # ╠═f2c89a20-09d5-47f4-8f83-e59477723d95
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 # ╠═4042bc32-1a14-4408-974d-7405fd8c8ccc
@@ -2789,10 +2775,10 @@ version = "17.4.0+2"
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╟─21e828e5-00e4-40ce-bff5-60a17439bf44
-# ╟─e35d4be7-366d-4ca5-a89a-5de24e4c6677
+# ╠═e35d4be7-366d-4ca5-a89a-5de24e4c6677
 # ╟─a3bcad72-0e6c-43f8-a08d-777a154190d8
 # ╟─8da80446-84d7-44bb-8122-874b4c9514f4
-# ╟─24256769-2274-4b78-8445-88ec4536c407
+# ╠═24256769-2274-4b78-8445-88ec4536c407
 # ╟─5b079ce8-3b28-4fe7-8df2-f576c2c948f5
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001

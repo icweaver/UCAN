@@ -25,16 +25,57 @@ begin
 	# Visualization and analysis
 	using AstroImages, PlutoPlotly, AstroAngles, Photometry 
 	using AstroImages: restrict
-	using Dates, Unitful, Measurements, PhysicalConstants 
+	using Dates, Unitful, Measurements
+	using PhysicalConstants: CODATA2018 as c 
 
 	AstroImages.set_cmap!(:cividis)
 end;
 
+# ╔═╡ 330e6803-a46f-4f4a-8010-0fe2941a5c46
+using UnitfulAstro
+
+# ╔═╡ d7f0393d-e2fa-44ea-a812-8f85820e661e
+md"""
+# Asteroid hunting 🔭
+
+Let's catch an asteroid passing by and estimate how big it is!
+"""
+
+# ╔═╡ d9431fb9-2713-4982-b342-988e01445fed
+md"""
+# Data inspection 🔎
+
+Here's what we got to work with:
+"""
+
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
 	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)
-	# @transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
-end
+	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
+end;
+
+# ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
+msg(x; title="Details") = details(title, x);
+
+# ╔═╡ 7654e284-65ac-4a12-afdb-ca318aa9fda9
+md"""
+!!! note ""
+	`fitscollection`: Function from [CCDReductions.jl](http://juliaastro.org/CCDReduction.jl/stable/) to quickly summarize fits header info
+
+!!! note ""
+	`@transform`: Macro from [DataFramesMeta.jl](https://juliadata.org/DataFramesMeta.jl/stable/) to make changes to our data frames. In this case, converting one of the columns from string format to DateTime format
+
+!!! note ""
+	`pretty`: Uses `pretty_table` function from [PrettyTables.jl](https://ronisbr.github.io/PrettyTables.jl/stable/) for nice HTML table formatting in the notebook
+""" |> msg
+
+# ╔═╡ 23a4ed9c-f75c-4fb3-ae34-035ca943fc94
+md"""
+It looks like we have $(nrow(df_sci)) science frames of our "mystery" target gathered between the following times in UTC:
+"""
+
+# ╔═╡ bb936bb4-42a4-4e8c-af2e-137bc8d23715
+extrema(df_sci.:"DATE-OBS")
 
 # ╔═╡ a4a703be-1c6e-4643-a173-1e738e667652
 # Aligned with AstroImageJ
@@ -43,9 +84,6 @@ imgs_sci = [load("data/eVscope-zzdq7q_aligned.fits", i) for i in 1:nrow(df_sci)]
 # ╔═╡ 53a015a5-e049-4ee6-9a11-1dc6965d5f11
 img_sci = first(imgs_sci);
 
-# ╔═╡ a9e5d4bd-3a13-4b35-b49b-48a4e2c09267
-wcs(img_sci)
-
 # ╔═╡ 355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 @bind frame_i Slider(1:length(imgs_sci); show_value=true)
 
@@ -53,7 +91,7 @@ wcs(img_sci)
 ap_target = CircularAperture(670, 510, 14);
 
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp1 = CircularAperture(425, 132, 14);
+ap_comp1 = CircularAperture(147, 577, 14);
 
 # ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 aperture_sum(aps) = [ap.aperture_sum for ap in aps]
@@ -160,6 +198,50 @@ let
 	p
 end
 
+# ╔═╡ e728e458-24dd-4f5d-bdf3-be9d34e4cc14
+# Make the table view a bit nicer in the browser
+pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
+	maximum_columns_width = "max-width",
+	show_subheader = false,
+	header_alignment = :c,
+)
+
+# ╔═╡ ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
+first(df_sci, 10) |> pretty
+
+# ╔═╡ c650df98-efe6-40a3-8b7f-8923f511f51f
+TableOfContents()
+
+# ╔═╡ 3a219a2d-09cc-4bd1-a13b-72eca2197752
+md"""
+Given the following system parameters that we know about the [Sun's mass](https://en.wikipedia.org/wiki/Solar_mass) and [general location of the asteroid belt](https://en.wikipedia.org/wiki/Asteroid_belt#Orbits):
+"""
+
+# ╔═╡ 97322d18-9784-4faf-aa88-9d54b9e67d68
+GMsun = (1 ± 0.00007)u"GMsun"
+
+# ╔═╡ 00595567-ea76-4bd5-8467-4f16e86a9855
+r = (2.7 ± 0.5)u"AU"
+
+# ╔═╡ b4caa011-8492-426e-9efd-fc8fff7914d7
+md"""
+we can back out the asteroid's rough size based on our timing measurements:
+"""
+
+# ╔═╡ afbe8ecd-6e20-478c-96c7-603db59959c7
+Δt = (5 ± 0.5)u"s" 
+
+# ╔═╡ 66bb240c-65a3-486f-8435-2841d2b9cc6a
+v = √(GMsun / r) |> u"km/s"
+
+# ╔═╡ 131f35b8-54f0-47e7-a19f-d3fb73f42337
+d_asteroid = v * Δt |> u"km"
+
+# ╔═╡ e03244d5-0691-431b-9f13-2d03fdb5a4ee
+md"""
+Not too bad! Reported values for this asteroid place its diameter in the 80 km class range.
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -175,6 +257,7 @@ PhysicalConstants = "5ad8b20f-a522-5ce9-bfc9-ddf1d5bda6ab"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+UnitfulAstro = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
 
 [compat]
 AstroAngles = "~0.1.3"
@@ -188,6 +271,7 @@ PhysicalConstants = "~0.2.3"
 PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.59"
 Unitful = "~1.20.0"
+UnitfulAstro = "~1.2.1"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -196,7 +280,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "f64fcaec612de24ce5ee30271d6423dc4568dc08"
+project_hash = "8ec6f04a8d8f7edfb93b1790e1e662790bc421ef"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1685,6 +1769,18 @@ weakdeps = ["ConstructionBase", "InverseFunctions"]
     ConstructionBaseUnitfulExt = "ConstructionBase"
     InverseFunctionsUnitfulExt = "InverseFunctions"
 
+[[deps.UnitfulAngles]]
+deps = ["Dates", "Unitful"]
+git-tree-sha1 = "79875b1f2e4bf918f0702a5980816955066d9ae2"
+uuid = "6fb2a4bd-7999-5318-a3b2-8ad61056cd98"
+version = "0.7.2"
+
+[[deps.UnitfulAstro]]
+deps = ["Unitful", "UnitfulAngles"]
+git-tree-sha1 = "da7577e6a726959b14f7451674d00b78d10ca30f"
+uuid = "6112ee07-acf9-5e0f-b108-d242c714bf9f"
+version = "1.2.1"
+
 [[deps.WCS]]
 deps = ["ConstructionBase", "WCS_jll"]
 git-tree-sha1 = "858cf2784ff27d908df7a3fe22fcd5fbf02f508b"
@@ -1749,10 +1845,16 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
+# ╟─d7f0393d-e2fa-44ea-a812-8f85820e661e
+# ╟─d9431fb9-2713-4982-b342-988e01445fed
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
+# ╠═ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
+# ╠═7654e284-65ac-4a12-afdb-ca318aa9fda9
+# ╠═fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
+# ╠═23a4ed9c-f75c-4fb3-ae34-035ca943fc94
+# ╠═bb936bb4-42a4-4e8c-af2e-137bc8d23715
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
-# ╠═a9e5d4bd-3a13-4b35-b49b-48a4e2c09267
 # ╠═355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 # ╠═b49df71d-c470-466e-b845-8a004a3c6cd3
 # ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
@@ -1765,11 +1867,22 @@ version = "17.4.0+2"
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 # ╠═03c78946-bd54-471e-af3c-05fc3a03ba0c
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
-# ╠═70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-# ╠═7289692b-1a85-4a84-b7cc-fea1e46c9f31
+# ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
+# ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
-# ╠═2ba90b91-5de2-44a2-954f-a73b1561e762
-# ╠═84745bd9-c2b1-45c3-8376-7f18d600e7eb
+# ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
+# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
+# ╠═e728e458-24dd-4f5d-bdf3-be9d34e4cc14
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
+# ╠═c650df98-efe6-40a3-8b7f-8923f511f51f
+# ╟─3a219a2d-09cc-4bd1-a13b-72eca2197752
+# ╠═97322d18-9784-4faf-aa88-9d54b9e67d68
+# ╠═00595567-ea76-4bd5-8467-4f16e86a9855
+# ╟─b4caa011-8492-426e-9efd-fc8fff7914d7
+# ╠═afbe8ecd-6e20-478c-96c7-603db59959c7
+# ╠═66bb240c-65a3-486f-8435-2841d2b9cc6a
+# ╠═131f35b8-54f0-47e7-a19f-d3fb73f42337
+# ╟─e03244d5-0691-431b-9f13-2d03fdb5a4ee
+# ╠═330e6803-a46f-4f4a-8010-0fe2941a5c46
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
