@@ -105,18 +105,24 @@ let
 	sl = Slider(fig[2, 1], range=1:length(imgs_sci))
 	i = sl.value
 	img = @lift r2(imgs_sci[$(i)])
-	ax = Axis(fig[1, 1]; title=@lift(timestamp($img)))
+	ax = Axis(fig[1, 1];
+		title = @lift(
+			string("Frame ", $(i), ": ") * timestamp($img)
+		)
+	)
 	
 	# Heatmap
 	hm = heatmap!(ax, x_range, y_range, img;
 		inspector_label = tooltip_hm,
 		colorrange=(0, zmax),
 	)
-	DataInspector(hm)
 	Colorbar(fig[1, 2], hm)
 
 	# Apertures
 	apertures!(ax, [ap_target, ap_comp1])
+
+	# Interactive
+	DataInspector(fig)
 	
 	fig
 end
