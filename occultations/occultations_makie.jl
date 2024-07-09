@@ -25,27 +25,36 @@ end;
 df_sci = let
 	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
-end
+end; # Semicolon hides automatic output
 
 # ╔═╡ a4a703be-1c6e-4643-a173-1e738e667652
-# The semicolon hides automatic output
-imgs_sci = [load(f.path) for f in eachrow(df_sci)];
+# Aligned with AstroImageJ
+imgs_sci = [load("data/eVscope-zzdq7q_aligned.fits", i) for i in 1:nrow(df_sci)];
 
 # ╔═╡ 53a015a5-e049-4ee6-9a11-1dc6965d5f11
 img_sci = first(imgs_sci);
 
+# ╔═╡ a2093bb6-d1c0-4a3c-a0fc-63152f5857bb
+function tooltip_hm(self, i, pos)
+	x, y, val = round.(pos; digits=2)
+	return "H[$(x), $(y)] = $(val)"
+end
+
+# ╔═╡ f5363afd-af83-4865-a6ca-d26716dbff3b
+WGLMakie.Page()
+
 # ╔═╡ 1408a942-0657-4c88-80d8-a1c9141658f6
-function apertures!(ax, aps; radius=25)
+function apertures!(ax, aps)
 	for ap in aps
-		arc!(ax, Point2f(ap.x, ap.y), radius, 0, 2π; color=:lightgreen)
+		arc!(ax, Point2f(ap.x, ap.y), ap.r, 0, 2π; color=:lightgreen)
 	end
 end
 
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
-ap_target = CircularAperture(664, 510, 20);
+ap_target = CircularAperture(666.76, 505.1, 12);
 
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp1 = CircularAperture(143, 577, 20);
+ap_comp1 = CircularAperture(152.06, 573.12, 12);
 
 # ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 aperture_sum(aps) = [ap.aperture_sum for ap in aps]
@@ -65,17 +74,16 @@ df_phot = let
 end
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-# let
-# 	WGLMakie.Page()
-# 	fig, ax, sc = scatter(df_phot.time, df_phot.target)
-# 	ax.yrectzoom = false 
-# 	DataInspector(fig)
-# 	fig
-# end
+let
+	fig, ax, sc = scatter(df_phot.time, df_phot.target)
+	ax.yrectzoom = false 
+	DataInspector(fig)
+	fig
+end
 
 # ╔═╡ 1831c578-5ff8-4094-8f57-67c39aff80c8
 # Set nice colorbar limit for visualizations
-const zlims = AstroImages.PlotUtils.zscale(img_sci)
+const zmin, zmax = AstroImages.PlotUtils.zscale(img_sci)
 
 # ╔═╡ 70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
 timestamp(img) = header(img)["DATE-OBS"]
@@ -92,16 +100,18 @@ end;
 
 # ╔═╡ 19f440ce-c1be-4655-ada6-fa7c8bc9d74d
 let
-	WGLMakie.Page()
-
 	# Fig, Ax setup
 	fig = Figure()
 	sl = Slider(fig[2, 1], range=1:length(imgs_sci))
-	img = @lift r2(imgs_sci[$(sl.value)])
+	i = sl.value
+	img = @lift r2(imgs_sci[$(i)])
 	ax = Axis(fig[1, 1]; title=@lift(timestamp($img)))
 	
 	# Heatmap
-	hm = heatmap!(ax, x_range, y_range, img; colorrange=(0, zlims[2]))
+	hm = heatmap!(ax, x_range, y_range, img;
+		inspector_label = tooltip_hm,
+		colorrange=(0, zmax),
+	)
 	DataInspector(hm)
 	Colorbar(fig[1, 2], hm)
 
@@ -109,58 +119,6 @@ let
 	apertures!(ax, [ap_target, ap_comp1])
 	
 	fig
-end
-
-# ╔═╡ 7289692b-1a85-4a84-b7cc-fea1e46c9f31
-function htrace(img;
-	zmin = 0,
-	zmax = zmax,
-	title = "ADU",
-	restrict = true,
-)
-	if restrict
-		img_small = r2(img)
-	else
-		img_small = img
-	end
-	
-	img_small = permutedims(img_small)
-	
-	heatmap(;
-		x = img_small.dims[1].val,
-		y = img_small.dims[2].val,
-		z = img_small.data,
-		zmin,
-		zmax,
-		colorbar = attr(; title),
-		colorscale = :Cividis,
-	)
-end
-
-# ╔═╡ 2ba90b91-5de2-44a2-954f-a73b1561e762
-function plot_img(img; restrict=true)
-	hm = htrace(img; restrict)
-	
-	l = Layout(
-		width = size(img, 1) / 2,
-	    height = size(img, 2) / 2,
-		title = timestamp(img),
-		xaxis = attr(title="X", constrain=:domain),
-		yaxis = attr(title="Y", scaleanchor=:x, constrain=:domain),
-	)
-
-	plot(hm, l)
-end
-
-# ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
-function circ(ap; line_color=:lightgreen)
-	circle(
-		ap.x - ap.r/2, # x_min
-		ap.x + ap.r/2, # x_max
-		ap.y - ap.r/2, # y_min
-		ap.y + ap.r/2; # y_max
-		line_color,
-	)
 end
 
 # ╔═╡ 84ec1fe6-d650-46d4-8c2c-f01413dca296
@@ -2338,19 +2296,18 @@ version = "3.5.0+0"
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
 # ╠═0cad0ff8-5c21-4dec-8f89-e288d00dec9a
+# ╠═a2093bb6-d1c0-4a3c-a0fc-63152f5857bb
+# ╠═f5363afd-af83-4865-a6ca-d26716dbff3b
 # ╠═19f440ce-c1be-4655-ada6-fa7c8bc9d74d
-# ╟─1408a942-0657-4c88-80d8-a1c9141658f6
+# ╠═1408a942-0657-4c88-80d8-a1c9141658f6
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
-# ╟─d36ff8f2-8c11-4cec-a467-d97e19725268
+# ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
 # ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
-# ╠═7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
-# ╠═2ba90b91-5de2-44a2-954f-a73b1561e762
-# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╠═84ec1fe6-d650-46d4-8c2c-f01413dca296
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╟─00000000-0000-0000-0000-000000000001
