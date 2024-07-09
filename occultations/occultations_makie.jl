@@ -73,10 +73,21 @@ df_phot = let
 	)
 end
 
+# ╔═╡ 36c75ddf-b737-44e6-86c1-19c0dc74fa04
+# Global var hack for now
+tooltip_scatter(self, i, pos) = string(Time(df_phot.time[i]))
+
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 let
-	fig, ax, sc = scatter(df_phot.time, df_phot.target)
-	ax.yrectzoom = false 
+	fig, ax, sc = scatter(Time.(df_phot.time), df_phot.target;
+		inspector_label = tooltip_scatter,
+		axis = (;
+			yrectzoom = false,
+			xlabel = "Time (UTC)",
+			ylabel = "Counts",
+		)
+	)
+	
 	DataInspector(fig)
 	fig
 end
@@ -106,6 +117,8 @@ let
 	i = sl.value
 	img = @lift r2(imgs_sci[$(i)])
 	ax = Axis(fig[1, 1];
+		xlabel = "X",
+		ylabel = "Y",
 		title = @lift(
 			string("Frame ", $(i), ": ") * timestamp($img)
 		)
@@ -116,7 +129,8 @@ let
 		inspector_label = tooltip_hm,
 		colorrange=(0, zmax),
 	)
-	Colorbar(fig[1, 2], hm)
+	
+	Colorbar(fig[1, 2], hm; label="ADU")
 
 	# Apertures
 	apertures!(ax, [ap_target, ap_comp1])
@@ -2311,6 +2325,7 @@ version = "3.5.0+0"
 # ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
 # ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
+# ╠═36c75ddf-b737-44e6-86c1-19c0dc74fa04
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
