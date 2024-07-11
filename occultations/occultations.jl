@@ -100,8 +100,15 @@ md"""
 ## Image registration?
 """
 
+# ╔═╡ 90c53c14-dd3a-40a8-b5ff-8cc40f69065d
+function align(fixed, moving)
+	tfm, mm = qd_rigid(fixed.data, moving.data, (5, 5), π/16)
+	img = warp(moving.data, tfm, axes(fixed.data))
+	return shareheader(moving, img)
+end
+
 # ╔═╡ 90fe7d8c-82c4-4792-a5b0-e5eb8f62fafb
-@bind yee Slider(1:2)
+@bind yee Slider(1:3)
 
 # ╔═╡ c7c9966e-d1f7-4a29-a53c-662794d06d74
 md"""
@@ -126,26 +133,33 @@ const zmin, zmax = AstroImages.PlotUtils.zscale(img_sci)
 # Helpful for preventing ginormous plot objects
 r2(img) = (restrict ∘ restrict)(img)
 
-# ╔═╡ eb333f45-a172-4596-8fbe-e19480898b88
-fixed = r2(imgs_sci[1]);
+# ╔═╡ 8161347d-e584-4ed2-ab80-55ae56ca8755
+function aligned_frames(imgs_sci)
+	imgs = r2.(imgs_sci)
+	movs = [first(imgs)]
+	for i in 2:length(imgs)
+		mov = align(imgs[i-1], imgs[i])
+		push!(movs, mov)
+	end
+	
+	return movs
+end
 
-# ╔═╡ cda3996f-90c9-42fb-b15e-8bdc67ac9833
-moving = r2(imgs_sci[2]);
+# ╔═╡ 78ad3571-f002-4372-a421-186e92a6e390
+movw1 = align(r2(imgs_sci[1]), r2(imgs_sci[2]));
 
-# ╔═╡ a3cffe8d-ab28-45b5-97e6-3d408cd54bf2
-tfm, mm = qd_rigid(fixed.data, moving.data, (5, 5), π/16)
-
-# ╔═╡ c3d9b237-fc1a-4b90-8d7f-eff518b752f3
-movw = let
-	img = warp(moving.data, tfm, axes(fixed.data))
-	shareheader(moving, img)
-end;
+# ╔═╡ 3d125572-20ae-40fa-892f-1d4ac9703b9d
+movw2 = align(movw1, r2(imgs_sci[3]));
 
 # ╔═╡ 02f37957-9bc9-426a-ad54-fc7be5ceaa2f
 imgs_sci_aligned = [
-	fixed,
-	movw,
+	r2(imgs_sci[1]),
+	movw1,
+	movw2,
 ];
+
+# ╔═╡ b37844ad-954e-4076-b88f-4e0d9999aeb4
+size(imgs_sci_aligned[3])
 
 # ╔═╡ 7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # Plotly heatmap trace of img
@@ -2156,11 +2170,12 @@ version = "17.4.0+2"
 # ╟─499b6851-28da-4068-a505-789bdce31371
 # ╟─67125878-7c40-4599-9555-969d05908cd7
 # ╠═4d2a90f0-51c3-498d-be6e-058d1dc96b65
-# ╠═eb333f45-a172-4596-8fbe-e19480898b88
-# ╠═cda3996f-90c9-42fb-b15e-8bdc67ac9833
-# ╠═a3cffe8d-ab28-45b5-97e6-3d408cd54bf2
-# ╠═c3d9b237-fc1a-4b90-8d7f-eff518b752f3
+# ╠═90c53c14-dd3a-40a8-b5ff-8cc40f69065d
+# ╠═8161347d-e584-4ed2-ab80-55ae56ca8755
+# ╠═78ad3571-f002-4372-a421-186e92a6e390
+# ╠═3d125572-20ae-40fa-892f-1d4ac9703b9d
 # ╠═02f37957-9bc9-426a-ad54-fc7be5ceaa2f
+# ╠═b37844ad-954e-4076-b88f-4e0d9999aeb4
 # ╠═90fe7d8c-82c4-4792-a5b0-e5eb8f62fafb
 # ╠═b35935a1-a9b2-435d-9c22-dd2adc005be1
 # ╟─c7c9966e-d1f7-4a29-a53c-662794d06d74
