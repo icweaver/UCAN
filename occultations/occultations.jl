@@ -49,7 +49,7 @@ Here's what we got to work with:
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
-	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)
+	df = first(fitscollection("data/eVscope-zzdq7q"; abspath=false), 250)
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end; # Semicolon hides automatic output
 
@@ -81,8 +81,8 @@ In the local version of this notebook, we can scrub through each frame to see ho
 # ╔═╡ a4a703be-1c6e-4643-a173-1e738e667652
 # Aligned with AstroImageJ
 # imgs_sci = [load("data/eVscope-zzdq7q_aligned.fits", i) for i in 1:nrow(df_sci)];
-# imgs_sci = [load(f) for f in df_sci.path];
-imgs_sci = [load(f) for f in df_sci.path[[begin, begin+100, begin+200]]];
+imgs_sci = [load(f) for f in df_sci.path];
+# imgs_sci = [load(f) for f in df_sci.path[[begin, begin+100, begin+200]]];
 
 # ╔═╡ 53a015a5-e049-4ee6-9a11-1dc6965d5f11
 img_sci = first(imgs_sci);
@@ -108,7 +108,7 @@ function align(fixed, moving)
 end
 
 # ╔═╡ 90fe7d8c-82c4-4792-a5b0-e5eb8f62fafb
-@bind yee Slider(1:3)
+@bind yee Slider(1:length(imgs_sci); show_value=true)
 
 # ╔═╡ c7c9966e-d1f7-4a29-a53c-662794d06d74
 md"""
@@ -137,29 +137,23 @@ r2(img) = (restrict ∘ restrict)(img)
 function aligned_frames(imgs_sci)
 	imgs = r2.(imgs_sci)
 	movs = [first(imgs)]
+	mov_old = first(movs)
 	for i in 2:length(imgs)
-		mov = align(imgs[i-1], imgs[i])
-		push!(movs, mov)
+		mov_new = align(mov_old, imgs[i])
+		push!(movs, mov_new)
+		mov_old = mov_new
 	end
 	
 	return movs
 end
 
-# ╔═╡ 78ad3571-f002-4372-a421-186e92a6e390
-movw1 = align(r2(imgs_sci[1]), r2(imgs_sci[2]));
-
-# ╔═╡ 3d125572-20ae-40fa-892f-1d4ac9703b9d
-movw2 = align(movw1, r2(imgs_sci[3]));
-
 # ╔═╡ 02f37957-9bc9-426a-ad54-fc7be5ceaa2f
-imgs_sci_aligned = [
-	r2(imgs_sci[1]),
-	movw1,
-	movw2,
-];
-
-# ╔═╡ b37844ad-954e-4076-b88f-4e0d9999aeb4
-size(imgs_sci_aligned[3])
+# ╠═╡ show_logs = false
+# ╠═╡ disabled = true
+# ╠═╡ skip_as_script = true
+#=╠═╡
+imgs_sci_aligned = aligned_frames(imgs_sci);
+  ╠═╡ =#
 
 # ╔═╡ 7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # Plotly heatmap trace of img
@@ -218,7 +212,7 @@ Based on the visualization above, we can make some pretty good guesses for our t
 
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
 # Accepts (x_center, y_center, radius)
-ap_target = CircularAperture(670, 510, 14);
+ap_target = CircularAperture(664, 510, 14);
 
 # ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 circ_target = circ(ap_target);
@@ -391,11 +385,13 @@ let
 end
 
 # ╔═╡ b35935a1-a9b2-435d-9c22-dd2adc005be1
+#=╠═╡
 let
 	p = plot_img(yee, imgs_sci_aligned[yee]; restrict=false)
 	relayout!(p; shapes)
 	p
 end
+  ╠═╡ =#
 
 # ╔═╡ e728e458-24dd-4f5d-bdf3-be9d34e4cc14
 # Make the table view a bit nicer in the browser
@@ -2172,10 +2168,7 @@ version = "17.4.0+2"
 # ╠═4d2a90f0-51c3-498d-be6e-058d1dc96b65
 # ╠═90c53c14-dd3a-40a8-b5ff-8cc40f69065d
 # ╠═8161347d-e584-4ed2-ab80-55ae56ca8755
-# ╠═78ad3571-f002-4372-a421-186e92a6e390
-# ╠═3d125572-20ae-40fa-892f-1d4ac9703b9d
 # ╠═02f37957-9bc9-426a-ad54-fc7be5ceaa2f
-# ╠═b37844ad-954e-4076-b88f-4e0d9999aeb4
 # ╠═90fe7d8c-82c4-4792-a5b0-e5eb8f62fafb
 # ╠═b35935a1-a9b2-435d-9c22-dd2adc005be1
 # ╟─c7c9966e-d1f7-4a29-a53c-662794d06d74
@@ -2183,7 +2176,7 @@ version = "17.4.0+2"
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
 # ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
-# ╠═2ba90b91-5de2-44a2-954f-a73b1561e762
+# ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
 # ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
 # ╟─484c9b8d-339f-45c3-a52a-01c5dec1b46d
