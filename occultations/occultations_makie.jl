@@ -13,13 +13,16 @@ begin
 	using CCDReduction, DataFramesMeta
 
 	# Visualization and analysis
-	using AstroImages, WGLMakie, AstroAngles, Photometry 
+	using AstroImages, WGLMakie, Photometry 
 	using Makie: Slider
 	using AstroImages: restrict
 	using Dates, Unitful, Measurements, PhysicalConstants 
 
 	AstroImages.set_cmap!(:cividis)
 end;
+
+# ╔═╡ 1cfc553c-d812-4e34-b8db-f35505aa64a4
+WGLMakie.Page()
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
@@ -39,9 +42,6 @@ function tooltip_hm(self, i, pos)
 	x, y, val = round.(pos; digits=2)
 	return "H[$(x), $(y)] = $(val)"
 end
-
-# ╔═╡ f5363afd-af83-4865-a6ca-d26716dbff3b
-WGLMakie.Page()
 
 # ╔═╡ 1408a942-0657-4c88-80d8-a1c9141658f6
 function apertures!(ax, aps)
@@ -111,7 +111,7 @@ end;
 
 # ╔═╡ 19f440ce-c1be-4655-ada6-fa7c8bc9d74d
 let
-	# Fig, Ax setup
+	# Fig, Axis setup
 	fig = Figure()
 	sl = Slider(fig[2, 1], range=1:length(imgs_sci))
 	i = sl.value
@@ -148,10 +148,12 @@ begin
 	update_theme!(Heatmap=(; colormap), Image=(; colormap))
 end
 
+# ╔═╡ 0ba04f5d-9cf3-44e0-9146-221dcb61636f
+# WGLMakie.Page(offline=true, exportable=true)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-AstroAngles = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
@@ -165,17 +167,16 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 
 [compat]
-AstroAngles = "~0.1.3"
 AstroImages = "~0.5.0"
 CCDReduction = "~0.2.2"
 DataFramesMeta = "~0.15.2"
-Makie = "~0.21.4"
+Makie = "~0.21.5"
 Measurements = "~2.11.0"
 Photometry = "~0.9.3"
 PhysicalConstants = "~0.2.3"
 PlutoUI = "~0.7.59"
 Unitful = "~1.20.0"
-WGLMakie = "~0.10.4"
+WGLMakie = "~0.10.5"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -184,7 +185,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "f5f22b5bfe7ca776adfe64ac3cf5764a4cd642c0"
+project_hash = "6bc8eeef039ce4759cbfd6f82cf5605d3953b8d4"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -611,9 +612,9 @@ version = "0.1.2"
 
 [[deps.DelaunayTriangulation]]
 deps = ["EnumX", "ExactPredicates", "Random"]
-git-tree-sha1 = "b0cb128d2e100646573e1da8565b02491fddb5ef"
+git-tree-sha1 = "078c716cbb032242df18b960e8b1fec6b1b0b9f9"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
-version = "1.0.4"
+version = "1.0.5"
 
 [[deps.Deno_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1056,9 +1057,9 @@ version = "1.4.1"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "be50fe8df3acbffa0274a744f1a99d29c45a57f4"
+git-tree-sha1 = "14eb2b542e748570b56446f4c50fbfb2306ebc45"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2024.1.0+0"
+version = "2024.2.0+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -1315,9 +1316,9 @@ version = "0.1.4"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
-git-tree-sha1 = "80b2833b56d466b3858d565adcd16a4a05f2089b"
+git-tree-sha1 = "f046ccd0c6db2832a9f639e2c669c6fe867e5f4f"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2024.1.0+0"
+version = "2024.2.0+0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1327,15 +1328,15 @@ version = "0.5.13"
 
 [[deps.Makie]]
 deps = ["Animations", "Base64", "CRC32c", "ColorBrewer", "ColorSchemes", "ColorTypes", "Colors", "Contour", "Dates", "DelaunayTriangulation", "Distributions", "DocStringExtensions", "Downloads", "FFMPEG_jll", "FileIO", "FilePaths", "FixedPointNumbers", "Format", "FreeType", "FreeTypeAbstraction", "GeometryBasics", "GridLayoutBase", "ImageIO", "InteractiveUtils", "IntervalSets", "Isoband", "KernelDensity", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MakieCore", "Markdown", "MathTeXEngine", "Observables", "OffsetArrays", "Packing", "PlotUtils", "PolygonOps", "PrecompileTools", "Printf", "REPL", "Random", "RelocatableFolders", "Scratch", "ShaderAbstractions", "Showoff", "SignedDistanceFields", "SparseArrays", "Statistics", "StatsBase", "StatsFuns", "StructArrays", "TriplotBase", "UnicodeFun", "Unitful"]
-git-tree-sha1 = "57a1a2b3d12e04f9e9fb77d61cd12571d5541c5f"
+git-tree-sha1 = "863b9e666b5a099c8835e85476a5834f9d77c4c1"
 uuid = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-version = "0.21.4"
+version = "0.21.5"
 
 [[deps.MakieCore]]
 deps = ["ColorTypes", "GeometryBasics", "IntervalSets", "Observables"]
-git-tree-sha1 = "638bc817096742e8302f7b0b972ee5701fe00e97"
+git-tree-sha1 = "c1c950560397ee68ad7302ee0e3efa1b07466a2f"
 uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
-version = "0.8.3"
+version = "0.8.4"
 
 [[deps.MappedArrays]]
 git-tree-sha1 = "2dab0221fe2b0f2cb6754eaa743cc266339f527e"
@@ -1800,9 +1801,9 @@ version = "1.2.1"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
-git-tree-sha1 = "6bb314cb1aacfa37ef58e5a0ccf4a1ec0311f495"
+git-tree-sha1 = "ff11acffdb082493657550959d4feb4b6149e73a"
 uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.4"
+version = "1.4.5"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -2148,9 +2149,9 @@ version = "7.7.0+0"
 
 [[deps.WGLMakie]]
 deps = ["Bonito", "Colors", "FileIO", "FreeTypeAbstraction", "GeometryBasics", "Hyperscript", "LinearAlgebra", "Makie", "Observables", "PNGFiles", "PrecompileTools", "RelocatableFolders", "ShaderAbstractions", "StaticArrays"]
-git-tree-sha1 = "88c6171696f9b9c8e48c2b0b36eba09f43c502ae"
+git-tree-sha1 = "dca58a991d7ea60ec5adf8c57afee5bf94c2539d"
 uuid = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
-version = "0.10.4"
+version = "0.10.5"
 
 [[deps.WidgetsBase]]
 deps = ["Observables"]
@@ -2312,12 +2313,12 @@ version = "3.5.0+0"
 """
 
 # ╔═╡ Cell order:
+# ╠═1cfc553c-d812-4e34-b8db-f35505aa64a4
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╠═53a015a5-e049-4ee6-9a11-1dc6965d5f11
 # ╠═0cad0ff8-5c21-4dec-8f89-e288d00dec9a
 # ╠═a2093bb6-d1c0-4a3c-a0fc-63152f5857bb
-# ╠═f5363afd-af83-4865-a6ca-d26716dbff3b
 # ╠═19f440ce-c1be-4655-ada6-fa7c8bc9d74d
 # ╠═1408a942-0657-4c88-80d8-a1c9141658f6
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
@@ -2330,6 +2331,7 @@ version = "3.5.0+0"
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
 # ╠═84ec1fe6-d650-46d4-8c2c-f01413dca296
+# ╠═0ba04f5d-9cf3-44e0-9146-221dcb61636f
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
