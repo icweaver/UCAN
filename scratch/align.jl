@@ -33,39 +33,71 @@ CondaPkg.status()
 end
 
 # ╔═╡ ed719e32-b643-4235-952a-4707cb31d0a6
-target = load("../occultations/data/eVscope-zzdq7q/zzdq7q_2023-08-23T00-36-04.697_OCCULTATION.fits")
+img1 = load("../occultations/data/eVscope-zzdq7q/zzdq7q_2023-08-23T00-36-04.697_OCCULTATION.fits");
 
 # ╔═╡ d53a7157-185b-46ef-8e8e-f620dcc1a93c
-source = load("../occultations/data/eVscope-zzdq7q/zzdq7q_2023-08-23T00-39-02.650_OCCULTATION.fits")
+img2 = load("../occultations/data/eVscope-zzdq7q/zzdq7q_2023-08-23T00-39-02.350_OCCULTATION.fits");
+
+# ╔═╡ 77029a97-ce13-49f2-ac25-1bf2757bc17d
+img3 = load("../occultations/data/eVscope-zzdq7q/zzdq7q_2023-08-23T00-39-02.650_OCCULTATION.fits");
+
+# ╔═╡ 62ccdb11-668c-477f-bff2-d1c7c82091af
+# x, y = eachslice(rand(3, 4, 2); dims=3)
 
 # ╔═╡ a7a1d32e-ef91-4c6f-8fe8-e944048557f7
-t = let
-	yee = np.zeros_like(source)
-	for i in 0:size(source, 1) - 1
-		for j in 0:size(source, 2) - 1
-			yee[i, j] = source[i+1, j+1]
-		end
-	end
-	yee
+function to_py(img)
+	arr = np.zeros_like(img)
+	PyArray(arr; copy=false) .= img
+	return arr
 end
 
-# ╔═╡ a51bb75d-5ff9-48c0-8df6-b62739de1790
-registered_image, footprint = aa.register(
-	t,
-	t,
-)
+# ╔═╡ 1cc48df5-0cd9-48da-b513-93a835bc1b78
+# Align img2 onto img1
+function align(img2, img1)
+	registered_image, footprint = aa.register(
+		to_py(img2),
+		to_py(img1);
+		detection_sigma = 3.0,
+	)
+	return shareheader(img2, PyArray(registered_image))
+end
 
-# ╔═╡ 99f396f1-8a3f-489e-8b4e-6901bc7c7a87
-imview(PyArray(registered_image))
+# ╔═╡ 504f2bef-cca0-45d4-a92b-cd57b71f12b1
+img2_aligned = align(img2, img1);
+
+# ╔═╡ acae719d-4176-44a3-add9-82d3501782c3
+img3_aligned = align(img3, img2_aligned);
 
 # ╔═╡ 5b93b05a-b1bb-43d6-8f4a-80aec2535740
-@bind i Slider(1:2)
+@bind i Slider(1:3)
 
 # ╔═╡ 44dfc90e-8a9b-428d-a66a-f21fd3b6af0b
 r = 650:680, 500:520
 
 # ╔═╡ 03ca7f31-8f49-4450-a630-3db7ec2c306e
-[target[r...], source[r...]][i]
+[img1[r...], img2[r...], img3[r...]][i]
+
+# ╔═╡ 6cf39ace-0830-4f8c-a113-dbaf7257f4d9
+[img1[r...], img2_aligned[r...], img3_aligned[r...]][i]
+
+# ╔═╡ 45b503c5-2fa0-42d8-9e78-b041e4df9ca0
+md"""
+# QD
+"""
+
+# ╔═╡ a83ca973-9368-4f4e-94fb-0b98fb9dede5
+# using RegisterMismatch, RegisterQD , ImageTransformations
+
+# ╔═╡ 1ef549ae-8507-4c54-8002-7a83e75a26df
+# function align(fixed, moving)
+# 	# Align on reduced image for performance
+# 	fixed_small, moving_small = r2.((fixed, moving))
+# 	tfm, mm = qd_rigid(fixed_small.data, moving_small.data, (5, 5), π/16)
+
+# 	# Transform on original image
+# 	img = warp(moving.data, tfm, axes(fixed.data))
+# 	return shareheader(moving, img)
+# end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -896,11 +928,18 @@ version = "17.4.0+2"
 # ╠═c6a1dd0d-c052-432b-962c-32d5c65edba4
 # ╠═ed719e32-b643-4235-952a-4707cb31d0a6
 # ╠═d53a7157-185b-46ef-8e8e-f620dcc1a93c
-# ╠═a51bb75d-5ff9-48c0-8df6-b62739de1790
-# ╠═99f396f1-8a3f-489e-8b4e-6901bc7c7a87
+# ╠═77029a97-ce13-49f2-ac25-1bf2757bc17d
+# ╠═1cc48df5-0cd9-48da-b513-93a835bc1b78
+# ╠═62ccdb11-668c-477f-bff2-d1c7c82091af
 # ╠═a7a1d32e-ef91-4c6f-8fe8-e944048557f7
+# ╠═504f2bef-cca0-45d4-a92b-cd57b71f12b1
+# ╠═acae719d-4176-44a3-add9-82d3501782c3
 # ╠═5b93b05a-b1bb-43d6-8f4a-80aec2535740
 # ╠═03ca7f31-8f49-4450-a630-3db7ec2c306e
+# ╠═6cf39ace-0830-4f8c-a113-dbaf7257f4d9
 # ╠═44dfc90e-8a9b-428d-a66a-f21fd3b6af0b
+# ╟─45b503c5-2fa0-42d8-9e78-b041e4df9ca0
+# ╠═a83ca973-9368-4f4e-94fb-0b98fb9dede5
+# ╠═1ef549ae-8507-4c54-8002-7a83e75a26df
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
