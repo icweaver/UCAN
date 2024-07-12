@@ -49,7 +49,7 @@ Here's what we got to work with:
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
-	df = first(fitscollection("data/eVscope-zzdq7q"; abspath=false), 250)
+	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end; # Semicolon hides automatic output
 
@@ -82,7 +82,6 @@ In the local version of this notebook, we can scrub through each frame to see ho
 # Aligned with AstroImageJ
 # imgs_sci = [load("data/eVscope-zzdq7q_aligned.fits", i) for i in 1:nrow(df_sci)];
 imgs_sci = [load(f) for f in df_sci.path];
-# imgs_sci = [load(f) for f in df_sci.path[[begin, begin+100, begin+200]]];
 
 # ╔═╡ 53a015a5-e049-4ee6-9a11-1dc6965d5f11
 img_sci = first(imgs_sci);
@@ -99,13 +98,6 @@ We went for a fairly tight aperture around our target to boost the S/N of our fi
 md"""
 ## Image registration?
 """
-
-# ╔═╡ 90c53c14-dd3a-40a8-b5ff-8cc40f69065d
-function align(fixed, moving)
-	tfm, mm = qd_rigid(fixed.data, moving.data, (5, 5), π/16)
-	img = warp(moving.data, tfm, axes(fixed.data))
-	return shareheader(moving, img)
-end
 
 # ╔═╡ 90fe7d8c-82c4-4792-a5b0-e5eb8f62fafb
 @bind yee Slider(1:length(imgs_sci); show_value=true)
@@ -133,9 +125,19 @@ const zmin, zmax = AstroImages.PlotUtils.zscale(img_sci)
 # Helpful for preventing ginormous plot objects
 r2(img) = (restrict ∘ restrict)(img)
 
+# ╔═╡ 90c53c14-dd3a-40a8-b5ff-8cc40f69065d
+function align(fixed, moving)
+	# Align on reduced image for performance
+	fixed_small, moving_small = r2.((fixed, moving))
+	tfm, mm = qd_rigid(fixed_small.data, moving_small.data, (5, 5), π/16)
+
+	# Transform on original image
+	img = warp(moving.data, tfm, axes(fixed.data))
+	return shareheader(moving, img)
+end
+
 # ╔═╡ 8161347d-e584-4ed2-ab80-55ae56ca8755
-function aligned_frames(imgs_sci)
-	imgs = r2.(imgs_sci)
+function aligned_frames(imgs)
 	movs = [first(imgs)]
 	mov_old = first(movs)
 	for i in 2:length(imgs)
@@ -387,7 +389,7 @@ end
 # ╔═╡ b35935a1-a9b2-435d-9c22-dd2adc005be1
 #=╠═╡
 let
-	p = plot_img(yee, imgs_sci_aligned[yee]; restrict=false)
+	p = plot_img(yee, imgs_sci_aligned[yee]; restrict=true)
 	relayout!(p; shapes)
 	p
 end
