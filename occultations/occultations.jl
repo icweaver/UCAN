@@ -125,7 +125,7 @@ Based on the visualization above, we were able to make some pretty good guesses 
 
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
 # Accepts (x_center, y_center, radius)
-ap_target = CircularAperture(668, 510, 14);
+ap_target = CircularAperture(668, 510, 7);
 
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
 ap_comp1 = CircularAperture(147, 577, 14);
@@ -353,15 +353,6 @@ transf, (source_list, target_list) = let
 	aa.find_transform(source, target; detection_sigma=3.0)
 end;
 
-# ╔═╡ cdcb6aea-ea89-4d9f-aaec-2b0f9dd516d7
-source_list
-
-# ╔═╡ 00b8aadb-0304-4024-9107-b7f8226f60cc
-target_list
-
-# ╔═╡ 5d91e1e2-4a6b-4276-9722-79a51b480fe7
-transf.rotation
-
 # ╔═╡ 43eb7424-5861-46be-b670-dcec6125d963
 md"""
 ### Plotly helper functions
@@ -437,26 +428,12 @@ end
 # Julia photometry aperture object --> plotly shape object
 function circ(ap; line_color=:lightgreen)
 	circle(
-		ap.x - ap.r/2, # x_min
-		ap.x + ap.r/2, # x_max
-		ap.y - ap.r/2, # y_min
-		ap.y + ap.r/2; # y_max
+		ap.x - ap.r, # x_min
+		ap.x + ap.r, # x_max
+		ap.y - ap.r, # y_min
+		ap.y + ap.r; # y_max
 		line_color,
 	)
-end
-
-# ╔═╡ 0256ba9c-2f20-479b-8221-06d3b4969cfe
-let
-	p = plot_img(frame_i, imgs_sci_aligned[frame_i_aligned])
-
-	shapes = [
-		circ(CircularAperture(y, x, 14))
-		for (x, y) in eachrow(PyArray(source_list; copy=false))
-	]
-	
-	relayout!(p; shapes)
-	
-	p
 end
 
 # ╔═╡ c5c30567-6681-4a31-be41-6ab26b9ade89
@@ -2145,13 +2122,9 @@ version = "17.4.0+2"
 # ╠═1ebac097-da9b-486d-a819-29179c19f1ef
 # ╟─60e9ac2c-728b-41ba-8863-8042daac4a16
 # ╟─0bbb5bca-4fab-41f1-89ee-369f3dafff60
-# ╠═0256ba9c-2f20-479b-8221-06d3b4969cfe
 # ╠═c5c30567-6681-4a31-be41-6ab26b9ade89
 # ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
 # ╠═a33916f7-c223-42e3-9c88-19fef724b20c
-# ╠═cdcb6aea-ea89-4d9f-aaec-2b0f9dd516d7
-# ╠═00b8aadb-0304-4024-9107-b7f8226f60cc
-# ╠═5d91e1e2-4a6b-4276-9722-79a51b480fe7
 # ╟─484c9b8d-339f-45c3-a52a-01c5dec1b46d
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16

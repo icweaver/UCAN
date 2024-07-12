@@ -172,7 +172,7 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
-df_sci = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
+df_sci = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)[1:3, :]
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
@@ -276,11 +276,15 @@ We turn now (pun not intended) to the matter of field rotation.
 # ╔═╡ 6773c197-941e-4de0-b017-ec036fb851bb
 md"""
 ### Field rotation
+
+Before defining this phenomenon, let's first see it in action. Drag the slider below to scroll through each of our science frames. (Note for the rest of this notebook that we will be using the default image orientation in the plotting software):
 """
 
-# ╔═╡ e34ee85f-bd37-421d-aa3b-499259554083
+# ╔═╡ 5cc14d4f-d156-420c-a404-90c541217d83
 md"""
-Before defining what this phenomenon is, let's first see it in action. Drag the slider below to scroll through each of our science frames. (Note for the rest of this notebook that we will be using the default image orientation in the plotting software):
+!!! note "Apertures"
+
+	To better show the frame to frame differences, we also added some sample target and comparison apertures (in green and orange, respectively) centered on the first frame in our image series.
 """
 
 # ╔═╡ c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
@@ -290,23 +294,33 @@ Frame number: $(frame_slider = @bind frame_i Slider(1:length(imgs_sci); show_val
 
 # ╔═╡ 7d54fd96-b268-4964-929c-d62c7d89b4b2
 md"""
-Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
+Uh-oh, we see that our images are literally rotating out from under us! This [field rotation](https://calgary.rasc.ca/field_rotation.htm) and also some drift that needed to be manually corrected partway through the observation are normal effects of taking long duration observations on an alt-az mount. Fortunately, it is fairly manageable to handle this as we will see in the next section.
 """
 
 # ╔═╡ 1df329a0-629a-4527-8e5d-1dbac9ed8497
 md"""
-# Image alignment
+## Image alignment 📐
+
+A typical astronomical observation might use the know RA and Dec of the field to [plate solve](https://astrobackyard.com/plate-solving/) each frame against background sources (see, e.g., [astrometry.net](https://astrometry.net/)). This then gives a coordinate transformation (e.g., with the [World Coordinate System (WCS) standard](https://fits.gsfc.nasa.gov/fits_wcs.html)) that can be applied to each frame to align them to a common grid with open source tools like [AstroImageJ](https://www.astro.louisville.edu/software/astroimagej/). Unfortunately, plate solving is a computationally expensive process that can take quite a while, especially if we have a large number of frames. Fortunately, there is a nice alternative that we can use if we do not care about the WCS information: [asterisms](https://en.wikipedia.org/wiki/Asterism_(astronomy)).
+
+In this process, one frame is aligned to another in much the same way that human brain might: by matching common shapes between each frame to each other. This works indpendently of WCS information, so it completely avoids the need to plate solve our images. We will employ the Python package [`astroalign`](https://astroalign.quatrope.org/en/latest/index.html) to perform this process.
 """
+
+# ╔═╡ d6bba196-213e-4c90-8d8e-f2ffc8108da6
+md"""
+!!! tip "Future work"
+	Stay tuned for an upcoming notebook where we will examine this asterism alignment process in more depth!
+"""
+
+# ╔═╡ 916b8558-b49c-40b6-b9d3-9915d4fe75f0
+ap_radius = 18
 
 # ╔═╡ f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
 # Accepts (x_center, y_center, radius)
-ap_target = CircularAperture(1029, 782, 24);
+ap_target = CircularAperture(1029, 782, ap_radius);
 
 # ╔═╡ 954c7918-7dd1-4967-a67b-7856f00dc498
-# ap_comp1 = CircularAperture(147, 577, 14);
-
-# ╔═╡ 59fd63bd-5df1-4a45-8505-f2b8c740e488
-# circ_comp1 = circ(ap_comp1; line_color=:orange);
+ap_comp1 = CircularAperture(1165, 950, ap_radius);
 
 # ╔═╡ b944bc98-ff4b-4851-89ea-1ee4e3191759
 @py begin
@@ -320,6 +334,8 @@ md"""
 """
 
 # ╔═╡ 36db58d8-23be-461a-ac75-998c8ad43068
+# Workaround. Apparently just wrapping img in a numpy array fails somewhere
+# maybe in the call to sep within astroalign
 function to_py(img)
 	arr = np.zeros_like(img)
 	PyArray(arr; copy=false) .= img
@@ -340,17 +356,11 @@ end
 
 # ╔═╡ bdc24b15-d14a-422c-a7aa-5335547fa53c
 function align_frames(imgs)
-	movs = []
 	fixed = first(imgs)
-	push!(movs, fixed)
-	# mov_old = first(movs)
-	for i in 2:length(imgs)
-		mov_new = align(imgs[i], fixed)
-		push!(movs, mov_new)
-		# mov_old = mov_new
+	frames_aligned = map(imgs[begin+1:end]) do img
+		align(img, fixed)
 	end
-	
-	return movs
+	return [fixed, frames_aligned]
 end
 
 # ╔═╡ 1fe59945-8bce-44f3-b548-9646c2ce6bda
@@ -955,10 +965,10 @@ end
 # ╔═╡ a3bcad72-0e6c-43f8-a08d-777a154190d8
 function circ(ap; line_color=:lightgreen)
 	circle(
-		ap.x - ap.r/2, # x_min
-		ap.x + ap.r/2, # x_max
-		ap.y - ap.r/2, # y_min
-		ap.y + ap.r/2; # y_max
+		ap.x - ap.r, # x_min
+		ap.x + ap.r, # x_max
+		ap.y - ap.r, # y_min
+		ap.y + ap.r; # y_max
 		line_color,
 	)
 end
@@ -966,8 +976,11 @@ end
 # ╔═╡ 3c015eef-20fe-419b-a2cf-6fefa505b1af
 circ_target = circ(ap_target);
 
+# ╔═╡ 59fd63bd-5df1-4a45-8505-f2b8c740e488
+circ_comp1 = circ(ap_comp1; line_color=:orange);
+
 # ╔═╡ 2e59cc0d-e477-4826-b8b6-d2d68c8592a9
-shapes = [circ_target]
+shapes = [circ_target, circ_comp1]
 
 # ╔═╡ 8da80446-84d7-44bb-8122-874b4c9514f4
 timestamp(img) = header(img)["DATE-OBS"]
@@ -991,29 +1004,14 @@ end
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
 let
 	p = plot_img(frame_i, imgs_sci[frame_i])
-	
 	relayout!(p; shapes)
-	
 	p
 end
 
 # ╔═╡ f3683998-543c-4bc4-8b73-fc1de6a6a955
 let
 	p = plot_img(frame_i_aligned, imgs_sci_aligned[frame_i_aligned])
-
-# 	transf, (source_list, target_list) = let
-# 	target = imgs_sci[1] |> to_py
-# 	source = imgs_sci[frame_i_aligned] |> to_py
-# 	aa.find_transform(source, target; detection_sigma=4.0)
-# end;
-
-# 	shapes = [
-# 		circ(CircularAperture(y, x, 14))
-# 		for (x, y) in eachrow(PyArray(source_list; copy=false))
-# 	]
-
 	relayout!(p; shapes)
-	
 	p
 end
 
@@ -2706,16 +2704,18 @@ version = "17.4.0+2"
 # ╠═035fcecb-f998-4644-9650-6aeaced3e41f
 # ╟─a1cb55ef-a33c-4506-bea4-aa6124026b75
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
-# ╟─e34ee85f-bd37-421d-aa3b-499259554083
+# ╟─5cc14d4f-d156-420c-a404-90c541217d83
 # ╟─c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
-# ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
+# ╟─86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
-# ╠═1df329a0-629a-4527-8e5d-1dbac9ed8497
+# ╟─1df329a0-629a-4527-8e5d-1dbac9ed8497
+# ╟─d6bba196-213e-4c90-8d8e-f2ffc8108da6
 # ╠═1fe59945-8bce-44f3-b548-9646c2ce6bda
 # ╟─73e16c0e-873c-46a3-a0fd-d7ed5405ed7b
 # ╠═f3683998-543c-4bc4-8b73-fc1de6a6a955
 # ╠═bdc24b15-d14a-422c-a7aa-5335547fa53c
 # ╠═03d38a82-4c31-4f3a-9afe-d1caead5e8af
+# ╠═916b8558-b49c-40b6-b9d3-9915d4fe75f0
 # ╠═f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
 # ╠═3c015eef-20fe-419b-a2cf-6fefa505b1af
 # ╠═954c7918-7dd1-4967-a67b-7856f00dc498
@@ -2782,7 +2782,7 @@ version = "17.4.0+2"
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╟─21e828e5-00e4-40ce-bff5-60a17439bf44
 # ╠═e35d4be7-366d-4ca5-a89a-5de24e4c6677
-# ╟─a3bcad72-0e6c-43f8-a08d-777a154190d8
+# ╠═a3bcad72-0e6c-43f8-a08d-777a154190d8
 # ╟─8da80446-84d7-44bb-8122-874b4c9514f4
 # ╠═24256769-2274-4b78-8445-88ec4536c407
 # ╟─5b079ce8-3b28-4fe7-8df2-f576c2c948f5
