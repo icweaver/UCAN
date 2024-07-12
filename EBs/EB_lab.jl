@@ -312,6 +312,11 @@ md"""
 	Stay tuned for an upcoming notebook where we will examine this asterism alignment process in more depth!
 """
 
+# ╔═╡ e7ad4e24-5dc9-4713-836a-be001304e45c
+md"""
+Let's see how our aligned frames look below:
+"""
+
 # ╔═╡ 916b8558-b49c-40b6-b9d3-9915d4fe75f0
 ap_radius = 18
 
@@ -360,7 +365,7 @@ function align_frames(imgs)
 	frames_aligned = map(imgs[begin+1:end]) do img
 		align(img, fixed)
 	end
-	return [fixed, frames_aligned]
+	return [fixed, frames_aligned...]
 end
 
 # ╔═╡ 1fe59945-8bce-44f3-b548-9646c2ce6bda
@@ -980,7 +985,7 @@ circ_target = circ(ap_target);
 circ_comp1 = circ(ap_comp1; line_color=:orange);
 
 # ╔═╡ 2e59cc0d-e477-4826-b8b6-d2d68c8592a9
-shapes = [circ_target, circ_comp1]
+shapes = [circ_target, circ_comp1];
 
 # ╔═╡ 8da80446-84d7-44bb-8122-874b4c9514f4
 timestamp(img) = header(img)["DATE-OBS"]
@@ -2705,22 +2710,23 @@ version = "17.4.0+2"
 # ╟─a1cb55ef-a33c-4506-bea4-aa6124026b75
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─5cc14d4f-d156-420c-a404-90c541217d83
-# ╟─c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
-# ╟─86e53a41-ab0d-4d9f-8a80-855949847ba2
-# ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
-# ╟─1df329a0-629a-4527-8e5d-1dbac9ed8497
-# ╟─d6bba196-213e-4c90-8d8e-f2ffc8108da6
-# ╠═1fe59945-8bce-44f3-b548-9646c2ce6bda
-# ╟─73e16c0e-873c-46a3-a0fd-d7ed5405ed7b
-# ╠═f3683998-543c-4bc4-8b73-fc1de6a6a955
-# ╠═bdc24b15-d14a-422c-a7aa-5335547fa53c
-# ╠═03d38a82-4c31-4f3a-9afe-d1caead5e8af
-# ╠═916b8558-b49c-40b6-b9d3-9915d4fe75f0
 # ╠═f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
 # ╠═3c015eef-20fe-419b-a2cf-6fefa505b1af
 # ╠═954c7918-7dd1-4967-a67b-7856f00dc498
 # ╠═59fd63bd-5df1-4a45-8505-f2b8c740e488
 # ╠═2e59cc0d-e477-4826-b8b6-d2d68c8592a9
+# ╟─c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
+# ╟─86e53a41-ab0d-4d9f-8a80-855949847ba2
+# ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
+# ╟─1df329a0-629a-4527-8e5d-1dbac9ed8497
+# ╠═1fe59945-8bce-44f3-b548-9646c2ce6bda
+# ╟─d6bba196-213e-4c90-8d8e-f2ffc8108da6
+# ╟─e7ad4e24-5dc9-4713-836a-be001304e45c
+# ╟─73e16c0e-873c-46a3-a0fd-d7ed5405ed7b
+# ╠═f3683998-543c-4bc4-8b73-fc1de6a6a955
+# ╟─03d38a82-4c31-4f3a-9afe-d1caead5e8af
+# ╟─bdc24b15-d14a-422c-a7aa-5335547fa53c
+# ╠═916b8558-b49c-40b6-b9d3-9915d4fe75f0
 # ╠═b944bc98-ff4b-4851-89ea-1ee4e3191759
 # ╟─3d77a38f-1e2f-40a7-bfec-90acf382f042
 # ╠═36db58d8-23be-461a-ac75-998c8ad43068
