@@ -33,7 +33,7 @@ begin
 	using PythonCall, CondaPkg
 	CondaPkg.add_pip("astroalign")
 	CondaPkg.add("numpy"; version="<2")
-end;
+end
 
 # ╔═╡ d7f0393d-e2fa-44ea-a812-8f85820e661e
 md"""
@@ -291,6 +291,7 @@ function align(img2, img1)
 		to_py(img2),
 		to_py(img1);
 		detection_sigma = 3.0,
+		# max_control_points = 7,
 	)
 	return shareheader(img2, PyArray(registered_image))
 end
@@ -298,12 +299,13 @@ end
 # ╔═╡ 8161347d-e584-4ed2-ab80-55ae56ca8755
 function align_frames(imgs)
 	movs = []
-	push!(movs, first(imgs))
-	mov_old = first(movs)
+	fixed = first(imgs)
+	push!(movs, fixed)
+	# mov_old = first(movs)
 	for i in 2:length(imgs)
-		mov_new = align(imgs[i], mov_old)
+		mov_new = align(imgs[i], fixed)
 		push!(movs, mov_new)
-		mov_old = mov_new
+		# mov_old = mov_new
 	end
 	
 	return movs
@@ -343,6 +345,22 @@ let
 	)
 	plot(sc, l)
 end
+
+# ╔═╡ a33916f7-c223-42e3-9c88-19fef724b20c
+transf, (source_list, target_list) = let
+	target = imgs_sci[1] |> to_py
+	source = imgs_sci[2] |> to_py
+	aa.find_transform(source, target; detection_sigma=3.0)
+end;
+
+# ╔═╡ cdcb6aea-ea89-4d9f-aaec-2b0f9dd516d7
+source_list
+
+# ╔═╡ 00b8aadb-0304-4024-9107-b7f8226f60cc
+target_list
+
+# ╔═╡ 5d91e1e2-4a6b-4276-9722-79a51b480fe7
+transf.rotation
 
 # ╔═╡ 43eb7424-5861-46be-b670-dcec6125d963
 md"""
@@ -415,9 +433,6 @@ function plot_img(i, img; restrict=true)
 	plot(hm, l)
 end
 
-# ╔═╡ b49df71d-c470-466e-b845-8a004a3c6cd3
-plot_img(frame_i, imgs_sci[frame_i])
-
 # ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # Julia photometry aperture object --> plotly shape object
 function circ(ap; line_color=:lightgreen)
@@ -430,6 +445,28 @@ function circ(ap; line_color=:lightgreen)
 	)
 end
 
+# ╔═╡ 0256ba9c-2f20-479b-8221-06d3b4969cfe
+let
+	p = plot_img(frame_i, imgs_sci_aligned[frame_i_aligned])
+
+	shapes = [
+		circ(CircularAperture(y, x, 14))
+		for (x, y) in eachrow(PyArray(source_list; copy=false))
+	]
+	
+	relayout!(p; shapes)
+	
+	p
+end
+
+# ╔═╡ c5c30567-6681-4a31-be41-6ab26b9ade89
+let
+	shapes = [
+		circ(CircularAperture(x, y, 14))
+		for (x, y) in eachrow(PyArray(source_list; copy=false))
+	]
+end
+
 # ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 circ_target = circ(ap_target);
 
@@ -439,9 +476,9 @@ circ_comp1 = circ(ap_comp1; line_color=:orange);
 # ╔═╡ fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
 shapes = [circ_target, circ_comp1]
 
-# ╔═╡ 0256ba9c-2f20-479b-8221-06d3b4969cfe
+# ╔═╡ b49df71d-c470-466e-b845-8a004a3c6cd3
 let
-	p = plot_img(frame_i, imgs_sci_aligned[frame_i_aligned])
+	p = plot_img(frame_i, imgs_sci[frame_i])
 	relayout!(p; shapes)
 	p
 end
@@ -2104,10 +2141,17 @@ version = "17.4.0+2"
 # ╟─41b95ea0-0564-465f-a7b2-ba9bb3cda8cc
 # ╟─67125878-7c40-4599-9555-969d05908cd7
 # ╠═02f37957-9bc9-426a-ad54-fc7be5ceaa2f
+# ╠═8161347d-e584-4ed2-ab80-55ae56ca8755
+# ╠═1ebac097-da9b-486d-a819-29179c19f1ef
 # ╟─60e9ac2c-728b-41ba-8863-8042daac4a16
 # ╟─0bbb5bca-4fab-41f1-89ee-369f3dafff60
 # ╠═0256ba9c-2f20-479b-8221-06d3b4969cfe
+# ╠═c5c30567-6681-4a31-be41-6ab26b9ade89
 # ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
+# ╠═a33916f7-c223-42e3-9c88-19fef724b20c
+# ╠═cdcb6aea-ea89-4d9f-aaec-2b0f9dd516d7
+# ╠═00b8aadb-0304-4024-9107-b7f8226f60cc
+# ╠═5d91e1e2-4a6b-4276-9722-79a51b480fe7
 # ╟─484c9b8d-339f-45c3-a52a-01c5dec1b46d
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
@@ -2138,15 +2182,13 @@ version = "17.4.0+2"
 # ╠═fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
 # ╟─4c3e0b40-dd97-4c9d-a18c-6ad369da589f
 # ╠═cb328028-3137-42f8-9a0e-24f142069f51
-# ╟─8161347d-e584-4ed2-ab80-55ae56ca8755
-# ╟─1ebac097-da9b-486d-a819-29179c19f1ef
 # ╟─8d6845a6-b543-4fe1-b9fc-487cfe34c057
 # ╟─43eb7424-5861-46be-b670-dcec6125d963
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
 # ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
-# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
+# ╠═84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╟─e9eb1a0f-553b-4477-8323-900191d469ee
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╠═c650df98-efe6-40a3-8b7f-8923f511f51f

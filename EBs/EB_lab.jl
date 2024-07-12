@@ -30,8 +30,13 @@ begin
 	using AstroImages: restrict
 	using Dates, Unitful 
 
-	AstroImages.set_cmap!(:cividis);
-end;
+	AstroImages.set_cmap!(:cividis)
+
+	# Python
+	using PythonCall, CondaPkg
+	CondaPkg.add_pip("astroalign")
+	CondaPkg.add("numpy"; version="<2")
+end
 
 # ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
 md"""
@@ -231,33 +236,33 @@ We have a match! Here is the associated header information for our science frame
 # ╔═╡ 7d7cd508-be27-4f52-bc13-91c702450167
 header(img_sci)
 
+# ╔═╡ f6197e8e-3132-4ab5-86d7-32572e337c58
+img_size, img_eltype = size(img_sci), eltype(img_sci)
+
 # ╔═╡ 5abbcbe0-3ee6-4658-9c99-e4567a23e3f6
 md"""
-It looks like this image is $(size(img_sci, 1)) x $(size(img_sci, 2)) pixels, with the ADU counts for each pixel stored as a $(eltype(img_sci)) to reduce memory storage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
+It looks like this image is $(first(img_size)) x $(last(img_size)) pixels, with the ADU counts for each pixel stored as a $(img_eltype) to reduce memory storage. Now that we know that we are pointing at the right place in the sky, let's take a look at the quality of our images.
 """
-
-# ╔═╡ f6197e8e-3132-4ab5-86d7-32572e337c58
-size(img_sci), eltype(img_sci)
 
 # ╔═╡ b7d3fb2b-c113-413c-b340-9dfb0a9b78af
 md"""
-### Image calibration
+### A note on image calibration
 
 A critical step in analyzing astronomical data is accounting for sources of noise that may impact our final image. This process is known as calibration, and its purpose is to increase the signal-to-noise ratio of our science images. Here is a nice summary modified from [Practical Astrophotography](https://practicalastrophotography.com/a-brief-guide-to-calibration-frames/) of three of the main sources of noise that we typically try to calibrate for:
 
 !!! note ""
-	**Bias Frames:** "Your camera inherently has a base level of read-out noise as it reads the values of each pixel of the sensor, called bias. When averaged out, basically it’s an inherent gradient to the sensor. Bias Frames are meant to capture this so it can be removed."
+	**Bias frames:** "Your camera inherently has a base level of read-out noise as it reads the values of each pixel of the sensor, called bias. When averaged out, basically it’s an inherent gradient to the sensor. Bias Frames are meant to capture this so it can be removed."
 
-	**Dark Frames:** "When taking a long exposure, the chip will introduce "thermal" noise. Its level is magnified by three things – temperature, exposure time, and ISO. Dark frames are used to subtract this sensor noise from your image and mitigate "hot or cold" pixels. (Some modern sensors automatically calculate dark levels and don't need dark frames). Dark Frames also will calibrate the chip so all pixels give the same value when not exposed to light."
+	**Dark frames:** "When taking a long exposure, the chip will introduce "thermal" noise. Its level is magnified by three things – temperature, exposure time, and ISO. Dark frames are used to subtract this sensor noise from your image and mitigate "hot or cold" pixels. (Some modern sensors automatically calculate dark levels and don't need dark frames). Dark Frames also will calibrate the chip so all pixels give the same value when not exposed to light."
 
-	**Flat Frames:** "I've seen people say flats help with light pollution. NOT TRUE AT ALL. Flat frames allow you to calculate the correction factor for each pixel so they all give the same value when exposed to the same quantity of light for a given optical path. Things like dust motes, lens vignetting consistently reduce the light to a given pixel, flat frames allow you to mathematically remove them to give a smooth evenly illuminated image."
+	**Flat frames:** "I've seen people say flats help with light pollution. NOT TRUE AT ALL. Flat frames allow you to calculate the correction factor for each pixel so they all give the same value when exposed to the same quantity of light for a given optical path. Things like dust motes, lens vignetting consistently reduce the light to a given pixel, flat frames allow you to mathematically remove them to give a smooth evenly illuminated image."
 """
 
 # ╔═╡ 2b32512b-63df-4a48-8e72-bf20aa75a845
 md"""
-Different flat fielding techniques are being examined by our team, but in general this has not been oberserved to be a significant source of noise in science mode observations.
+Different flat fielding techniques are being examined by our team, but in general this has not been oberserved to be a significant source of noise in science mode observations. In practice, the [sensor calibration](https://help.unistellar.com/hc/en-us/articles/360011333600-Sensor-calibration-Dark-Frame-How-and-Why) step that is required at the end of science observations are set to the same gain and exposure time as your science images. By doing this, the bias frame is automatically built into the dark frames collected during this step, so no separate bias acquisition is needed.
 
-In practice, the [sensor calibration](https://help.unistellar.com/hc/en-us/articles/360011333600-Sensor-calibration-Dark-Frame-How-and-Why) step that is required at the end of science observations are set to the same gain and exposure time as your science images. By doing this, the Bias Frame is automatically built into the Dark Frames collected during this step, so no separate bias acquisition is needed. For the rest of this notebook, we will be using the dark-subtracted science frames (`imgs_sci`).
+We find that the contribution from dark noise does not impact our observations significantly, so we have excluded this calibration step for simplicity. Stay tuned for a future calibration notebook though where we will explore these procedures in more detail!
 """
 
 # ╔═╡ 035fcecb-f998-4644-9650-6aeaced3e41f
@@ -288,6 +293,74 @@ md"""
 Uh-oh, we see that there is some serious [field rotation](https://calgary.rasc.ca/field_rotation.htm) going on, and also some drift that needed to be manually corrected partway through the observation. This is a normal effect of taking long duration observations on an alt-az mount, like the ones used for Unistellar smart telescope, and it is fairly easy to handle as we will see in the next section.
 """
 
+# ╔═╡ 1df329a0-629a-4527-8e5d-1dbac9ed8497
+md"""
+# Image alignment
+"""
+
+# ╔═╡ f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
+# Accepts (x_center, y_center, radius)
+ap_target = CircularAperture(1029, 782, 24);
+
+# ╔═╡ 954c7918-7dd1-4967-a67b-7856f00dc498
+# ap_comp1 = CircularAperture(147, 577, 14);
+
+# ╔═╡ 59fd63bd-5df1-4a45-8505-f2b8c740e488
+# circ_comp1 = circ(ap_comp1; line_color=:orange);
+
+# ╔═╡ b944bc98-ff4b-4851-89ea-1ee4e3191759
+@py begin
+	import numpy as np
+	import astroalign as aa
+end
+
+# ╔═╡ 3d77a38f-1e2f-40a7-bfec-90acf382f042
+md"""
+### Python helper functions
+"""
+
+# ╔═╡ 36db58d8-23be-461a-ac75-998c8ad43068
+function to_py(img)
+	arr = np.zeros_like(img)
+	PyArray(arr; copy=false) .= img
+	return arr
+end
+
+# ╔═╡ 03d38a82-4c31-4f3a-9afe-d1caead5e8af
+# Align img2 onto img1
+function align(img2, img1)
+	registered_image, footprint = aa.register(
+		to_py(img2),
+		to_py(img1);
+		min_area = 25,
+		detection_sigma = 2,
+	)
+	return shareheader(img2, PyArray(registered_image))
+end
+
+# ╔═╡ bdc24b15-d14a-422c-a7aa-5335547fa53c
+function align_frames(imgs)
+	movs = []
+	fixed = first(imgs)
+	push!(movs, fixed)
+	# mov_old = first(movs)
+	for i in 2:length(imgs)
+		mov_new = align(imgs[i], fixed)
+		push!(movs, mov_new)
+		# mov_old = mov_new
+	end
+	
+	return movs
+end
+
+# ╔═╡ 1fe59945-8bce-44f3-b548-9646c2ce6bda
+imgs_sci_aligned = align_frames(imgs_sci);
+
+# ╔═╡ 73e16c0e-873c-46a3-a0fd-d7ed5405ed7b
+md"""
+Frame number: $(frame_slider_aligned = @bind frame_i_aligned Slider(1:length(imgs_sci_aligned); show_value=true))
+"""
+
 # ╔═╡ d6d19588-9fa5-4b3e-987a-082345357fe7
 md"""
 ## Aperture photometry 🔾
@@ -298,94 +371,6 @@ Now that we have some science frames to work with, the next step is to begin cou
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
 """
 
-# ╔═╡ ba008023-7a79-45ea-b547-23071a12a2f5
-md"""
-Before applying this scheme to all of our frames, let's test it out on a random image (`img_test`) selected from our time series:
-"""
-
-# ╔═╡ fbaac862-4b2d-4f7c-ada3-8e124882d539
-msg_background_est = md"""
-For more on the specific estimation procedures, we highlight this modified section from the [Photometry.jl documentation](https://juliaastro.org/dev/modules/AstroImages/guide/photometry/#Background-Estimation):
-
-
-> Estimating backgrounds is an important step in performing photometry. Ideally, we could perfectly describe the background with a scalar value or with some distribution. Unfortunately, it's impossible for us to precisely separate the background and foreground signals. Here, we use mixture of robust statistical estimators and meshing to let us get the spatially varying background from an astronomical photo. Let's show an example Now let's try and estimate the background using estimate_background. First, we'll sigma-clip to try and remove the signals from the stars. Then, the background is broken down into boxes. Within each box, the given statistical estimators get the background value and RMS. By default, we use [`SourceExtractorBackground`](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) and [`StdRMS`](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.StdRMS). This creates a low-resolution image, which we then need to resize. We can accomplish this using an interpolator, by default a cubic-spline interpolator via ZoomInterpolator. The end result is a smooth estimate of the spatially varying background and background RMS.
-""";
-
-# ╔═╡ e20e02e7-f744-4694-9499-1866ebd617fc
-md"""
-### Background estimation
-
-First, we estimate the background flux (`bkg_f`) using one of Photometry.jl's [standard estimator algorithms](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) to help us separate out the background and foreground signals.
-
-To broadly summarize this estimation process, we:
-
-1. [Sigma clip](https://www.gnu.org/software/gnuastro/manual/html_node/Sigma-clipping.html) our image to try remove bright sources (i.e., outliers).
-
-2. Place a mesh grid over the subtracted image to split it into smaller boxes with size determined by `box_size`.
-
-3. Smooth out the remaining image by taking the "average" flux value within each box. "Average" is in quotes because this can be any statistical estimator we choose. By default, this is the [`SourceExtractorBackground`](https://juliaastro.org/Photometry.jl/stable/background/estimators/#Photometry.Background.SourceExtractorBackground) estimator defined in [Photometry.jl](https://juliaastro.org/Photometry.jl/stable/).
-
-4. Interpolate the smaller, averaged image obtained in the previous step back up to its original size to use as our smooth estimate for the background.
-
-
-$(msg(msg_background_est))
-"""
-
-# ╔═╡ fbc0be60-2a3b-4938-b262-7df938e59333
-md"""
-Here we have decided to use a mesh (box) size equal to the greatest common denominator between the dimensions of the image so that a fairly course, but whole number of them will fit nicely over our image. This will allow us to avoid needing to deal with boundary conditions where only part of a cell would fit at the edge of the image. Next, we subtract this background estimate off from our image to produce `subt` below. In practice, this just helps reduce the number of potential sources that might get picked up by our source extraction algorithm.
-"""
-
-# ╔═╡ 5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
-md"""
-### Source extraction
-
-Now that we have an estimate for the background flux in our image, we can pass both to `extract_sources` to detect our sources. This routine uses the [`PeakMesh`](https://juliaastro.org/Photometry.jl/stable/detection/algs/#Photometry.Detection.PeakMesh) source detection algorithm, which grids our image and then picks sources that are above a certain threshold in each box.
-
-By default, each box is 3 x 3  pixels. If the source in the center of this odd-sided box is above `error * nsigma`, then it is identified as a source. For this lab, we have decided to use the master dark frame as our `error` and the default `nsigma=3.0` above the background estimate subtracted science image to define our source criteria. Please feel free to experiment with different criteria to see how the different choices can affect our final list of extracted sources.
-"""
-
-# ╔═╡ 823f9107-130f-4333-9f90-307dad4eb99f
-img_dark = load("data/TRANSIT/ut20240325/dark/mgcc3f_2024-03-25T07-10-03.022_DARKFRAMEMEAN.fits");
-
-# ╔═╡ 0647db36-87b5-461f-94c3-5d6aabd49b09
-pixel_left, pixel_right = 700, 1_200;
-
-# ╔═╡ 05b8c987-0b0c-4a18-9d07-fc9faf1abda0
-md"""
-But which one of these potential candidates is our target star? Based on the visualization of our target's motion earlier, the target looks to travel from about pixel $(pixel_left) to $(pixel_right) in the X direction, so let's filter out all of the targets that don't fit this criteria (and also just take the brightest one in case there are still multiple candidates left):
-"""
-
-# ╔═╡ 9517c714-8214-47be-beb0-80f8e8fa483a
-msg(md"""
-!!! tip ""
-
-	`do` blocks are handy ways for breaking up long lines. For example, the above could equivalently be written like this:
-	
-	```julia
-	sources = let
-		candidates = filter(source -> pixel_left ≤ source.y ≤ pixel_right, sources_all)
-	
-		# Break any ties
-		max_val = maximum(candidates.value)
-		filter(candidate -> candidate.value == max_val, candidates)
-	end
-	```
-"""; title=md"What is this `do` syntax?")
-
-# ╔═╡ 52c137a0-9ebe-41f9-bae3-35bc0e7264da
-md"""
-Ok, it looks like there is only one candidate left! Let's place an aperture (`ap`) at this location to see how we did:
-"""
-
-# ╔═╡ 087bb2d6-f2c7-4290-aab7-793e43dbc8e7
-@bind new_img Button("New frame")
-
-# ╔═╡ 91c1c00f-75c7-4c77-9831-b8234cd1ad3d
-md"""
-Alright, it looks like this approach successfully identified our target star! We look next at applying this procedure to all of our frames. Feel free to hit the `New frame` button to verify that this scheme works on other sample science frames.
-"""
-
 # ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 md"""
 ## Putting it all together 🏗️
@@ -394,34 +379,34 @@ Now that we have the building blocks for identifying our source target in place,
 """
 
 # ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
-function get_aps(img, pixel_left, pixel_right, aperture_size)
-	# Clip image
-	clipped = sigma_clip(img, 1, fill=NaN)
+# function get_aps(img, pixel_left, pixel_right, aperture_size)
+# 	# Clip image
+# 	clipped = sigma_clip(img, 1, fill=NaN)
 	
-	# Subtract background
-	bkg_f, bkg_rms_f = estimate_background(clipped, aperture_size)
-	subt = img - bkg_f
+# 	# Subtract background
+# 	bkg_f, bkg_rms_f = estimate_background(clipped, aperture_size)
+# 	subt = img - bkg_f
 	
-	# Extract target source
-	sources_all = extract_sources(PeakMesh(), subt, img_dark, true)
-	candidates = filter(sources_all) do source
-		pixel_left ≤ source.y ≤ pixel_right
-	end
+# 	# Extract target source
+# 	sources_all = extract_sources(PeakMesh(), subt, img_dark, true)
+# 	candidates = filter(sources_all) do source
+# 		pixel_left ≤ source.y ≤ pixel_right
+# 	end
 	
-	max_val = maximum(candidates.value)
-	sources = filter(candidates) do candidate
-		candidate.value == max_val
-	end
+# 	max_val = maximum(candidates.value)
+# 	sources = filter(candidates) do candidate
+# 		candidate.value == max_val
+# 	end
 	
-	# Place aperture
-	aps = CircularAperture.(sources.y, sources.x, aperture_size);
-end
+# 	# Place aperture
+# 	aps = CircularAperture.(sources.y, sources.x, aperture_size);
+# end
 
 # ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
-aps = [
-	get_aps(img, pixel_left, pixel_right, 24) |> first
-	for img in imgs_sci
-];
+# aps = [
+# 	get_aps(img, pixel_left, pixel_right, 24) |> first
+# 	for img in imgs_sci
+# ];
 
 # ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
 md"""
@@ -433,6 +418,13 @@ md"""
 Frame number: $(frame_slider)
 """
 
+# ╔═╡ fbbba3ba-3d51-4b11-8c91-87a56bd6e0ec
+# let
+# 	p = plot_img(frame_i, imgs_sci[frame_i])
+# 	relayout!(p; shapes=get_shapes([aps[frame_i]]))
+# 	p
+# end
+
 # ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
 md"""
 Not bad! Now we can sum up the flux in the target aperture for each frame to create our final light curve:
@@ -443,8 +435,8 @@ begin
 	times = String[]
 	fluxes = Float64[]
 	
-	for (ap, img) in zip(aps, imgs_sci)
-		phot = photometry(ap, img)
+	for img in imgs_sci_aligned
+		phot = photometry(ap_target, img)
 		push!(times, header(img)["DATE-OBS"])
 		push!(fluxes, phot.aperture_sum)
 	end
@@ -971,6 +963,12 @@ function circ(ap; line_color=:lightgreen)
 	)
 end
 
+# ╔═╡ 3c015eef-20fe-419b-a2cf-6fefa505b1af
+circ_target = circ(ap_target);
+
+# ╔═╡ 2e59cc0d-e477-4826-b8b6-d2d68c8592a9
+shapes = [circ_target]
+
 # ╔═╡ 8da80446-84d7-44bb-8122-874b4c9514f4
 timestamp(img) = header(img)["DATE-OBS"]
 
@@ -991,65 +989,31 @@ function plot_img(i, img; restrict=true)
 end
 
 # ╔═╡ 86e53a41-ab0d-4d9f-8a80-855949847ba2
-plot_img(frame_i, imgs_sci[frame_i])
-
-# ╔═╡ 667116b0-2b87-46ca-80aa-51361e8cde27
-begin
-	# Updates this cell every time the button below is pressed
-	new_img
-	rand_frame_i = rand(1:length(imgs_sci))
-	img_test = imgs_sci[rand_frame_i]
-	plot_img(rand_frame_i, img_test)
-end;
-
-# ╔═╡ c8b8ad4b-8445-408f-8245-d73284a85749
-# Step 1
-clipped = sigma_clip(img_test, 1; fill=:clamp)
-
-# ╔═╡ a54f3628-c6b6-4eed-bba0-15c49323d310
-# The size of our mesh in pixels (a square with side length = `box_size`)
-box_size = gcd(size(img_test)...)
-
-# ╔═╡ 7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# Steps 2-4: Estimate background, and its uncertainty
-bkg_f, bkg_rms_f = estimate_background(clipped, box_size)
-
-# ╔═╡ 41f58e00-a538-4b37-b9a7-60333ac063ac
-# Returns list of extracted sources, sorted from strongest to weakest
-# by default
-sources_all = let
-	subt = img_test - bkg_f
-	extract_sources(PeakMesh(), subt, img_dark)
-end
-
-# ╔═╡ 00cd8162-c165-4724-9478-b9f2999c3343
-sources = let
-	candidates = filter(sources_all) do source
-		pixel_left ≤ source.y ≤ pixel_right
-	end
-
-	# Break any ties
-	max_val = maximum(candidates.value)
-	filter(candidates) do candidate
-		candidate.value == max_val
-	end
-end
-
-# ╔═╡ 1e67c656-67bd-4619-9fc7-29bc0d1e4085
-# Place an aperture with radius 24 px at the source extracted location for visualization purposes
-ap = CircularAperture.(sources.y, sources.x, 24);
-
-# ╔═╡ 8f0abb7d-4c5e-485d-9037-6b01de4a0e08
-let
-	fig = plot_img(rand_frame_i, img_test)
-	add_shape!(fig, get_shapes(ap)[1])
-	fig
-end
-
-# ╔═╡ fbbba3ba-3d51-4b11-8c91-87a56bd6e0ec
 let
 	p = plot_img(frame_i, imgs_sci[frame_i])
-	relayout!(p; shapes=get_shapes([aps[frame_i]]))
+	
+	relayout!(p; shapes)
+	
+	p
+end
+
+# ╔═╡ f3683998-543c-4bc4-8b73-fc1de6a6a955
+let
+	p = plot_img(frame_i_aligned, imgs_sci_aligned[frame_i_aligned])
+
+# 	transf, (source_list, target_list) = let
+# 	target = imgs_sci[1] |> to_py
+# 	source = imgs_sci[frame_i_aligned] |> to_py
+# 	aa.find_transform(source, target; detection_sigma=4.0)
+# end;
+
+# 	shapes = [
+# 		circ(CircularAperture(y, x, 14))
+# 		for (x, y) in eachrow(PyArray(source_list; copy=false))
+# 	]
+
+	relayout!(p; shapes)
+	
 	p
 end
 
@@ -1058,6 +1022,9 @@ md"""
 ### Packages
 """
 
+# ╔═╡ 0b2dd92f-e02b-4a2d-88e2-6fc20bea8483
+
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1065,6 +1032,7 @@ AstroAngles = "5c4adb95-c1fc-4c53-b4ea-2a94080c53d2"
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
+CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
@@ -1073,6 +1041,7 @@ JSONTables = "b9914132-a727-11e9-1322-f18e41205b0b"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 TableScraper = "3d876f86-fca9-45cb-9864-7207416dc431"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
@@ -1081,6 +1050,7 @@ AstroAngles = "~0.1.3"
 AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
 CommonMark = "~0.8.12"
+CondaPkg = "~0.2.22"
 DataFramesMeta = "~0.15.2"
 HTTP = "~1.10.6"
 ImageCore = "~0.9.4"
@@ -1088,6 +1058,7 @@ JSONTables = "~1.0.3"
 Photometry = "~0.9.0"
 PlutoPlotly = "~0.4.6"
 PlutoUI = "~0.7.59"
+PythonCall = "~0.9.20"
 TableScraper = "~0.1.4"
 Unitful = "~1.20.0"
 """
@@ -1098,7 +1069,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "7d82a0185dcdfabcc0c976b20d4d55661591e368"
+project_hash = "4dd6ae97d4fb58576262ffb335c479cab33c0052"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1406,6 +1377,12 @@ deps = ["Serialization", "Sockets"]
 git-tree-sha1 = "6cbbd4d241d7e6579ab354737f4dd95ca43946e1"
 uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
 version = "2.4.1"
+
+[[deps.CondaPkg]]
+deps = ["JSON3", "Markdown", "MicroMamba", "Pidfile", "Pkg", "Preferences", "TOML"]
+git-tree-sha1 = "e81c4263c7ef4eca4d645ef612814d72e9255b41"
+uuid = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
+version = "0.2.22"
 
 [[deps.ConstructionBase]]
 deps = ["LinearAlgebra"]
@@ -2008,6 +1985,12 @@ git-tree-sha1 = "44d32db644e84c75dab479f1bc15ee76a1a3618f"
 uuid = "128add7d-3638-4c79-886c-908ea0c25c34"
 version = "0.2.0"
 
+[[deps.MicroMamba]]
+deps = ["Pkg", "Scratch", "micromamba_jll"]
+git-tree-sha1 = "011cab361eae7bcd7d278f0a7a00ff9c69000c51"
+uuid = "0b3b1443-0f03-428d-bdfb-f27f9c1191ea"
+version = "0.1.14"
+
 [[deps.Missings]]
 deps = ["DataAPI"]
 git-tree-sha1 = "ec4f7fbeab05d7747bdf98eb74d130a2a2ed298d"
@@ -2145,6 +2128,12 @@ git-tree-sha1 = "47b496ddd23ef2c2a064a8a344025c264492f94a"
 uuid = "af68cb61-81ac-52ed-8703-edc140936be4"
 version = "0.9.0"
 
+[[deps.Pidfile]]
+deps = ["FileWatching", "Test"]
+git-tree-sha1 = "2d8aaf8ee10df53d0dfb9b8ee44ae7c04ced2b03"
+uuid = "fa939f87-e72e-5be4-a000-7fc836dbe307"
+version = "1.3.0"
+
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
@@ -2225,6 +2214,12 @@ deps = ["Distributed", "Printf"]
 git-tree-sha1 = "763a8ceb07833dd51bb9e3bbca372de32c0605ad"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.10.0"
+
+[[deps.PythonCall]]
+deps = ["CondaPkg", "Dates", "Libdl", "MacroTools", "Markdown", "Pkg", "REPL", "Requires", "Serialization", "Tables", "UnsafePointers"]
+git-tree-sha1 = "8de9e6cbabc9bcad4f325bd9f2f1e83361e5037d"
+uuid = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+version = "0.9.20"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -2320,6 +2315,12 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "2803cab51702db743f3fda07dd1745aadfbf43bd"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.5.0"
+
+[[deps.Scratch]]
+deps = ["Dates"]
+git-tree-sha1 = "3bac05bc7e74a75fd9cba4295cde4045d9fe2386"
+uuid = "6c6a2e73-6563-6170-7368-637461726353"
+version = "1.2.1"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
@@ -2599,6 +2600,11 @@ weakdeps = ["ConstructionBase", "InverseFunctions"]
     ConstructionBaseUnitfulExt = "ConstructionBase"
     InverseFunctionsUnitfulExt = "InverseFunctions"
 
+[[deps.UnsafePointers]]
+git-tree-sha1 = "c81331b3b2e60a982be57c046ec91f599ede674a"
+uuid = "e17b2a0c-0bdf-430a-bd0c-3a23cae4ff39"
+version = "1.0.0"
+
 [[deps.WCS]]
 deps = ["ConstructionBase", "WCS_jll"]
 git-tree-sha1 = "858cf2784ff27d908df7a3fe22fcd5fbf02f508b"
@@ -2645,6 +2651,12 @@ git-tree-sha1 = "d4f63314c8aa1e48cd22aa0c17ed76cd1ae48c3c"
 uuid = "075b6546-f08a-558a-be8f-8157d0f608a5"
 version = "1.10.3+0"
 
+[[deps.micromamba_jll]]
+deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
+git-tree-sha1 = "b4a5a3943078f9fd11ae0b5ab1bdbf7718617945"
+uuid = "f8abcde7-e9b7-5caa-b8af-a437887ae8e4"
+version = "1.5.8+0"
+
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
@@ -2679,7 +2691,7 @@ version = "17.4.0+2"
 # ╠═335a1a12-379a-4e0d-a3de-788369ae3818
 # ╟─a04886d9-471a-40ec-9f0b-65ffe89932cf
 # ╠═8a78029c-ddf5-4ada-b6d3-a9a649bdbae8
-# ╠═cdf14fe8-6b27-44eb-b789-6cf072f4d184
+# ╟─cdf14fe8-6b27-44eb-b789-6cf072f4d184
 # ╟─a38466b5-c7fb-4600-904b-b7ddd7afd272
 # ╠═2b8c75f6-c148-4c70-be6a-c1a4b95d5849
 # ╠═dbe812e2-a795-4caa-842d-07da5eabcade
@@ -2698,27 +2710,21 @@ version = "17.4.0+2"
 # ╟─c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
 # ╠═86e53a41-ab0d-4d9f-8a80-855949847ba2
 # ╟─7d54fd96-b268-4964-929c-d62c7d89b4b2
+# ╠═1df329a0-629a-4527-8e5d-1dbac9ed8497
+# ╠═1fe59945-8bce-44f3-b548-9646c2ce6bda
+# ╟─73e16c0e-873c-46a3-a0fd-d7ed5405ed7b
+# ╠═f3683998-543c-4bc4-8b73-fc1de6a6a955
+# ╠═bdc24b15-d14a-422c-a7aa-5335547fa53c
+# ╠═03d38a82-4c31-4f3a-9afe-d1caead5e8af
+# ╠═f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
+# ╠═3c015eef-20fe-419b-a2cf-6fefa505b1af
+# ╠═954c7918-7dd1-4967-a67b-7856f00dc498
+# ╠═59fd63bd-5df1-4a45-8505-f2b8c740e488
+# ╠═2e59cc0d-e477-4826-b8b6-d2d68c8592a9
+# ╠═b944bc98-ff4b-4851-89ea-1ee4e3191759
+# ╟─3d77a38f-1e2f-40a7-bfec-90acf382f042
+# ╠═36db58d8-23be-461a-ac75-998c8ad43068
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
-# ╟─e20e02e7-f744-4694-9499-1866ebd617fc
-# ╟─ba008023-7a79-45ea-b547-23071a12a2f5
-# ╠═667116b0-2b87-46ca-80aa-51361e8cde27
-# ╟─fbaac862-4b2d-4f7c-ada3-8e124882d539
-# ╠═c8b8ad4b-8445-408f-8245-d73284a85749
-# ╠═a54f3628-c6b6-4eed-bba0-15c49323d310
-# ╠═7a6e23cf-aba4-4bb6-9a5e-8670e9a17b51
-# ╟─fbc0be60-2a3b-4938-b262-7df938e59333
-# ╟─5bdb5e4d-1dbb-4c42-b868-1e31f78f833d
-# ╠═41f58e00-a538-4b37-b9a7-60333ac063ac
-# ╠═823f9107-130f-4333-9f90-307dad4eb99f
-# ╟─05b8c987-0b0c-4a18-9d07-fc9faf1abda0
-# ╠═0647db36-87b5-461f-94c3-5d6aabd49b09
-# ╠═00cd8162-c165-4724-9478-b9f2999c3343
-# ╟─9517c714-8214-47be-beb0-80f8e8fa483a
-# ╟─52c137a0-9ebe-41f9-bae3-35bc0e7264da
-# ╠═1e67c656-67bd-4619-9fc7-29bc0d1e4085
-# ╟─087bb2d6-f2c7-4290-aab7-793e43dbc8e7
-# ╟─8f0abb7d-4c5e-485d-9037-6b01de4a0e08
-# ╟─91c1c00f-75c7-4c77-9831-b8234cd1ad3d
 # ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
 # ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
 # ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
@@ -2780,6 +2786,7 @@ version = "17.4.0+2"
 # ╟─8da80446-84d7-44bb-8122-874b4c9514f4
 # ╠═24256769-2274-4b78-8445-88ec4536c407
 # ╟─5b079ce8-3b28-4fe7-8df2-f576c2c948f5
+# ╠═0b2dd92f-e02b-4a2d-88e2-6fc20bea8483
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
