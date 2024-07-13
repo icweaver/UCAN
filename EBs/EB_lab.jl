@@ -287,6 +287,17 @@ md"""
 	To better show the frame to frame differences, we also added some sample target and comparison apertures (in green and orange, respectively) centered on the first frame in our image series.
 """
 
+# ╔═╡ 916b8558-b49c-40b6-b9d3-9915d4fe75f0
+ap_radius = 18
+
+# ╔═╡ f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
+# Aperture object that will be used for photometry
+# (x_center, y_center, radius)
+ap_target = CircularAperture(1029, 782, ap_radius);
+
+# ╔═╡ 954c7918-7dd1-4967-a67b-7856f00dc498
+ap_comp1 = CircularAperture(1165, 950, ap_radius);
+
 # ╔═╡ c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
 md"""
 Frame number: $(frame_slider = @bind frame_i Slider(1:length(imgs_sci); show_value=true))
@@ -317,26 +328,21 @@ md"""
 Let's see how our aligned frames look below:
 """
 
-# ╔═╡ 916b8558-b49c-40b6-b9d3-9915d4fe75f0
-ap_radius = 18
+# ╔═╡ 102ce649-e560-470e-afa5-699db577e148
+md"""
+Nice! The rotation looks to have been successfuly transformed out. We turn next to computing the photometry for our aligned series of frames.
+"""
 
-# ╔═╡ f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
-# Accepts (x_center, y_center, radius)
-ap_target = CircularAperture(1029, 782, ap_radius);
-
-# ╔═╡ 954c7918-7dd1-4967-a67b-7856f00dc498
-ap_comp1 = CircularAperture(1165, 950, ap_radius);
+# ╔═╡ 3d77a38f-1e2f-40a7-bfec-90acf382f042
+md"""
+#### Python helper functions
+"""
 
 # ╔═╡ b944bc98-ff4b-4851-89ea-1ee4e3191759
 @py begin
 	import numpy as np
 	import astroalign as aa
 end
-
-# ╔═╡ 3d77a38f-1e2f-40a7-bfec-90acf382f042
-md"""
-### Python helper functions
-"""
 
 # ╔═╡ 36db58d8-23be-461a-ac75-998c8ad43068
 # Workaround. Apparently just wrapping img in a numpy array fails somewhere
@@ -386,76 +392,39 @@ Now that we have some science frames to work with, the next step is to begin cou
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
 """
 
-# ╔═╡ 19747ca2-c9a7-4960-b5f0-04f3d82b6caf
-md"""
-## Putting it all together 🏗️
+# ╔═╡ 381d0147-264b-46f6-82ab-8c840c50c7d1
+aps = [ap_target, ap_comp1]
 
-Now that we have the building blocks for identifying our source target in place, we wrap them into a function that we can call on each of our frames:
-"""
-
-# ╔═╡ aa43cae9-cb94-459e-8b08-e0dcd36f2e48
-# function get_aps(img, pixel_left, pixel_right, aperture_size)
-# 	# Clip image
-# 	clipped = sigma_clip(img, 1, fill=NaN)
+# ╔═╡ 79c924a7-f915-483d-aee6-94e749d3b004
+aperture_sums = map(imgs_sci_aligned) do img
+	# Returns (x_center, y_center, aperture_sum)
+	# for each aperture
+	p = photometry(aps, img)
 	
-# 	# Subtract background
-# 	bkg_f, bkg_rms_f = estimate_background(clipped, aperture_size)
-# 	subt = img - bkg_f
-	
-# 	# Extract target source
-# 	sources_all = extract_sources(PeakMesh(), subt, img_dark, true)
-# 	candidates = filter(sources_all) do source
-# 		pixel_left ≤ source.y ≤ pixel_right
-# 	end
-	
-# 	max_val = maximum(candidates.value)
-# 	sources = filter(candidates) do candidate
-# 		candidate.value == max_val
-# 	end
-	
-# 	# Place aperture
-# 	aps = CircularAperture.(sources.y, sources.x, aperture_size);
-# end
-
-# ╔═╡ b4fb3061-5551-4af2-925b-711e383c9bd7
-# aps = [
-# 	get_aps(img, pixel_left, pixel_right, 24) |> first
-# 	for img in imgs_sci
-# ];
-
-# ╔═╡ bd10f1c9-4b0d-4a30-8917-016f22582d06
-md"""
-Let's place the apertures onto our visualizer from earlier to double check how we did:
-"""
-
-# ╔═╡ 75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-md"""
-Frame number: $(frame_slider)
-"""
-
-# ╔═╡ fbbba3ba-3d51-4b11-8c91-87a56bd6e0ec
-# let
-# 	p = plot_img(frame_i, imgs_sci[frame_i])
-# 	relayout!(p; shapes=get_shapes([aps[frame_i]]))
-# 	p
-# end
-
-# ╔═╡ 151f0244-7ac1-4cf2-8492-96a12e31b4d6
-md"""
-Not bad! Now we can sum up the flux in the target aperture for each frame to create our final light curve:
-"""
-
-# ╔═╡ 050b8516-b375-4f1f-906f-6362034b6564
-begin
-	times = String[]
-	fluxes = Float64[]
-	
-	for img in imgs_sci_aligned
-		phot = photometry(ap_target, img)
-		push!(times, header(img)["DATE-OBS"])
-		push!(fluxes, phot.aperture_sum)
-	end
+	# Just store the aperture sum for each frame
+	p.aperture_sum
 end
+
+# ╔═╡ 0d07e670-4ddb-41ce-ac2c-60991a52ded4
+md"""
+We now have a vector of aperture sums, one row per frame, one set of aperture sums per frame in the order of our aperture list `aps`. This lends itself naturally to a matrix where each row is a given frame, and each column is an aperture (target, comp1, etc.), so let's convert it to one and view it with its corresponding observation times in a DataFrame:
+"""
+
+# ╔═╡ 96dc5bbe-3284-43a0-8c04-c1bb51ad618b
+df_phot = let
+	# `stack` converts to a Matrix
+	# `:auto` names the columns for us
+	# `copycols` sets whether we want a view or copy of the source matrix 
+	df = DataFrame(stack(aperture_sums; dims=1), :auto; copycols=false)
+	
+	# Place the observation time in the first column
+	insertcols!(df, 1, :t => df_sci.:"DATE-OBS")
+end
+
+# ╔═╡ 15ad7461-9c40-4755-8f00-14aa3be53e0f
+md"""
+By convention, `t` is our observation time, `x1` is for our target star, and `x2` and up are our comparison stars. We can now visualize the light curve of our target from our photometry table:
+"""
 
 # ╔═╡ 6470b357-4dc6-4b2b-9760-93d64bab13e9
 let
@@ -465,13 +434,10 @@ let
 		title = "W UMa light curve",
 	)
 
-	sc = PlutoPlotly.scatter(; x=times, y=fluxes, mode=:markers)
+	sc = PlutoPlotly.scatter(df_phot; x=:t, y=:x1, mode=:markers)
 	
 	PlutoPlotly.plot(sc, layout)
 end
-
-# ╔═╡ c3a95928-9b53-45d5-b176-d697e1339d52
-
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 md"""
@@ -492,13 +458,6 @@ md"""
 ### Other systematics
 
 Although this was a fairly bright target with a relatively large [signal-to-noise ratio](http://spiff.rit.edu/classes/ast613/lectures/signal/signal_illus.html), its resulting light curve still contains systematics that can be addressed.
-"""
-
-# ╔═╡ 469f4c4a-4f4b-4a48-9811-4fb123c69ef7
-md"""
-#### Comparison stars
-
-Comparison stars are a great way to deal with systematics from our atmosphere if they are available in our field of view. By dividing our target light curve by the light curve from one or multiple of these stars using our same analysis, we can remove much of the noise introduced by atmopsheric turbulence and changes in airmass. How could we generalize our pipeline to handle this use case? What other systematics would we want to account for?
 """
 
 # ╔═╡ c5286692-2610-414d-97b7-ffab0bd485a7
@@ -979,6 +938,7 @@ function circ(ap; line_color=:lightgreen)
 end
 
 # ╔═╡ 3c015eef-20fe-419b-a2cf-6fefa505b1af
+# Corresponding plotly object
 circ_target = circ(ap_target);
 
 # ╔═╡ 59fd63bd-5df1-4a45-8505-f2b8c740e488
@@ -1024,9 +984,6 @@ end
 md"""
 ### Packages
 """
-
-# ╔═╡ 0b2dd92f-e02b-4a2d-88e2-6fc20bea8483
-
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2710,6 +2667,7 @@ version = "17.4.0+2"
 # ╟─a1cb55ef-a33c-4506-bea4-aa6124026b75
 # ╟─6773c197-941e-4de0-b017-ec036fb851bb
 # ╟─5cc14d4f-d156-420c-a404-90c541217d83
+# ╠═916b8558-b49c-40b6-b9d3-9915d4fe75f0
 # ╠═f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
 # ╠═3c015eef-20fe-419b-a2cf-6fefa505b1af
 # ╠═954c7918-7dd1-4967-a67b-7856f00dc498
@@ -2723,28 +2681,23 @@ version = "17.4.0+2"
 # ╟─d6bba196-213e-4c90-8d8e-f2ffc8108da6
 # ╟─e7ad4e24-5dc9-4713-836a-be001304e45c
 # ╟─73e16c0e-873c-46a3-a0fd-d7ed5405ed7b
-# ╠═f3683998-543c-4bc4-8b73-fc1de6a6a955
+# ╟─f3683998-543c-4bc4-8b73-fc1de6a6a955
+# ╟─102ce649-e560-470e-afa5-699db577e148
+# ╟─3d77a38f-1e2f-40a7-bfec-90acf382f042
+# ╠═b944bc98-ff4b-4851-89ea-1ee4e3191759
+# ╟─36db58d8-23be-461a-ac75-998c8ad43068
 # ╟─03d38a82-4c31-4f3a-9afe-d1caead5e8af
 # ╟─bdc24b15-d14a-422c-a7aa-5335547fa53c
-# ╠═916b8558-b49c-40b6-b9d3-9915d4fe75f0
-# ╠═b944bc98-ff4b-4851-89ea-1ee4e3191759
-# ╟─3d77a38f-1e2f-40a7-bfec-90acf382f042
-# ╠═36db58d8-23be-461a-ac75-998c8ad43068
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
-# ╟─19747ca2-c9a7-4960-b5f0-04f3d82b6caf
-# ╠═aa43cae9-cb94-459e-8b08-e0dcd36f2e48
-# ╠═b4fb3061-5551-4af2-925b-711e383c9bd7
-# ╟─bd10f1c9-4b0d-4a30-8917-016f22582d06
-# ╟─75d7dc39-e3e8-43dd-bef9-d162f5df4ae3
-# ╠═fbbba3ba-3d51-4b11-8c91-87a56bd6e0ec
-# ╟─151f0244-7ac1-4cf2-8492-96a12e31b4d6
-# ╠═050b8516-b375-4f1f-906f-6362034b6564
+# ╠═381d0147-264b-46f6-82ab-8c840c50c7d1
+# ╠═79c924a7-f915-483d-aee6-94e749d3b004
+# ╟─0d07e670-4ddb-41ce-ac2c-60991a52ded4
+# ╠═96dc5bbe-3284-43a0-8c04-c1bb51ad618b
+# ╟─15ad7461-9c40-4755-8f00-14aa3be53e0f
 # ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
-# ╟─c3a95928-9b53-45d5-b176-d697e1339d52
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 # ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
-# ╟─469f4c4a-4f4b-4a48-9811-4fb123c69ef7
 # ╟─c5286692-2610-414d-97b7-ffab0bd485a7
 # ╟─4a6a8956-f6e5-433a-a87b-056a5123ffbc
 # ╟─502fe5dd-d55a-450e-9209-60dc05f395dc
@@ -2755,7 +2708,7 @@ version = "17.4.0+2"
 # ╠═399f53c5-b654-4330-9ead-4d795917b03b
 # ╟─c5e95837-fd89-4da2-b480-13f5ed788fb6
 # ╠═edda8d09-ec46-4a0b-b1b2-b1289ee5456e
-# ╠═29197489-441c-440d-9ce2-3dbd17fa53fc
+# ╟─29197489-441c-440d-9ce2-3dbd17fa53fc
 # ╠═f2c89a20-09d5-47f4-8f83-e59477723d95
 # ╟─a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 # ╠═4042bc32-1a14-4408-974d-7405fd8c8ccc
@@ -2787,12 +2740,11 @@ version = "17.4.0+2"
 # ╠═285a56b7-bb3e-4929-a853-2fc69c77bdcb
 # ╠═a984c96d-273e-4d6d-bab8-896f14a79103
 # ╟─21e828e5-00e4-40ce-bff5-60a17439bf44
-# ╠═e35d4be7-366d-4ca5-a89a-5de24e4c6677
-# ╠═a3bcad72-0e6c-43f8-a08d-777a154190d8
+# ╟─e35d4be7-366d-4ca5-a89a-5de24e4c6677
+# ╟─a3bcad72-0e6c-43f8-a08d-777a154190d8
 # ╟─8da80446-84d7-44bb-8122-874b4c9514f4
-# ╠═24256769-2274-4b78-8445-88ec4536c407
+# ╟─24256769-2274-4b78-8445-88ec4536c407
 # ╟─5b079ce8-3b28-4fe7-8df2-f576c2c948f5
-# ╠═0b2dd92f-e02b-4a2d-88e2-6fc20bea8483
 # ╠═6bc5d30d-2051-4249-9f2a-c4354aa49198
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
