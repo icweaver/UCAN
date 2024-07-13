@@ -14,6 +14,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 635efbd3-bed2-4236-9eb2-c816a713990b
+using Statistics
+
 # ╔═╡ 6bc5d30d-2051-4249-9f2a-c4354aa49198
 begin
 	# Notebook UI
@@ -172,7 +175,7 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
-df_sci = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)[1:3, :]
+df_sci = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
@@ -386,7 +389,7 @@ Frame number: $(frame_slider_aligned = @bind frame_i_aligned Slider(1:length(img
 md"""
 ## Aperture photometry 🔾
 
-Now that we have some science frames to work with, the next step is to begin counting the flux coming from our target system so that we can measure it over time. We will use the [Photomtery.jl](https://github.com/JuliaAstro/Photometry.jl) package which is inspired by other tools like astropy's [`photutils`](https://github.com/astropy/photutils) and C's [`SEP`](https://github.com/kbarbary/sep) library to perform source extraction and photometry. 
+Now that we have some science frames to work with, the next step is to begin counting the flux coming from our target system so that we can measure it over time. We will use the [Photomtery.jl](https://github.com/JuliaAstro/Photometry.jl) package which is inspired by other tools like astropy's [`photutils`](https://github.com/astropy/photutils) and C's [`SEP`](https://github.com/kbarbary/sep) library to perform the photometry. 
 
 !!! note
 	More at <https://juliaastro.org/dev/modules/AstroImages/guide/photometry/>
@@ -403,7 +406,7 @@ aperture_sums = map(imgs_sci_aligned) do img
 	
 	# Just store the aperture sum for each frame
 	p.aperture_sum
-end
+end;
 
 # ╔═╡ 0d07e670-4ddb-41ce-ac2c-60991a52ded4
 md"""
@@ -415,14 +418,19 @@ df_phot = let
 	# `stack` converts to a Matrix
 	# `:auto` names the columns for us
 	# `copycols` sets whether we want a view or copy of the source matrix 
-	df = DataFrame(stack(aperture_sums; dims=1), :auto; copycols=false)
+	data = stack(aperture_sums; dims=1)
+	data ./ median(data; dims=1)
+	
+	df = DataFrame(data, :auto; copycols=false)
+
+	@transform! df begin
+		:x1 = :x1 / median(:x1)
+		:x2 = :x2 / median(:x2)
+	end
 	
 	# Place the observation time in the first column
 	insertcols!(df, 1, :t => df_sci.:"DATE-OBS")
 end
-
-# ╔═╡ 0f33ac60-f976-4599-8831-b3e3e621936a
-stack(df_phot)
 
 # ╔═╡ 15ad7461-9c40-4755-8f00-14aa3be53e0f
 md"""
@@ -441,7 +449,7 @@ let
 
 	layout = Layout(
 		xaxis = attr(title="Date (UTC)"),
-		yaxis = attr(title="Aperture sum"),
+		yaxis = attr(title="Relative aperture sum"),
 		title = "W UMa light curve",
 		legend_title_text = "Source",
 	)
@@ -449,6 +457,21 @@ let
 	relayout!(p, layout)
 
 	p
+end
+
+# ╔═╡ 59392770-f59e-4188-a675-89c2f2fc67d9
+let
+	# Switch to long "tidy" format
+	sc = scatter(x=df_phot.t, y=df_phot.x1 ./ df_phot.x2, mode = :markers,)
+
+	layout = Layout(
+		xaxis = attr(title="Date (UTC)"),
+		yaxis = attr(title="Relative aperture sum"),
+		title = "W UMa light curve",
+		legend_title_text = "Source",
+	)
+	
+	plot(sc, layout)
 end
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
@@ -1014,6 +1037,7 @@ Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 TableScraper = "3d876f86-fca9-45cb-9864-7207416dc431"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
@@ -1041,7 +1065,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "4dd6ae97d4fb58576262ffb335c479cab33c0052"
+project_hash = "5dbcb8bfd9af4c83a92fb0d67c08a27001acfd66"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2703,11 +2727,12 @@ version = "17.4.0+2"
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═381d0147-264b-46f6-82ab-8c840c50c7d1
 # ╠═79c924a7-f915-483d-aee6-94e749d3b004
-# ╠═0f33ac60-f976-4599-8831-b3e3e621936a
 # ╟─0d07e670-4ddb-41ce-ac2c-60991a52ded4
 # ╠═96dc5bbe-3284-43a0-8c04-c1bb51ad618b
+# ╠═635efbd3-bed2-4236-9eb2-c816a713990b
 # ╟─15ad7461-9c40-4755-8f00-14aa3be53e0f
-# ╟─6470b357-4dc6-4b2b-9760-93d64bab13e9
+# ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
+# ╠═59392770-f59e-4188-a675-89c2f2fc67d9
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 # ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
