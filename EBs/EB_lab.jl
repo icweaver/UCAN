@@ -291,7 +291,7 @@ md"""
 """
 
 # ╔═╡ 916b8558-b49c-40b6-b9d3-9915d4fe75f0
-ap_radius = 18
+ap_radius = 24
 
 # ╔═╡ f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
 # Aperture object that will be used for photometry
@@ -299,7 +299,7 @@ ap_radius = 18
 ap_target = CircularAperture(1029, 782, ap_radius);
 
 # ╔═╡ 954c7918-7dd1-4967-a67b-7856f00dc498
-ap_comp1 = CircularAperture(1165, 950, ap_radius);
+ap_comp1 = CircularAperture(1409, 999, ap_radius);
 
 # ╔═╡ c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
 md"""
@@ -450,7 +450,7 @@ let
 	layout = Layout(
 		xaxis = attr(title="Date (UTC)"),
 		yaxis = attr(title="Relative aperture sum"),
-		title = "W UMa light curve",
+		title = "Source light curves",
 		legend_title_text = "Source",
 	)
 	
@@ -458,6 +458,11 @@ let
 
 	p
 end
+
+# ╔═╡ 17eb5723-71f4-4344-b1b1-41b894e7582b
+md"""
+And divide by our comparison star:
+"""
 
 # ╔═╡ 59392770-f59e-4188-a675-89c2f2fc67d9
 let
@@ -467,7 +472,7 @@ let
 	layout = Layout(
 		xaxis = attr(title="Date (UTC)"),
 		yaxis = attr(title="Relative aperture sum"),
-		title = "W UMa light curve",
+		title = "W UMa divided light curve",
 		legend_title_text = "Source",
 	)
 	
@@ -2731,8 +2736,9 @@ version = "17.4.0+2"
 # ╠═96dc5bbe-3284-43a0-8c04-c1bb51ad618b
 # ╠═635efbd3-bed2-4236-9eb2-c816a713990b
 # ╟─15ad7461-9c40-4755-8f00-14aa3be53e0f
-# ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
-# ╠═59392770-f59e-4188-a675-89c2f2fc67d9
+# ╟─6470b357-4dc6-4b2b-9760-93d64bab13e9
+# ╟─17eb5723-71f4-4344-b1b1-41b894e7582b
+# ╟─59392770-f59e-4188-a675-89c2f2fc67d9
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 # ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
