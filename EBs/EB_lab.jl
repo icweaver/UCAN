@@ -421,6 +421,9 @@ df_phot = let
 	insertcols!(df, 1, :t => df_sci.:"DATE-OBS")
 end
 
+# ╔═╡ 0f33ac60-f976-4599-8831-b3e3e621936a
+stack(df_phot)
+
 # ╔═╡ 15ad7461-9c40-4755-8f00-14aa3be53e0f
 md"""
 By convention, `t` is our observation time, `x1` is for our target star, and `x2` and up are our comparison stars. We can now visualize the light curve of our target from our photometry table:
@@ -428,15 +431,24 @@ By convention, `t` is our observation time, `x1` is for our target star, and `x2
 
 # ╔═╡ 6470b357-4dc6-4b2b-9760-93d64bab13e9
 let
-	layout = PlutoPlotly.Layout(
-		xaxis = PlutoPlotly.attr(title="Date (UTC)"),
-		yaxis = PlutoPlotly.attr(title="Aperture sum"),
-		title = "W UMa light curve",
+	# Switch to long "tidy" format
+	p = plot(stack(df_phot);
+		x = :t,
+		y = :value,
+		color = :variable,
+		mode = :markers,
 	)
 
-	sc = PlutoPlotly.scatter(df_phot; x=:t, y=:x1, mode=:markers)
+	layout = Layout(
+		xaxis = attr(title="Date (UTC)"),
+		yaxis = attr(title="Aperture sum"),
+		title = "W UMa light curve",
+		legend_title_text = "Source",
+	)
 	
-	PlutoPlotly.plot(sc, layout)
+	relayout!(p, layout)
+
+	p
 end
 
 # ╔═╡ e34ceb7c-1584-41ce-a5b5-3532fac3c03d
@@ -2691,10 +2703,11 @@ version = "17.4.0+2"
 # ╟─d6d19588-9fa5-4b3e-987a-082345357fe7
 # ╠═381d0147-264b-46f6-82ab-8c840c50c7d1
 # ╠═79c924a7-f915-483d-aee6-94e749d3b004
+# ╠═0f33ac60-f976-4599-8831-b3e3e621936a
 # ╟─0d07e670-4ddb-41ce-ac2c-60991a52ded4
 # ╠═96dc5bbe-3284-43a0-8c04-c1bb51ad618b
 # ╟─15ad7461-9c40-4755-8f00-14aa3be53e0f
-# ╠═6470b357-4dc6-4b2b-9760-93d64bab13e9
+# ╟─6470b357-4dc6-4b2b-9760-93d64bab13e9
 # ╟─e34ceb7c-1584-41ce-a5b5-3532fac3c03d
 # ╟─276ff16f-95f1-44eb-971d-db65e8821e59
 # ╟─934b1888-0e5c-4dcb-a637-5c2f813161d4
