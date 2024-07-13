@@ -285,9 +285,9 @@ Before defining this phenomenon, let's first see it in action. Drag the slider b
 
 # ╔═╡ 5cc14d4f-d156-420c-a404-90c541217d83
 md"""
-!!! note "Apertures"
+!!! note "Apertures and comparison stars"
 
-	To better show the frame to frame differences, we also added some sample target and comparison apertures (in green and orange, respectively) centered on the first frame in our image series.
+	To better show the frame to frame differences, we also added some sample target and comparison star aperturess (in green and orange, respectively) centered on the first frame in our image series. We use comparison stars to divide out common systematics like atmospheric turbulence and other changes in seeing conditions so that ideally only the target signal will be left.
 """
 
 # ╔═╡ 916b8558-b49c-40b6-b9d3-9915d4fe75f0
@@ -300,6 +300,9 @@ ap_target = CircularAperture(1029, 782, ap_radius);
 
 # ╔═╡ 954c7918-7dd1-4967-a67b-7856f00dc498
 ap_comp1 = CircularAperture(1409, 999, ap_radius);
+
+# ╔═╡ 59fd63bd-5df1-4a45-8505-f2b8c740e488
+ap_comp2 = CircularAperture(1153, 711, ap_radius);
 
 # ╔═╡ c06e64ef-4085-4bb5-9b8b-2ed244d5dbe8
 md"""
@@ -396,7 +399,7 @@ Now that we have some science frames to work with, the next step is to begin cou
 """
 
 # ╔═╡ 381d0147-264b-46f6-82ab-8c840c50c7d1
-aps = [ap_target, ap_comp1]
+aps = [ap_target, ap_comp1, ap_comp2]
 
 # ╔═╡ 79c924a7-f915-483d-aee6-94e749d3b004
 aperture_sums = map(imgs_sci_aligned) do img
@@ -426,6 +429,7 @@ df_phot = let
 	@transform! df begin
 		:x1 = :x1 / median(:x1)
 		:x2 = :x2 / median(:x2)
+		:x3 = :x3 / median(:x3)
 	end
 	
 	# Place the observation time in the first column
@@ -439,7 +443,7 @@ By convention, `t` is our observation time, `x1` is for our target star, and `x2
 
 # ╔═╡ 6470b357-4dc6-4b2b-9760-93d64bab13e9
 let
-	# Switch to long "tidy" format
+	# Switch to long "tidy" format to use convenient plotting syntax
 	p = plot(stack(df_phot);
 		x = :t,
 		y = :value,
@@ -461,12 +465,11 @@ end
 
 # ╔═╡ 17eb5723-71f4-4344-b1b1-41b894e7582b
 md"""
-And divide by our comparison star:
+And divide by a sample comparison star:
 """
 
 # ╔═╡ 59392770-f59e-4188-a675-89c2f2fc67d9
 let
-	# Switch to long "tidy" format
 	sc = scatter(x=df_phot.t, y=df_phot.x1 ./ df_phot.x2, mode = :markers,)
 
 	layout = Layout(
@@ -977,15 +980,13 @@ function circ(ap; line_color=:lightgreen)
 	)
 end
 
-# ╔═╡ 3c015eef-20fe-419b-a2cf-6fefa505b1af
-# Corresponding plotly object
-circ_target = circ(ap_target);
-
-# ╔═╡ 59fd63bd-5df1-4a45-8505-f2b8c740e488
-circ_comp1 = circ(ap_comp1; line_color=:orange);
-
 # ╔═╡ 2e59cc0d-e477-4826-b8b6-d2d68c8592a9
-shapes = [circ_target, circ_comp1];
+# Convert to plotly objects for plotting
+shapes = [
+	circ(ap_target),
+	circ(ap_comp1; line_color=:orange),
+	circ(ap_comp2; line_color=:orange),
+];
 
 # ╔═╡ 8da80446-84d7-44bb-8122-874b4c9514f4
 timestamp(img) = header(img)["DATE-OBS"]
@@ -2710,7 +2711,6 @@ version = "17.4.0+2"
 # ╟─5cc14d4f-d156-420c-a404-90c541217d83
 # ╠═916b8558-b49c-40b6-b9d3-9915d4fe75f0
 # ╠═f1ed6484-8f6a-4fbf-9a3d-0fe20360ab3b
-# ╠═3c015eef-20fe-419b-a2cf-6fefa505b1af
 # ╠═954c7918-7dd1-4967-a67b-7856f00dc498
 # ╠═59fd63bd-5df1-4a45-8505-f2b8c740e488
 # ╠═2e59cc0d-e477-4826-b8b6-d2d68c8592a9
