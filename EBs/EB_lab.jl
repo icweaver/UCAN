@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.43
+# v0.19.45
 
 using Markdown
 using InteractiveUtils
@@ -465,7 +465,7 @@ end
 
 # ╔═╡ 17eb5723-71f4-4344-b1b1-41b894e7582b
 md"""
-And divide by a sample comparison star:
+And divide by a sample comparison star  (the first one):
 """
 
 # ╔═╡ 59392770-f59e-4188-a675-89c2f2fc67d9

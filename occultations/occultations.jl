@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.43
+# v0.19.45
 
 using Markdown
 using InteractiveUtils
@@ -51,9 +51,27 @@ Here's what we got to work with:
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
-	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)[150:250, :]
+	df = fitscollection("data/mgcc_this_one"; abspath=false)[1800:2050, :]
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end; # Semicolon hides automatic output
+
+# ╔═╡ ce7d00a8-1843-4ecd-9390-c9354adc5996
+df_sci.:"DATE-OBS"[1]
+
+# ╔═╡ 84ba3c5e-e529-43cf-bf6a-1ae160e169d0
+df_sci |> nrow
+
+# ╔═╡ d2e927f8-94f3-41cc-8a11-fda7bc78e442
+# df_sci = let
+# 	df = fitscollection("data/20240717T080002_607_aingnq/"; abspath=false)[begin:50:end, :]
+# 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
+# end; # Semicolon hides automatic output
+
+# ╔═╡ 2f81a3b6-c16b-40ba-a864-ea530e44d318
+yee = fitscollection("data/mgcc_this_one"; abspath=false)
+
+# ╔═╡ b6d33648-5117-4f64-813f-f7947ee2aadd
+yee."DATE-OBS"[1900:1950]
 
 # ╔═╡ 23a4ed9c-f75c-4fb3-ae34-035ca943fc94
 md"""
@@ -84,6 +102,18 @@ imgs_sci = [load(f) for f in df_sci.path];
 # ╔═╡ 355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 @bind frame_i Slider(1:length(imgs_sci); show_value=true)
 
+# ╔═╡ 2b2e9f13-651f-4f3c-9ca9-103f6b2df514
+imgs_sci[1][:, reverse(begin:end)] #|> imview #|> permutedims
+
+# ╔═╡ 49d653e6-752c-4a0f-a88a-cc536a5c3ac9
+df_sci.path[1]
+
+# ╔═╡ f5ba2f6a-a422-4327-a825-3ce33f6cb70b
+# let
+# 	img = load(fitscollection("data/fw67hf/20240717T080000_918/"; abspath=false)[begin, :].path)
+# 	reverse(img)
+# end
+
 # ╔═╡ c7c9966e-d1f7-4a29-a53c-662794d06d74
 md"""
 !!! tip "Plotting aside"
@@ -101,15 +131,47 @@ There's definitely some wiggling going on due to our alt-az tracking. If we were
 
 # ╔═╡ 67125878-7c40-4599-9555-969d05908cd7
 md"""
-## Frame alignment
+## Frame alignment 📐
 
 To accomplish this, we will just align on asterisms instead! There is a ready-made python package for this ([`astroalign`](https://astroalign.quatrope.org/en/latest/)), which we can hook into with [PythonCall.jl](https://juliapy.github.io/PythonCall.jl/stable/):
 """
+
+# ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
+# Accepts (x_center, y_center, radius)
+ap_target = CircularAperture(711, 301, 11);
+
+# ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
+ap_comp1 = CircularAperture(661, 443, 11);
 
 # ╔═╡ 60e9ac2c-728b-41ba-8863-8042daac4a16
 md"""
 With these aligned images, we can now pop some static apertures onto our frames to perform our photomoetry more reliably. The target is in the green aperture near the center of the frame, and for fun a sample comparison star is in the orange aperture. We went for a fairly tight aperture size to boost the S/N of our final light curve.
 """
+
+# ╔═╡ c5c30567-6681-4a31-be41-6ab26b9ade89
+# let
+# 	img_target = imgs_sci[1] #|> reverse
+# 	img_source = imgs_sci[2] #|> reverse
+	
+# 		transf, (source_list, target_list) = let
+# 		target = img_target |> to_py
+# 		source = img_source |> to_py
+# 		aa.find_transform(source, target;
+# 			detection_sigma = 12.0,
+# 			min_area = 9,
+			
+# 		)
+# 	end;
+		
+# 	shapes = [
+# 		circ(CircularAperture(x, y, 14))
+# 		for (y, x) in eachrow(PyArray(source_list; copy=false))
+# 	]
+
+# 	p = plot_img(frame_i, img_target)
+# 	relayout!(p; shapes)
+# 	p
+# end
 
 # ╔═╡ 48cf49ce-26e7-424c-a2cb-59aabfba8576
 md"""
@@ -123,29 +185,18 @@ md"""
 Based on the visualization above, we were able to make some pretty good guesses for our target and comparison star apertures:
 """
 
-# ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
-# Accepts (x_center, y_center, radius)
-ap_target = CircularAperture(668, 510, 7);
-
-# ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp1 = CircularAperture(147, 577, 14);
-
 # ╔═╡ 156cda32-b464-42cc-aae0-d0a048f5cadc
 md"""
 We defined our apertures with the [Photometry.jl](http://juliaastro.org/dev/modules/Photometry/) package, e.g., `ap_target`, for analysis in Julia, and their corresponding plot object, e.g., `circ_target`, for visualization in plotly. Now, we just call the [`photometry`](http://juliaastro.org/dev/modules/Photometry/apertures/#Photometry.Aperture.photometry) function from Photometry.jl and store our results in a table:
 """
-
-# ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
-aperture_sum(aps) = [ap.aperture_sum for ap in aps]
 
 # ╔═╡ ec96a17a-34d2-41d1-a036-7977ffee3450
 md"""
 Below is the resulting light curve for our target. The occultation signal is quite striking:
 """
 
-# ╔═╡ 03c78946-bd54-471e-af3c-05fc3a03ba0c
-# Optional comparison star division
-# scatter(df_phot; x=:t, y=:f_div1, mode=:markers) |> plot
+# ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
+aperture_sum(aps) = [ap.aperture_sum for ap in aps]
 
 # ╔═╡ 041fd375-92a5-4204-bfdc-5409a04ba141
 md"""
@@ -154,7 +205,7 @@ We now have everything we need to make a size estimate for this asteroid!
 
 # ╔═╡ 977c59a8-25ed-47c9-a929-53c5c056d959
 md"""
-## Size estimation 📐
+## Size estimation 🌱
 
 Given the following system parameters that we know about the [Sun's mass](https://en.wikipedia.org/wiki/Solar_mass) and [general location of the asteroid belt](https://en.wikipedia.org/wiki/Asteroid_belt#Orbits):
 """
@@ -290,7 +341,8 @@ function align(img2, img1)
 	registered_image, footprint = aa.register(
 		to_py(img2),
 		to_py(img1);
-		detection_sigma = 3.0,
+		detection_sigma = 12.0,
+		min_area = 9,
 		# max_control_points = 7,
 	)
 	return shareheader(img2, PyArray(registered_image))
@@ -341,7 +393,7 @@ let
 	l = Layout(;
 		xaxis = attr(title="Time (UTC)"),
 		yaxis = attr(title="Counts"),
-		title = "Target light curve",
+		title = "Divided light curve",
 	)
 	plot(sc, l)
 end
@@ -369,7 +421,7 @@ r2(img) = (restrict ∘ restrict)(img)
 # ╔═╡ 7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # Plotly heatmap trace of img
 function htrace(img;
-	zmin = 0,
+	zmin = zmin,
 	zmax = zmax,
 	title = "ADU",
 	restrict = true,
@@ -436,14 +488,6 @@ function circ(ap; line_color=:lightgreen)
 	)
 end
 
-# ╔═╡ c5c30567-6681-4a31-be41-6ab26b9ade89
-let
-	shapes = [
-		circ(CircularAperture(x, y, 14))
-		for (x, y) in eachrow(PyArray(source_list; copy=false))
-	]
-end
-
 # ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 circ_target = circ(ap_target);
 
@@ -456,6 +500,13 @@ shapes = [circ_target, circ_comp1]
 # ╔═╡ b49df71d-c470-466e-b845-8a004a3c6cd3
 let
 	p = plot_img(frame_i, imgs_sci[frame_i])
+	relayout!(p; shapes)
+	p
+end
+
+# ╔═╡ 3f243bc0-c223-475b-a05c-b89d431628d2
+let
+	p = plot_img(frame_i, imgs_sci_aligned[frame_i_aligned])
 	relayout!(p; shapes)
 	p
 end
@@ -916,9 +967,9 @@ version = "1.15.1"
 
 [[deps.DimensionalData]]
 deps = ["Adapt", "ArrayInterface", "ConstructionBase", "DataAPI", "Dates", "Extents", "Interfaces", "IntervalSets", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "PrecompileTools", "Random", "RecipesBase", "SparseArrays", "Statistics", "TableTraits", "Tables"]
-git-tree-sha1 = "5f3bb465f4b06b25e9bbe8f1d9711834ef4697d6"
+git-tree-sha1 = "0e98f99281b580f69dd845430c80950d9f456f72"
 uuid = "0703355e-b756-11e9-17c0-8b28908087d0"
-version = "0.27.3"
+version = "0.27.5"
 
     [deps.DimensionalData.extensions]
     DimensionalDataCategoricalArraysExt = "CategoricalArrays"
@@ -1148,31 +1199,32 @@ uuid = "22cec73e-a1b8-11e9-2c92-598750a2cf9c"
 version = "0.3.1"
 
 [[deps.InlineStrings]]
-deps = ["Parsers"]
-git-tree-sha1 = "86356004f30f8e737eff143d57d41bd580e437aa"
+git-tree-sha1 = "45521d31238e87ee9f9732561bfee12d4eebd52d"
 uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
-version = "1.4.1"
+version = "1.4.2"
 
     [deps.InlineStrings.extensions]
     ArrowTypesExt = "ArrowTypes"
+    ParsersExt = "Parsers"
 
     [deps.InlineStrings.weakdeps]
     ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
+    Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "be50fe8df3acbffa0274a744f1a99d29c45a57f4"
+git-tree-sha1 = "14eb2b542e748570b56446f4c50fbfb2306ebc45"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2024.1.0+0"
+version = "2024.2.0+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.Interfaces]]
-git-tree-sha1 = "6a73550de045ce0165fbcec85b9bba7764e9f209"
+git-tree-sha1 = "331ff37738aea1a3cf841ddf085442f31b84324f"
 uuid = "85a1e053-f937-4924-92a5-1367d23b7b87"
-version = "0.3.1"
+version = "0.3.2"
 
 [[deps.Interpolations]]
 deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "Requires", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
@@ -1203,9 +1255,9 @@ weakdeps = ["Random", "RecipesBase", "Statistics"]
 
 [[deps.InverseFunctions]]
 deps = ["Test"]
-git-tree-sha1 = "e7cbed5032c4c397a6ac23d1493f3289e01231c4"
+git-tree-sha1 = "18c59411ece4838b18cd7f537e56cf5e41ce5bfd"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
-version = "0.1.14"
+version = "0.1.15"
 weakdeps = ["Dates"]
 
     [deps.InverseFunctions.extensions]
@@ -1293,9 +1345,9 @@ version = "0.3.1"
 
 [[deps.LazySets]]
 deps = ["Distributed", "GLPK", "IntervalArithmetic", "JuMP", "LinearAlgebra", "Random", "ReachabilityBase", "RecipesBase", "Reexport", "Requires", "SharedArrays", "SparseArrays", "StaticArraysCore"]
-git-tree-sha1 = "953862259c4605bf20bbb8dd5aa504c0f2d5d09d"
+git-tree-sha1 = "dfa8131d5b6cd448d7ede6f78210a91a8169b31b"
 uuid = "b4f0291d-fe17-52bc-9479-3d1a343d9043"
-version = "2.14.0"
+version = "2.14.1"
 
 [[deps.LazyStack]]
 deps = ["LinearAlgebra", "NamedDims", "OffsetArrays", "Test", "ZygoteRules"]
@@ -1360,9 +1412,9 @@ version = "0.1.4"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
-git-tree-sha1 = "80b2833b56d466b3858d565adcd16a4a05f2089b"
+git-tree-sha1 = "f046ccd0c6db2832a9f639e2c669c6fe867e5f4f"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2024.1.0+0"
+version = "2024.2.0+0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -1630,9 +1682,9 @@ uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
-git-tree-sha1 = "763a8ceb07833dd51bb9e3bbca372de32c0605ad"
+git-tree-sha1 = "80686d28ecb3ee7fb3ac5371cacaa0d673eb0d4a"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.PythonCall]]
 deps = ["CondaPkg", "Dates", "Libdl", "MacroTools", "Markdown", "Pkg", "REPL", "Requires", "Serialization", "Tables", "UnsafePointers"]
@@ -1743,9 +1795,9 @@ version = "1.2.1"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
-git-tree-sha1 = "6bb314cb1aacfa37ef58e5a0ccf4a1ec0311f495"
+git-tree-sha1 = "ff11acffdb082493657550959d4feb4b6149e73a"
 uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.4"
+version = "1.4.5"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -1821,9 +1873,9 @@ version = "0.1.1"
 
 [[deps.Static]]
 deps = ["CommonWorldInvalidations", "IfElse", "PrecompileTools"]
-git-tree-sha1 = "0bbff21027dd8a107551847528127b62a35f7594"
+git-tree-sha1 = "87d51a3ee9a4b0d2fe054bdd3fc2436258db2603"
 uuid = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
-version = "1.1.0"
+version = "1.1.1"
 
 [[deps.StaticArrayInterface]]
 deps = ["ArrayInterface", "Compat", "IfElse", "LinearAlgebra", "PrecompileTools", "Requires", "SparseArrays", "Static", "SuiteSparse"]
@@ -2104,6 +2156,11 @@ version = "17.4.0+2"
 # ╟─d7f0393d-e2fa-44ea-a812-8f85820e661e
 # ╟─d9431fb9-2713-4982-b342-988e01445fed
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
+# ╠═ce7d00a8-1843-4ecd-9390-c9354adc5996
+# ╠═84ba3c5e-e529-43cf-bf6a-1ae160e169d0
+# ╠═d2e927f8-94f3-41cc-8a11-fda7bc78e442
+# ╠═2f81a3b6-c16b-40ba-a864-ea530e44d318
+# ╠═b6d33648-5117-4f64-813f-f7947ee2aadd
 # ╠═ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
 # ╟─7654e284-65ac-4a12-afdb-ca318aa9fda9
 # ╟─23a4ed9c-f75c-4fb3-ae34-035ca943fc94
@@ -2114,29 +2171,32 @@ version = "17.4.0+2"
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╟─355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 # ╠═b49df71d-c470-466e-b845-8a004a3c6cd3
+# ╠═2b2e9f13-651f-4f3c-9ca9-103f6b2df514
+# ╠═49d653e6-752c-4a0f-a88a-cc536a5c3ac9
+# ╠═f5ba2f6a-a422-4327-a825-3ce33f6cb70b
 # ╟─c7c9966e-d1f7-4a29-a53c-662794d06d74
 # ╟─41b95ea0-0564-465f-a7b2-ba9bb3cda8cc
 # ╟─67125878-7c40-4599-9555-969d05908cd7
 # ╠═02f37957-9bc9-426a-ad54-fc7be5ceaa2f
-# ╠═8161347d-e584-4ed2-ab80-55ae56ca8755
-# ╠═1ebac097-da9b-486d-a819-29179c19f1ef
-# ╟─60e9ac2c-728b-41ba-8863-8042daac4a16
 # ╟─0bbb5bca-4fab-41f1-89ee-369f3dafff60
-# ╠═c5c30567-6681-4a31-be41-6ab26b9ade89
-# ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
-# ╠═a33916f7-c223-42e3-9c88-19fef724b20c
-# ╟─484c9b8d-339f-45c3-a52a-01c5dec1b46d
+# ╟─3f243bc0-c223-475b-a05c-b89d431628d2
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
 # ╠═3ba4245a-ad63-4550-aaa9-4a1381a28f68
+# ╟─8161347d-e584-4ed2-ab80-55ae56ca8755
+# ╟─1ebac097-da9b-486d-a819-29179c19f1ef
+# ╟─60e9ac2c-728b-41ba-8863-8042daac4a16
+# ╟─c5c30567-6681-4a31-be41-6ab26b9ade89
+# ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
+# ╠═a33916f7-c223-42e3-9c88-19fef724b20c
+# ╟─484c9b8d-339f-45c3-a52a-01c5dec1b46d
 # ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
 # ╟─156cda32-b464-42cc-aae0-d0a048f5cadc
 # ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
-# ╠═fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╟─ec96a17a-34d2-41d1-a036-7977ffee3450
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-# ╠═03c78946-bd54-471e-af3c-05fc3a03ba0c
+# ╟─fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╟─041fd375-92a5-4204-bfdc-5409a04ba141
 # ╟─977c59a8-25ed-47c9-a929-53c5c056d959
 # ╠═97322d18-9784-4faf-aa88-9d54b9e67d68
