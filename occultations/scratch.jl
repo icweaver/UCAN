@@ -10,6 +10,9 @@ using AstroImages, Photometry, CoordinateTransformations, WGLMakie
 # ╔═╡ d35d10de-05a4-44c7-aaf9-2aad672fc4b2
 using ImageTransformations
 
+# ╔═╡ ccdd25cd-9934-427a-a123-16eb0cff84b7
+using Distances
+
 # ╔═╡ cd33ce27-cc43-4951-9e6b-05723e895cbf
 using PlutoUI
 
@@ -36,7 +39,7 @@ r2 = restrict ∘ restrict
 img1 = r2(load("./data/mgcc_this_one/20240717T080003_317_Occultation.fits")).data |> AstroImage;
 
 # ╔═╡ dc681de9-5908-41c6-ad29-bd023113eeee
-img2 = r2(load("./data/mgcc_this_one/20240717T080126_543_Occultation.fits")).data |> AstroImage;
+img2 = r2(load("./data/mgcc_this_one/20240717T080150_551_Occultation.fits")).data |> AstroImage;
 
 # ╔═╡ 63294aae-455f-47f3-b3ae-d9e7595a902b
 img2 - img1
@@ -44,12 +47,9 @@ img2 - img1
 # ╔═╡ 47430138-4420-4d64-9187-561494e6603b
 imgs = [img1, img2];
 
-# ╔═╡ ef486cf9-bc5d-4665-807b-cd2e76da92c1
-sources1 = first(extract_sources(PeakMesh(), img1), 5)
-
 # ╔═╡ ee4a7900-2795-40b6-9c9f-d3a16bddcaa7
 function get_aps(img)
-	sources = first(extract_sources(PeakMesh(), img), 5)
+	sources = first(extract_sources(PeakMesh(), img), 4)
 	CircularAperture.(sources.y, sources.x, 12)
 end
 
@@ -59,38 +59,27 @@ ap_sources1 = get_aps(img1);
 # ╔═╡ 8501630c-e361-4f68-b64e-be2c20a847a8
 ap_sources2 = get_aps(img2);
 
-# ╔═╡ 73005d9d-e864-48f3-b06e-a8fe7d437f0b
-x_range, y_range = let
-	collect.((img1.dims[1], img1.dims[2]))
-end;
+# ╔═╡ 25c0bc9c-0823-451c-893a-1ccd0f4a5e31
+X = [
+	3.0 4.0
+	1.0 2.0
+	1.5 2.5
+	3.5 4.5
+]
 
-# ╔═╡ b2b62b05-22c9-4a2c-aa09-0993c772aa2a
-aps1 = CircularAperture.(
-	(
-		(24, 20),
-		(85, 142),
-		(153, 120),
-	),
-	12
-);
+# ╔═╡ 60c6470d-fb6b-4c0f-ba8a-e8fd87c6e8b9
+pairwise(Euclidean(), X)
 
-# ╔═╡ 6966d118-01a7-48c1-8317-b6a9c63d3ab7
-aps2 = CircularAperture.(
-	(
-		(28, 17),
-		(88, 139),
-		(155, 117),
-	),
-	12
-);
+# ╔═╡ 13d1ed80-b9ab-477b-9ab9-63f10a4bf7c7
+ap_sources2[2].y
 
 # ╔═╡ 20278cb6-03d1-4dec-8679-4409f56e544d
 pos(aps) = map(aps) do ap
 	Point((ap.x, ap.y))
 end
 
-# ╔═╡ 3d8c50b3-decc-48e0-91ab-d793d7025cb9
-f = AffineMap(pos(aps1) => pos(aps2))
+# ╔═╡ 8ee0fefc-e4c4-4912-8353-5e9788c62f6b
+f = AffineMap(pos(ap_sources2) => pos(ap_sources1))
 
 # ╔═╡ 274318a3-326f-4a85-a42a-bcd0f8f934bc
 img2_stacked = warp(img2, f, axes(img1)) |> AstroImage;
@@ -134,6 +123,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
+Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -142,6 +132,7 @@ WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 [compat]
 AstroImages = "~0.5.0"
 CoordinateTransformations = "~0.6.3"
+Distances = "~0.10.11"
 ImageTransformations = "~0.10.1"
 Photometry = "~0.9.3"
 PlutoUI = "~0.7.59"
@@ -154,7 +145,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "0cf98ec085241c8112285cf8e77c84c97e71057e"
+project_hash = "2ef6ce8936542575a1187a909f4b1de5c38b24d9"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2145,16 +2136,16 @@ version = "3.5.0+0"
 # ╠═dc681de9-5908-41c6-ad29-bd023113eeee
 # ╠═63294aae-455f-47f3-b3ae-d9e7595a902b
 # ╠═47430138-4420-4d64-9187-561494e6603b
-# ╠═ef486cf9-bc5d-4665-807b-cd2e76da92c1
 # ╠═ee4a7900-2795-40b6-9c9f-d3a16bddcaa7
 # ╠═f815c2fa-4e23-4cac-84e9-de157c2aab7c
 # ╠═8501630c-e361-4f68-b64e-be2c20a847a8
-# ╠═73005d9d-e864-48f3-b06e-a8fe7d437f0b
+# ╠═25c0bc9c-0823-451c-893a-1ccd0f4a5e31
+# ╠═60c6470d-fb6b-4c0f-ba8a-e8fd87c6e8b9
+# ╠═ccdd25cd-9934-427a-a123-16eb0cff84b7
+# ╠═13d1ed80-b9ab-477b-9ab9-63f10a4bf7c7
 # ╠═5e9f5204-1b34-41c8-af71-36156874bab1
-# ╠═b2b62b05-22c9-4a2c-aa09-0993c772aa2a
-# ╠═6966d118-01a7-48c1-8317-b6a9c63d3ab7
 # ╠═20278cb6-03d1-4dec-8679-4409f56e544d
-# ╠═3d8c50b3-decc-48e0-91ab-d793d7025cb9
+# ╠═8ee0fefc-e4c4-4912-8353-5e9788c62f6b
 # ╠═274318a3-326f-4a85-a42a-bcd0f8f934bc
 # ╠═3af6aba1-5e08-4278-96fe-07f12c5e7b9e
 # ╠═eebf3a6a-a75d-42d1-a133-2a79f7c1c353

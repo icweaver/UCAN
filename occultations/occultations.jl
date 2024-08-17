@@ -205,7 +205,7 @@ We now have everything we need to make a size estimate for this asteroid!
 
 # ╔═╡ 977c59a8-25ed-47c9-a929-53c5c056d959
 md"""
-## Size estimation 🌱
+## Size estimation 🪨
 
 Given the following system parameters that we know about the [Sun's mass](https://en.wikipedia.org/wiki/Solar_mass) and [general location of the asteroid belt](https://en.wikipedia.org/wiki/Asteroid_belt#Orbits):
 """
