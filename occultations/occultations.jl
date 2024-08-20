@@ -39,7 +39,7 @@ end
 md"""
 # 🪨 Asteroid occultation lab
 
-In this lab we will observe an asteroid passing in front of a star in real time and explore how to produce and analyze its resulting light curve.
+In this lab we will observe an asteroid passing in front of a star in real time and explore how to produce and analyze its resulting light curve. For more on these types of observtations, see our [Unistellar Science page here](https://science.unistellar.com/asteroid-occultations/).
 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level.
 """
@@ -62,6 +62,19 @@ RGB(1, 0, 0) + RGB(0, 0, 1)
 
 $(RGB(1, 0, 0) + RGB(0, 0, 1))
 """;
+
+# ╔═╡ 68d3d6ae-a0bd-468d-9b78-a2679b1c0be9
+md"""
+## Background 📖
+
+Asteroids are small, rocky bodies orbiting our Sun, primarily in a circular orbit between Mars and Jupiter know as the _asteroid belt_. There are million of these bodies present in our Solar System, and they are thought to be the remnants of our early Solar System during its formation. Understanding more about these dark wanderers can then give us insight into our origins.
+
+Because they do not emit their own light, we must rely on other methods to observe asteroids. Once such method is to wait for an asteroid to pass in front of a background star from our point of view. When this happens, the light from the star is momentarily blocked out in what is known as an _occultation_ event.
+
+$(Resource("https://science.unistellar.com/wp-content/uploads/2023/03/90Antiope_shadow_cords_v1.png"))
+
+_Simplified diagram of an asteroid occultation. Each colored band represents a chord of the asteroid's shadow that an observer on Earth might catch. In aggregate, these observations can give us an idea of the asteroid's shape and size._
+"""
 
 # ╔═╡ d9431fb9-2713-4982-b342-988e01445fed
 md"""
@@ -309,6 +322,9 @@ pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
 # ╔═╡ ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
 # Just show the first 10 rows
 first(df_sci, 10) |> pretty
+
+# ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
+msg(x; title="Details") = details(title, x)
 
 # ╔═╡ 922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
 cm"""
@@ -566,12 +582,6 @@ md"""
 
 # ╔═╡ c650df98-efe6-40a3-8b7f-8923f511f51f
 TableOfContents()
-
-# ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
-msg(x; title="Details") = details(title, x);
-
-# ╔═╡ 57e5a1b2-c6fa-42e1-826a-590aca02bd29
-msg(x; title="Details") = details(title, x);
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2209,11 +2219,11 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╠═d7f0393d-e2fa-44ea-a812-8f85820e661e
-# ╠═922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
+# ╟─d7f0393d-e2fa-44ea-a812-8f85820e661e
+# ╟─922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
 # ╟─0439db40-1572-4dac-af7e-d09d28631a37
-# ╠═e0a51a72-9300-41d0-bc5c-44772350d6cc
-# ╠═57e5a1b2-c6fa-42e1-826a-590aca02bd29
+# ╟─e0a51a72-9300-41d0-bc5c-44772350d6cc
+# ╠═68d3d6ae-a0bd-468d-9b78-a2679b1c0be9
 # ╟─d9431fb9-2713-4982-b342-988e01445fed
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 # ╠═ce7d00a8-1843-4ecd-9390-c9354adc5996
@@ -2272,7 +2282,7 @@ version = "17.4.0+2"
 # ╟─fa066775-a63b-49c8-a368-0d033fb01a6e
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
 # ╟─e728e458-24dd-4f5d-bdf3-be9d34e4cc14
-# ╠═fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
+# ╟─fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
 # ╟─4c3e0b40-dd97-4c9d-a18c-6ad369da589f
 # ╠═cb328028-3137-42f8-9a0e-24f142069f51
 # ╟─8d6845a6-b543-4fe1-b9fc-487cfe34c057
