@@ -69,18 +69,20 @@ md"""
 
 Asteroids are small, rocky bodies orbiting our Sun, primarily in a circular orbit between Mars and Jupiter know as the _asteroid belt_. There are million of these bodies present in our Solar System, and they are thought to be the remnants of our early Solar System during its formation. Understanding more about these dark wanderers can then give us insight into our origins.
 
-Because they do not emit their own light, we must rely on other methods to observe asteroids. Once such method is to wait for an asteroid to pass in front of a background star from our point of view. When this happens, the light from the star is momentarily blocked out in what is known as an _occultation_ event.
+Because they do not emit their own light, we must rely on other methods to observe asteroids. One such method is to wait for an asteroid to pass in front of a background star from our point of view. When this happens, the light from the star is momentarily blocked out in what is known as an _occultation_ event.
 
 $(Resource("https://science.unistellar.com/wp-content/uploads/2023/03/90Antiope_shadow_cords_v1.png"))
 
 _Simplified diagram of an asteroid occultation. Each colored band represents a chord of the asteroid's shadow that an observer on Earth might catch. In aggregate, these observations can give us an idea of the asteroid's shape and size._
+
+The duration of this event, combined with how fast the asteroid is moving, can then give us an estimate on the asteroid's size. In this lab, we will step through this process using real eVscope data collected from an occulting asteroid.
 """
 
 # ╔═╡ d9431fb9-2713-4982-b342-988e01445fed
 md"""
 ## Data inspection 🔎
 
-Here's what we got to work with:
+We start by loading in the raw sample data, which is available here.
 """
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
@@ -2223,8 +2225,8 @@ version = "17.4.0+2"
 # ╟─922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
 # ╟─0439db40-1572-4dac-af7e-d09d28631a37
 # ╟─e0a51a72-9300-41d0-bc5c-44772350d6cc
-# ╠═68d3d6ae-a0bd-468d-9b78-a2679b1c0be9
-# ╟─d9431fb9-2713-4982-b342-988e01445fed
+# ╟─68d3d6ae-a0bd-468d-9b78-a2679b1c0be9
+# ╠═d9431fb9-2713-4982-b342-988e01445fed
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 # ╠═ce7d00a8-1843-4ecd-9390-c9354adc5996
 # ╠═84ba3c5e-e529-43cf-bf6a-1ae160e169d0
