@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -23,7 +23,7 @@ begin
 	using CCDReduction, DataFramesMeta
 
 	# Visualization and analysis
-	using AstroImages, PlutoPlotly, Photometry 
+	using AstroImages, PlutoPlotly, Photometry, ImageCore 
 	using AstroImages: restrict
 	using Dates, Unitful, UnitfulAstro, Measurements
 
@@ -37,10 +37,31 @@ end
 
 # ╔═╡ d7f0393d-e2fa-44ea-a812-8f85820e661e
 md"""
-# 🔭 Asteroid hunting
+# 🪨 Asteroid occultation lab
 
-Let's catch an asteroid passing by and estimate how big it is!
+In this lab we will observe an asteroid passing in front of a star in real time and explore how to produce and analyze its resulting light curve.
+
+Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level.
 """
+
+# ╔═╡ 0439db40-1572-4dac-af7e-d09d28631a37
+md"""
+With this requisite information out of the way, let's get started!
+"""
+
+# ╔═╡ e0a51a72-9300-41d0-bc5c-44772350d6cc
+msg_adding_colors = md"""
+##### Adding colors in Julia 🎨
+This makes magenta!
+
+```julia
+using ImageCore
+
+RGB(1, 0, 0) + RGB(0, 0, 1)
+```
+
+$(RGB(1, 0, 0) + RGB(0, 0, 1))
+""";
 
 # ╔═╡ d9431fb9-2713-4982-b342-988e01445fed
 md"""
@@ -289,8 +310,35 @@ pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
 # Just show the first 10 rows
 first(df_sci, 10) |> pretty
 
-# ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
-msg(x; title="Details") = details(title, x);
+# ╔═╡ 922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
+cm"""
+!!! note "Using this notebook"
+	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page, or [click on this direct link](https://computationalthinking.mit.edu/Fall23/installation/) which includes a video and written instructions for getting started with Julia and Pluto 🌱.
+
+	!!! tip "First time running"
+		**Note**: This notebook will download all of the analysis packages and data needed for us, so the first time it runs may take a little while (~ a few minutes depending on your internet connection and platform). Clicking on the `Status` tab in the bottom right will bring up a progress window that we can use to monitor this process, and it also includes an option at the bottom marked `Notify when done` that can be selected to give us a notification pop-up in our browser when everything is finished.
+
+	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/EBs/EB_lab.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
+
+	!!! tip "Advanced: bring your own editor"
+		This works in the opposite direction too; any changes you make to the source file, say in your favorite editor, will automatically be reflected in the notebook in your browser! To enable this feature, just add this keyword to the function that was used to start Pluto:
+
+		```julia-repl
+		julia> using Pluto
+		
+		julia> Pluto.run(auto_reload_from_file=true)
+		
+		# This will be on by default in an upcoming release =]
+		```
+
+		The location of the file for this notebook is displayed in the bar at the very top of this page, and can also be modified there if you want to change where this notebook lives.
+
+	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
+
+	$(msg(msg_adding_colors))
+
+	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined. For more examples of using these notebooks for Unistellar science, check out our recent [Spectroscopy Lab](https://icweaver.github.io/UCAN/spectroscopy/notebook.html)!
+"""
 
 # ╔═╡ 7654e284-65ac-4a12-afdb-ca318aa9fda9
 md"""
@@ -519,6 +567,12 @@ md"""
 # ╔═╡ c650df98-efe6-40a3-8b7f-8923f511f51f
 TableOfContents()
 
+# ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
+msg(x; title="Details") = details(title, x);
+
+# ╔═╡ 57e5a1b2-c6fa-42e1-826a-590aca02bd29
+msg(x; title="Details") = details(title, x);
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -528,6 +582,7 @@ CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+ImageCore = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
@@ -542,6 +597,7 @@ CCDReduction = "~0.2.2"
 CommonMark = "~0.8.12"
 CondaPkg = "~0.2.22"
 DataFramesMeta = "~0.15.2"
+ImageCore = "~0.10.2"
 Measurements = "~2.11.0"
 Photometry = "~0.9.3"
 PlutoPlotly = "~0.4.6"
@@ -557,7 +613,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "06a85f4a7548ceb2b03ad5f10478416ed33c8b6d"
+project_hash = "2f26732a9c4fa6adcce292e82a5befc005a3fdc8"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2153,7 +2209,11 @@ version = "17.4.0+2"
 """
 
 # ╔═╡ Cell order:
-# ╟─d7f0393d-e2fa-44ea-a812-8f85820e661e
+# ╠═d7f0393d-e2fa-44ea-a812-8f85820e661e
+# ╠═922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
+# ╟─0439db40-1572-4dac-af7e-d09d28631a37
+# ╠═e0a51a72-9300-41d0-bc5c-44772350d6cc
+# ╠═57e5a1b2-c6fa-42e1-826a-590aca02bd29
 # ╟─d9431fb9-2713-4982-b342-988e01445fed
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 # ╠═ce7d00a8-1843-4ecd-9390-c9354adc5996
