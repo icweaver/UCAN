@@ -175,7 +175,10 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 """
 
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
-df_sci = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
+df_sci = let
+	df = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
+	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
+end;
 
 # ╔═╡ 06d26240-81b6-401b-8eda-eab3a9a0fb20
 md"""
@@ -435,9 +438,6 @@ df_phot = let
 	# Place the observation time in the first column
 	insertcols!(df, 1, :t => df_sci.:"DATE-OBS")
 end
-
-# ╔═╡ c6505424-dff8-49fa-8160-a031eaac838e
-170.18 + 86.28 + 261.37
 
 # ╔═╡ 15ad7461-9c40-4755-8f00-14aa3be53e0f
 md"""
@@ -2737,7 +2737,6 @@ version = "17.4.0+2"
 # ╠═79c924a7-f915-483d-aee6-94e749d3b004
 # ╟─0d07e670-4ddb-41ce-ac2c-60991a52ded4
 # ╠═96dc5bbe-3284-43a0-8c04-c1bb51ad618b
-# ╠═c6505424-dff8-49fa-8160-a031eaac838e
 # ╠═635efbd3-bed2-4236-9eb2-c816a713990b
 # ╟─15ad7461-9c40-4755-8f00-14aa3be53e0f
 # ╟─6470b357-4dc6-4b2b-9760-93d64bab13e9
