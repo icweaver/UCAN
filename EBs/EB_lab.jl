@@ -436,6 +436,9 @@ df_phot = let
 	insertcols!(df, 1, :t => df_sci.:"DATE-OBS")
 end
 
+# ╔═╡ c6505424-dff8-49fa-8160-a031eaac838e
+170.18 + 86.28 + 261.37
+
 # ╔═╡ 15ad7461-9c40-4755-8f00-14aa3be53e0f
 md"""
 By convention, `t` is our observation time, `x1` is for our target star, and `x2` and up are our comparison stars. We can now visualize the light curve of our target from our photometry table:
@@ -2734,6 +2737,7 @@ version = "17.4.0+2"
 # ╠═79c924a7-f915-483d-aee6-94e749d3b004
 # ╟─0d07e670-4ddb-41ce-ac2c-60991a52ded4
 # ╠═96dc5bbe-3284-43a0-8c04-c1bb51ad618b
+# ╠═c6505424-dff8-49fa-8160-a031eaac838e
 # ╠═635efbd3-bed2-4236-9eb2-c816a713990b
 # ╟─15ad7461-9c40-4755-8f00-14aa3be53e0f
 # ╟─6470b357-4dc6-4b2b-9760-93d64bab13e9

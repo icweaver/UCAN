@@ -39,9 +39,9 @@ end
 md"""
 # 🪨 Asteroid occultation lab
 
-In this lab we will observe an asteroid passing in front of a star in real time and explore how to produce and analyze its resulting light curve. For more on these types of observtations, see our [Unistellar Science page here](https://science.unistellar.com/asteroid-occultations/).
+In this lab we will observe an asteroid passing in front of a star in real time and explore how to produce and analyze its resulting light curve. For more on taking these types of observations, see our [Unistellar Science page here](https://science.unistellar.com/asteroid-occultations/).
 
-Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level. Also feel free to check out our [Eclipsing Binary lab](https://icweaver.github.io/UCAN/EBs/EB_lab.html) for an example of applying these tools to a similar set of observations.
+Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level. For an example of applying these tools to a similar set of eVscope observations, see our [Eclipsing Binary lab](https://icweaver.github.io/UCAN/EBs/EB_lab.html).
 """
 
 # ╔═╡ 0439db40-1572-4dac-af7e-d09d28631a37
@@ -67,41 +67,32 @@ $(RGB(1, 0, 0) + RGB(0, 0, 1))
 md"""
 ## Background 📖
 
-Asteroids are small, rocky bodies orbiting our Sun, primarily in a circular orbit between Mars and Jupiter know as the _asteroid belt_. There are million of these bodies present in our Solar System, and they are thought to be the remnants of our early Solar System during its formation. Understanding more about these dark wanderers can then give us insight into our origins.
+Asteroids are small, rocky bodies orbiting our Sun, primarily in a circular orbit between Mars and Jupiter know as the _asteroid belt_. There are millions of these bodies present in our Solar System, and they are thought to be the remnants of our early Solar System during its formation. For this reason, understanding more about these dark wanderers can give us insight into our origins.
 
-Because they do not emit their own light, we must rely on other methods to observe asteroids. One such method is to wait for an asteroid to pass in front of a background star from our point of view. When this happens, the light from the star is momentarily blocked out in what is known as an _occultation_ event.
+Asteroids do not emit their own light, so we must rely on other methods to observe them. One such method is to wait for an asteroid to pass in front of a background star from our point of view. When this happens, the light from the star is momentarily blocked out in what is known as an _occultation_ event.
 
 $(Resource("https://science.unistellar.com/wp-content/uploads/2023/03/90Antiope_shadow_cords_v1.png"))
 
 _Simplified diagram of an asteroid occultation. Each colored band represents a chord of the asteroid's shadow that an observer on Earth might catch. In aggregate, these observations can give us an idea of the asteroid's shape and size._
 
-The duration of this event, combined with how fast the asteroid is moving, can then give us an estimate on the asteroid's size. In this lab, we will step through this process using real eVscope data collected from an occulting asteroid.
+The duration of this event, combined with how fast the asteroid is moving, can then give us an estimate of the asteroid's size. In this lab, we will step through this process using eVscope data collected from an occulting asteroid.
 """
 
 # ╔═╡ d9431fb9-2713-4982-b342-988e01445fed
 md"""
 ## Data inspection 🔎
 
-We start by loading in the raw sample data, which is available here.
+We start by loading in the raw sample data, which is [available here](https://drive.google.com/drive/folders/1q8uDDv1pVHrYw17gXDec0TB-g1V5wtJQ?usp=sharing).
+
+!!! note
+	We placed the unzipped data into a folder named `data` at the same location as our notebook.
 """
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
-	df = fitscollection("data/bak/eVscope-zzdq7q"; abspath=false)[150:250, :]
+	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)#[150:250, :]
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end; # Semicolon hides automatic output
-
-# ╔═╡ ce7d00a8-1843-4ecd-9390-c9354adc5996
-df_sci.:"DATE-OBS"[1]
-
-# ╔═╡ 84ba3c5e-e529-43cf-bf6a-1ae160e169d0
-df_sci |> nrow
-
-# ╔═╡ d2e927f8-94f3-41cc-8a11-fda7bc78e442
-# df_sci = let
-# 	df = fitscollection("data/20240717T080002_607_aingnq/"; abspath=false)[begin:50:end, :]
-# 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
-# end; # Semicolon hides automatic output
 
 # ╔═╡ 23a4ed9c-f75c-4fb3-ae34-035ca943fc94
 md"""
@@ -121,12 +112,10 @@ or about:
 
 # ╔═╡ 5a53889d-e99d-44bf-8516-a1397867a2b2
 md"""
-Let's see how each image frame looks (note that in the online version of this notebook that the slider will not work):
+That's pretty quick! Let's see how each image frame looks (note that in the online version of this notebook that the slider will not work):
 """
 
 # ╔═╡ a4a703be-1c6e-4643-a173-1e738e667652
-# Aligned with AstroImageJ, requires WCS plate solved frames
-# imgs_sci = [load("data/eVscope-zzdq7q_aligned.fits", i) for i in 1:nrow(df_sci)];
 imgs_sci = [load(f) for f in df_sci.path];
 
 # ╔═╡ 355eb355-7db5-4df0-a5ee-9cbc599e1d6b
@@ -154,42 +143,10 @@ md"""
 To accomplish this, we will just align on asterisms instead! There is a ready-made python package for this ([`astroalign`](https://astroalign.quatrope.org/en/latest/)), which we can hook into with [PythonCall.jl](https://juliapy.github.io/PythonCall.jl/stable/):
 """
 
-# ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
-# Accepts (x_center, y_center, radius)
-ap_target = CircularAperture(668, 510, 7);
-
-# ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp1 = CircularAperture(147, 577, 11);
-
 # ╔═╡ 60e9ac2c-728b-41ba-8863-8042daac4a16
 md"""
-With these aligned images, we can now pop some static apertures onto our frames to perform our photomoetry more reliably. The target is in the green aperture near the center of the frame, and for fun a sample comparison star is in the orange aperture. We went for a fairly tight aperture size to boost the S/N of our final light curve.
+With these aligned images, we can now pop some static apertures onto our frames to perform our photomoetry more reliably. The target is in the green aperture near the center of the frame, and for fun a sample comparison star is in the orange aperture. We went for a fairly tight aperture size to boost the signal-to-noise ratio of our final light curve.
 """
-
-# ╔═╡ c5c30567-6681-4a31-be41-6ab26b9ade89
-# let
-# 	img_target = imgs_sci[1] #|> reverse
-# 	img_source = imgs_sci[2] #|> reverse
-	
-# 		transf, (source_list, target_list) = let
-# 		target = img_target |> to_py
-# 		source = img_source |> to_py
-# 		aa.find_transform(source, target;
-# 			detection_sigma = 12.0,
-# 			min_area = 9,
-			
-# 		)
-# 	end;
-		
-# 	shapes = [
-# 		circ(CircularAperture(x, y, 14))
-# 		for (y, x) in eachrow(PyArray(source_list; copy=false))
-# 	]
-
-# 	p = plot_img(frame_i, img_target)
-# 	relayout!(p; shapes)
-# 	p
-# end
 
 # ╔═╡ 48cf49ce-26e7-424c-a2cb-59aabfba8576
 md"""
@@ -203,18 +160,28 @@ md"""
 Based on the visualization above, we were able to make some pretty good guesses for our target and comparison star apertures:
 """
 
+# ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
+# (x_center, y_center, radius)
+ap_target = CircularAperture(668, 510, 11);
+
+# ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
+ap_comp1 = CircularAperture(147, 577, 11);
+
 # ╔═╡ 156cda32-b464-42cc-aae0-d0a048f5cadc
 md"""
-We defined our apertures with the [Photometry.jl](http://juliaastro.org/dev/modules/Photometry/) package, e.g., `ap_target`, for analysis in Julia, and their corresponding plot object, e.g., `circ_target`, for visualization in plotly. Now, we just call the [`photometry`](http://juliaastro.org/dev/modules/Photometry/apertures/#Photometry.Aperture.photometry) function from Photometry.jl and store our results in a table:
+We defined our apertures with the [Photometry.jl](http://juliaastro.org/dev/modules/Photometry/) package, e.g., `ap_target`, for analysis in Julia, and their corresponding plot object, e.g., `circ(ap_target)`, for visualization in plotly. Now, we just call the [`photometry`](http://juliaastro.org/dev/modules/Photometry/apertures/#Photometry.Aperture.photometry) function from Photometry.jl and store our results in a table:
+"""
+
+# ╔═╡ 93517d36-21b1-4fd8-bde9-c504681a6644
+md"""
+!!! note
+	The first column is time, `x1` is the target flux, `x2` is the comparison star flux, and `xdiv` is the target flux divided by the comparison star flux.
 """
 
 # ╔═╡ ec96a17a-34d2-41d1-a036-7977ffee3450
 md"""
 Below is the resulting light curve for our target. The occultation signal is quite striking:
 """
-
-# ╔═╡ fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
-aperture_sum(aps) = [ap.aperture_sum for ap in aps]
 
 # ╔═╡ 041fd375-92a5-4204-bfdc-5409a04ba141
 md"""
@@ -401,18 +368,18 @@ function align_frames(imgs)
 	movs = []
 	fixed = first(imgs)
 	push!(movs, fixed)
-	mov_old = first(movs)
+	# mov_old = first(movs)
 	for i in 2:length(imgs)
-		mov_new = align(imgs[i], mov_old)
+		mov_new = align(imgs[i], fixed)
 		push!(movs, mov_new)
-		mov_old = mov_new
+		# mov_old = mov_new
 	end
 	
 	return movs
 end
 
 # ╔═╡ 37da7f88-82e1-452b-bef3-2bfc6afd3f95
-imgs_sci_aligned = align_frames(imgs_sci)
+imgs_sci_aligned = align_frames(imgs_sci);
 
 # ╔═╡ 0bbb5bca-4fab-41f1-89ee-369f3dafff60
 @bind frame_i_aligned Slider(1:length(imgs_sci_aligned); show_value=true)
@@ -420,23 +387,19 @@ imgs_sci_aligned = align_frames(imgs_sci)
 # ╔═╡ d36ff8f2-8c11-4cec-a467-d97e19725268
 df_phot = let
 	# Run photometry
-	phot_target = photometry.(Ref(ap_target), imgs_sci_aligned)
-	phot_comp1 = photometry.(Ref(ap_comp1), imgs_sci_aligned)
+	phot = map(imgs_sci_aligned) do img
+		photometry([ap_target, ap_comp1], img).aperture_sum
+	end
 
-	# Store results
-	df = DataFrame(
-		t = df_sci."DATE-OBS",
-		f_target = aperture_sum(phot_target),
-		f_comp1 = aperture_sum(phot_comp1),
-	)
-
-	# Comparison star division
-	@transform! df :f_div1 = :f_target ./ :f_comp1
+	# Create table
+	df = DataFrame(stack(phot; dims=1), :auto)
+	insertcols!(df, 1, :t => df_sci."DATE-OBS")
+	@transform! df :xdiv = :x1 ./ :x2
 end
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 let
-	sc = scatter(df_phot; x=:t, y=:f_target, mode=:markers)
+	sc = scatter(df_phot; x=:t, y=:x1, mode=:markers)
 	l = Layout(;
 		xaxis = attr(title="Time (UTC)"),
 		yaxis = attr(title="Counts"),
@@ -444,25 +407,6 @@ let
 	)
 	plot(sc, l)
 end
-
-# ╔═╡ 45907db4-76e5-4ab5-aec4-49762984fd16
-let
-	img2 = imgs_sci[9]
-	img1 = imgs_sci[1]
-	
-	aa.register(to_py(img2), to_py(img1);
-		detection_sigma = 4,
-		min_area = 3,
-		# max_control_points = 2,
-	)
-end
-
-# ╔═╡ a33916f7-c223-42e3-9c88-19fef724b20c
-transf, (source_list, target_list) = let
-	target = imgs_sci[1] |> to_py
-	source = imgs_sci[2] |> to_py
-	aa.find_transform(source, target; detection_sigma=3.0)
-end;
 
 # ╔═╡ 43eb7424-5861-46be-b670-dcec6125d963
 md"""
@@ -535,6 +479,11 @@ function plot_img(i, img; restrict=true)
 	plot(hm, l)
 end
 
+# ╔═╡ b49df71d-c470-466e-b845-8a004a3c6cd3
+let
+	p = plot_img(frame_i, imgs_sci[frame_i])
+end
+
 # ╔═╡ 84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # Julia photometry aperture object --> plotly shape object
 function circ(ap; line_color=:lightgreen)
@@ -547,25 +496,10 @@ function circ(ap; line_color=:lightgreen)
 	)
 end
 
-# ╔═╡ e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
-circ_target = circ(ap_target);
-
-# ╔═╡ 3ba4245a-ad63-4550-aaa9-4a1381a28f68
-circ_comp1 = circ(ap_comp1; line_color=:orange);
-
-# ╔═╡ fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
-shapes = [circ_target, circ_comp1]
-
-# ╔═╡ b49df71d-c470-466e-b845-8a004a3c6cd3
-let
-	p = plot_img(frame_i, imgs_sci[frame_i])
-	relayout!(p; shapes)
-	p
-end
-
 # ╔═╡ 3f243bc0-c223-475b-a05c-b89d431628d2
 let
 	p = plot_img(frame_i, imgs_sci_aligned[frame_i_aligned])
+	shapes = [circ(ap_target), circ(ap_comp1; line_color=:orange)]
 	relayout!(p; shapes)
 	p
 end
@@ -2219,12 +2153,9 @@ version = "17.4.0+2"
 # ╟─0439db40-1572-4dac-af7e-d09d28631a37
 # ╟─e0a51a72-9300-41d0-bc5c-44772350d6cc
 # ╟─68d3d6ae-a0bd-468d-9b78-a2679b1c0be9
-# ╠═d9431fb9-2713-4982-b342-988e01445fed
+# ╟─d9431fb9-2713-4982-b342-988e01445fed
 # ╠═a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
-# ╠═ce7d00a8-1843-4ecd-9390-c9354adc5996
-# ╠═84ba3c5e-e529-43cf-bf6a-1ae160e169d0
-# ╠═d2e927f8-94f3-41cc-8a11-fda7bc78e442
-# ╠═ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
+# ╟─ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
 # ╟─7654e284-65ac-4a12-afdb-ca318aa9fda9
 # ╟─23a4ed9c-f75c-4fb3-ae34-035ca943fc94
 # ╠═bb936bb4-42a4-4e8c-af2e-137bc8d23715
@@ -2238,26 +2169,18 @@ version = "17.4.0+2"
 # ╟─41b95ea0-0564-465f-a7b2-ba9bb3cda8cc
 # ╟─67125878-7c40-4599-9555-969d05908cd7
 # ╠═37da7f88-82e1-452b-bef3-2bfc6afd3f95
-# ╟─0bbb5bca-4fab-41f1-89ee-369f3dafff60
-# ╟─3f243bc0-c223-475b-a05c-b89d431628d2
-# ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
-# ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
-# ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
-# ╠═3ba4245a-ad63-4550-aaa9-4a1381a28f68
-# ╠═8161347d-e584-4ed2-ab80-55ae56ca8755
-# ╠═1ebac097-da9b-486d-a819-29179c19f1ef
-# ╠═45907db4-76e5-4ab5-aec4-49762984fd16
 # ╟─60e9ac2c-728b-41ba-8863-8042daac4a16
-# ╟─c5c30567-6681-4a31-be41-6ab26b9ade89
+# ╟─0bbb5bca-4fab-41f1-89ee-369f3dafff60
+# ╠═3f243bc0-c223-475b-a05c-b89d431628d2
 # ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
-# ╠═a33916f7-c223-42e3-9c88-19fef724b20c
 # ╟─484c9b8d-339f-45c3-a52a-01c5dec1b46d
-# ╠═fc0e15fa-4d17-4429-ab2a-f29bae3cb6b1
+# ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
+# ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
 # ╟─156cda32-b464-42cc-aae0-d0a048f5cadc
-# ╠═d36ff8f2-8c11-4cec-a467-d97e19725268
+# ╟─d36ff8f2-8c11-4cec-a467-d97e19725268
+# ╟─93517d36-21b1-4fd8-bde9-c504681a6644
 # ╟─ec96a17a-34d2-41d1-a036-7977ffee3450
 # ╠═ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
-# ╟─fad348eb-f6ef-4e6d-bd24-e34cabbe2dd7
 # ╟─041fd375-92a5-4204-bfdc-5409a04ba141
 # ╟─977c59a8-25ed-47c9-a929-53c5c056d959
 # ╠═97322d18-9784-4faf-aa88-9d54b9e67d68
@@ -2276,13 +2199,15 @@ version = "17.4.0+2"
 # ╟─fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
 # ╟─4c3e0b40-dd97-4c9d-a18c-6ad369da589f
 # ╠═cb328028-3137-42f8-9a0e-24f142069f51
+# ╟─8161347d-e584-4ed2-ab80-55ae56ca8755
+# ╟─1ebac097-da9b-486d-a819-29179c19f1ef
 # ╟─8d6845a6-b543-4fe1-b9fc-487cfe34c057
 # ╟─43eb7424-5861-46be-b670-dcec6125d963
 # ╠═1831c578-5ff8-4094-8f57-67c39aff80c8
 # ╟─1246d6fb-4d4f-46cb-a2e2-f2ceadf966a6
 # ╟─7289692b-1a85-4a84-b7cc-fea1e46c9f31
 # ╟─2ba90b91-5de2-44a2-954f-a73b1561e762
-# ╠═84745bd9-c2b1-45c3-8376-7f18d600e7eb
+# ╟─84745bd9-c2b1-45c3-8376-7f18d600e7eb
 # ╟─e9eb1a0f-553b-4477-8323-900191d469ee
 # ╠═40272038-3af6-11ef-148a-8be0002c4bda
 # ╠═c650df98-efe6-40a3-8b7f-8923f511f51f
