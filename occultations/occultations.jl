@@ -41,7 +41,7 @@ md"""
 
 In this lab we will observe an asteroid passing in front of a star in real time and explore how to produce and analyze its resulting light curve. For more on these types of observtations, see our [Unistellar Science page here](https://science.unistellar.com/asteroid-occultations/).
 
-Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level.
+Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level. Also feel free to check out our [Eclipsing Binary lab](https://icweaver.github.io/UCAN/EBs/EB_lab.html) for an example of applying these tools to a similar set of observations.
 """
 
 # ╔═╡ 0439db40-1572-4dac-af7e-d09d28631a37
@@ -87,7 +87,7 @@ We start by loading in the raw sample data, which is available here.
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
-	df = fitscollection("data/mgcc_this_one"; abspath=false)[1800:2050, :]
+	df = fitscollection("data/bak/eVscope-zzdq7q"; abspath=false)[150:250, :]
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end; # Semicolon hides automatic output
 
@@ -102,12 +102,6 @@ df_sci |> nrow
 # 	df = fitscollection("data/20240717T080002_607_aingnq/"; abspath=false)[begin:50:end, :]
 # 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 # end; # Semicolon hides automatic output
-
-# ╔═╡ 2f81a3b6-c16b-40ba-a864-ea530e44d318
-yee = fitscollection("data/mgcc_this_one"; abspath=false)
-
-# ╔═╡ b6d33648-5117-4f64-813f-f7947ee2aadd
-yee."DATE-OBS"[1900:1950]
 
 # ╔═╡ 23a4ed9c-f75c-4fb3-ae34-035ca943fc94
 md"""
@@ -138,18 +132,6 @@ imgs_sci = [load(f) for f in df_sci.path];
 # ╔═╡ 355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 @bind frame_i Slider(1:length(imgs_sci); show_value=true)
 
-# ╔═╡ 2b2e9f13-651f-4f3c-9ca9-103f6b2df514
-imgs_sci[1][:, reverse(begin:end)] #|> imview #|> permutedims
-
-# ╔═╡ 49d653e6-752c-4a0f-a88a-cc536a5c3ac9
-df_sci.path[1]
-
-# ╔═╡ f5ba2f6a-a422-4327-a825-3ce33f6cb70b
-# let
-# 	img = load(fitscollection("data/fw67hf/20240717T080000_918/"; abspath=false)[begin, :].path)
-# 	reverse(img)
-# end
-
 # ╔═╡ c7c9966e-d1f7-4a29-a53c-662794d06d74
 md"""
 !!! tip "Plotting aside"
@@ -174,10 +156,10 @@ To accomplish this, we will just align on asterisms instead! There is a ready-ma
 
 # ╔═╡ 8e7fe041-042d-4475-8c35-a14fc0c2d305
 # Accepts (x_center, y_center, radius)
-ap_target = CircularAperture(711, 301, 11);
+ap_target = CircularAperture(668, 510, 7);
 
 # ╔═╡ 2229f2f7-0a04-4383-b2ac-8db614b65a83
-ap_comp1 = CircularAperture(661, 443, 11);
+ap_comp1 = CircularAperture(147, 577, 11);
 
 # ╔═╡ 60e9ac2c-728b-41ba-8863-8042daac4a16
 md"""
@@ -407,8 +389,8 @@ function align(img2, img1)
 	registered_image, footprint = aa.register(
 		to_py(img2),
 		to_py(img1);
-		detection_sigma = 12.0,
-		min_area = 9,
+		detection_sigma = 3,
+		# min_area = 4,
 		# max_control_points = 7,
 	)
 	return shareheader(img2, PyArray(registered_image))
@@ -419,19 +401,18 @@ function align_frames(imgs)
 	movs = []
 	fixed = first(imgs)
 	push!(movs, fixed)
-	# mov_old = first(movs)
+	mov_old = first(movs)
 	for i in 2:length(imgs)
-		mov_new = align(imgs[i], fixed)
+		mov_new = align(imgs[i], mov_old)
 		push!(movs, mov_new)
-		# mov_old = mov_new
+		mov_old = mov_new
 	end
 	
 	return movs
 end
 
-# ╔═╡ 02f37957-9bc9-426a-ad54-fc7be5ceaa2f
-# ╠═╡ show_logs = false
-imgs_sci_aligned = align_frames(imgs_sci);
+# ╔═╡ 37da7f88-82e1-452b-bef3-2bfc6afd3f95
+imgs_sci_aligned = align_frames(imgs_sci)
 
 # ╔═╡ 0bbb5bca-4fab-41f1-89ee-369f3dafff60
 @bind frame_i_aligned Slider(1:length(imgs_sci_aligned); show_value=true)
@@ -462,6 +443,18 @@ let
 		title = "Divided light curve",
 	)
 	plot(sc, l)
+end
+
+# ╔═╡ 45907db4-76e5-4ab5-aec4-49762984fd16
+let
+	img2 = imgs_sci[9]
+	img1 = imgs_sci[1]
+	
+	aa.register(to_py(img2), to_py(img1);
+		detection_sigma = 4,
+		min_area = 3,
+		# max_control_points = 2,
+	)
 end
 
 # ╔═╡ a33916f7-c223-42e3-9c88-19fef724b20c
@@ -2231,8 +2224,6 @@ version = "17.4.0+2"
 # ╠═ce7d00a8-1843-4ecd-9390-c9354adc5996
 # ╠═84ba3c5e-e529-43cf-bf6a-1ae160e169d0
 # ╠═d2e927f8-94f3-41cc-8a11-fda7bc78e442
-# ╠═2f81a3b6-c16b-40ba-a864-ea530e44d318
-# ╠═b6d33648-5117-4f64-813f-f7947ee2aadd
 # ╠═ac3a9384-1b18-47ee-b6f3-e7fb4b7a0594
 # ╟─7654e284-65ac-4a12-afdb-ca318aa9fda9
 # ╟─23a4ed9c-f75c-4fb3-ae34-035ca943fc94
@@ -2243,21 +2234,19 @@ version = "17.4.0+2"
 # ╠═a4a703be-1c6e-4643-a173-1e738e667652
 # ╟─355eb355-7db5-4df0-a5ee-9cbc599e1d6b
 # ╠═b49df71d-c470-466e-b845-8a004a3c6cd3
-# ╠═2b2e9f13-651f-4f3c-9ca9-103f6b2df514
-# ╠═49d653e6-752c-4a0f-a88a-cc536a5c3ac9
-# ╠═f5ba2f6a-a422-4327-a825-3ce33f6cb70b
 # ╟─c7c9966e-d1f7-4a29-a53c-662794d06d74
 # ╟─41b95ea0-0564-465f-a7b2-ba9bb3cda8cc
 # ╟─67125878-7c40-4599-9555-969d05908cd7
-# ╠═02f37957-9bc9-426a-ad54-fc7be5ceaa2f
+# ╠═37da7f88-82e1-452b-bef3-2bfc6afd3f95
 # ╟─0bbb5bca-4fab-41f1-89ee-369f3dafff60
 # ╟─3f243bc0-c223-475b-a05c-b89d431628d2
 # ╠═8e7fe041-042d-4475-8c35-a14fc0c2d305
 # ╠═e59f63c5-8348-44d3-9f2c-d1ebda1e9a16
 # ╠═2229f2f7-0a04-4383-b2ac-8db614b65a83
 # ╠═3ba4245a-ad63-4550-aaa9-4a1381a28f68
-# ╟─8161347d-e584-4ed2-ab80-55ae56ca8755
-# ╟─1ebac097-da9b-486d-a819-29179c19f1ef
+# ╠═8161347d-e584-4ed2-ab80-55ae56ca8755
+# ╠═1ebac097-da9b-486d-a819-29179c19f1ef
+# ╠═45907db4-76e5-4ab5-aec4-49762984fd16
 # ╟─60e9ac2c-728b-41ba-8863-8042daac4a16
 # ╟─c5c30567-6681-4a31-be41-6ab26b9ade89
 # ╟─48cf49ce-26e7-424c-a2cb-59aabfba8576
