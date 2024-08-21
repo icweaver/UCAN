@@ -82,7 +82,7 @@ The duration of this event, combined with how fast the asteroid is moving, can t
 md"""
 ## Data inspection 🔎
 
-We start by loading in the raw sample data, which is [available here](https://drive.google.com/drive/folders/1q8uDDv1pVHrYw17gXDec0TB-g1V5wtJQ?usp=sharing).
+We start by loading in the raw sample data, which is [available here](https://drive.google.com/drive/folders/16Mt5VLMCz_MdMW3h1XBitgCm0cc7Mj60?usp=drive_link).
 
 !!! note
 	We placed the unzipped data into a folder named `data` at the same location as our notebook.
@@ -90,7 +90,7 @@ We start by loading in the raw sample data, which is [available here](https://dr
 
 # ╔═╡ a1bd9062-65e3-494e-b3b9-aff1f4a0a1f2
 df_sci = let
-	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)#[150:250, :]
+	df = fitscollection("data/eVscope-zzdq7q"; abspath=false)
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end; # Semicolon hides automatic output
 
@@ -249,6 +249,18 @@ md"""
 	* We were only sampling over a single chord, so getting different answers than the published result is to be expected
 """
 
+# ╔═╡ 4078e4f6-3295-44b2-8fed-e6a628a74b5f
+md"""
+## Next steps
+
+We have now successfuly characterized our occulting asteroid! Here are some other items to consider:
+
+!!! note ""
+	* How could these kinds of observations be combined to get a better estimate of the size and/or shape of the asteroid?
+	* What other constraints might we be able to make?
+	* What kinds of observations would be needed to determine other properties of the asteroid (e.g., mass, composition, reflectivity, rotation)?
+"""
+
 # ╔═╡ 99273ce1-548e-43f1-ad42-31ebd2db34e7
 md"""
 ## Notebook setup 🔧
@@ -399,7 +411,7 @@ end
 
 # ╔═╡ ca358bdb-83fd-4a7e-91b8-4e1a5d1d27ad
 let
-	sc = scatter(df_phot; x=:t, y=:x1, mode=:markers)
+	sc = scatter(df_phot; x=:t, y=:xdiv, mode=:markers)
 	l = Layout(;
 		xaxis = attr(title="Time (UTC)"),
 		yaxis = attr(title="Counts"),
@@ -2192,6 +2204,7 @@ version = "17.4.0+2"
 # ╟─e03244d5-0691-431b-9f13-2d03fdb5a4ee
 # ╟─66a1bc55-a265-421b-99a0-9cfe44d2eb7e
 # ╟─2914603e-6b55-48a5-a269-8c44cde31237
+# ╟─4078e4f6-3295-44b2-8fed-e6a628a74b5f
 # ╟─99273ce1-548e-43f1-ad42-31ebd2db34e7
 # ╟─fa066775-a63b-49c8-a368-0d033fb01a6e
 # ╟─70ec6ef2-836b-4d9a-86a4-4956d8dc28f3
