@@ -43,7 +43,7 @@ end
 
 # ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
 md"""
-# ⚪ ⚫ Eclipsing binary lab
+# ⚪ ⚫ Unistellar Eclipsing Binary Lab
 
 In this lab we will observe an eclipsing binary in real time and explore how to produce a light curve for it.
 
