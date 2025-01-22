@@ -101,6 +101,12 @@ aa.estimate_transform("similarity", src, dst)
 # ╔═╡ 540bc82b-2e7b-4795-8970-2e64362659e6
 aa.estimate_transform("euclidean", src, dst)
 
+# ╔═╡ 631a56c9-85a2-464b-95cb-7c6fbfb62a44
+src_test = np.array([1, 2, 1, 3, 5, 6, 7 ,8]).reshape((4, 2))
+
+# ╔═╡ 827395b0-0f26-4e93-a3ce-2f3b0aae13f1
+aa._generate_invariants(src_test)
+
 # ╔═╡ 34d8d525-1b35-4670-861f-4d634142c780
 function to_py(img)
 	arr = np.zeros_like(img)
@@ -110,6 +116,9 @@ end
 
 # ╔═╡ 31617e77-55e1-46bc-9cbb-1e663f30206c
 transf, (s_list, t_list) = aa.find_transform(to_py(img2), to_py(img1))
+
+# ╔═╡ 815184fc-8e75-4ab2-b6a7-b0bf28b240a0
+s_list
 
 # ╔═╡ 79227718-7005-42ca-b909-a9c1b3e56a59
 # Align img2 onto img1
@@ -166,7 +175,7 @@ PythonCall = "~0.9.23"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.2"
+julia_version = "1.11.3"
 manifest_format = "2.0"
 project_hash = "f319730f2fa370f1a1c5be94b47563a4d7a66603"
 
@@ -1746,11 +1755,14 @@ version = "17.4.0+2"
 # ╠═52646480-fc66-461e-aed0-0b1d5b26abb6
 # ╠═80077305-3741-40e1-9292-1d8bbcd9339a
 # ╠═31617e77-55e1-46bc-9cbb-1e663f30206c
+# ╠═815184fc-8e75-4ab2-b6a7-b0bf28b240a0
 # ╠═c579f69e-af75-410e-a7ab-e78cf86a65ff
 # ╠═7e29bbdc-9dd5-4866-9dc1-e6be1a1ecb3c
 # ╠═4056582b-bb0e-4493-a131-a62b97126336
 # ╠═992b757d-1d69-4c0a-8c79-924881c9de0a
 # ╠═540bc82b-2e7b-4795-8970-2e64362659e6
+# ╠═827395b0-0f26-4e93-a3ce-2f3b0aae13f1
+# ╠═631a56c9-85a2-464b-95cb-7c6fbfb62a44
 # ╠═3b87bccf-924c-4a44-8e15-1f8487007fbd
 # ╠═d4273003-aa16-43af-bca7-f0327378c27d
 # ╠═1b556e1b-81c8-4e8e-b314-4e21b89ae316
