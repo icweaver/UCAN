@@ -45,6 +45,20 @@ imgs = [img1, img2];
 # ╔═╡ 590c56d8-a9a4-4870-985c-3cee29e972de
 img = imgs[i];
 
+# ╔═╡ 84f698ea-8e25-4233-8f05-f05d29192003
+# tfm = AffineMap(points2 => points1)
+
+# ╔═╡ 65606a75-deef-4d99-9f6d-b22d741d9ea4
+# tfm.linear, tfm.translation
+
+# ╔═╡ 04439bca-7fc2-45db-84a0-010996c9c572
+# 2×2 Matrix{Float64}:
+#  0.9975     -0.0706617
+#  0.0706617   0.9975
+# Float64
+# 88.5153
+# -94.6118
+
 # ╔═╡ 0cc3b13e-90b6-4327-b563-f6888a9e2c6e
 # From https://github.com/JuliaGeometry/CoordinateTransformations.jl/pull/97/files
 # Compute rigid and similarity transformations between point sets
@@ -135,7 +149,7 @@ aps = CircularAperture.(sources.y, sources.x, 25)
 let
 	p = implot(img; colorbar=false)
 
-	colors = [:cyan, :magenta, :yellow]
+	colors = [:cyan, :magenta, :yellow, :lightgreen]
 	for (ap, linecolor) in zip(aps, colors)
 		plot!(p, ap; linecolor, linewidth=3)
 	end
@@ -158,12 +172,6 @@ sources2 = detect_sources(img2)
 points2 = map(sources2) do source
 	[source.x, source.y]
 end
-
-# ╔═╡ 84f698ea-8e25-4233-8f05-f05d29192003
-tfm = AffineMap(points2 => points1)
-
-# ╔═╡ 65606a75-deef-4d99-9f6d-b22d741d9ea4
-tfm.linear, tfm.translation
 
 # ╔═╡ 8a763b57-02ee-42a6-b11f-9a01db105af1
 tfm_euclidean = kabsch(points2 => points1)
@@ -2469,8 +2477,9 @@ version = "1.4.1+2"
 # ╠═4927c658-180f-40d7-a2d0-dd9f00f4f9b2
 # ╠═8a763b57-02ee-42a6-b11f-9a01db105af1
 # ╠═780fbe08-16d6-4e0d-8be5-4c4915bf3894
+# ╠═04439bca-7fc2-45db-84a0-010996c9c572
 # ╟─0cc3b13e-90b6-4327-b563-f6888a9e2c6e
-# ╠═8c8f5a94-8b13-4326-a8e0-1a5b05b04af3
+# ╟─8c8f5a94-8b13-4326-a8e0-1a5b05b04af3
 # ╠═368cd559-b6b5-41f8-a39d-96cb6bdf0900
 # ╠═7dc720af-373b-4794-af23-e431acb80d2d
 # ╠═6e4d668b-dcbe-4cd6-abe4-2ab65e5c5f8b
