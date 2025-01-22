@@ -68,24 +68,26 @@ md"""
 # ╔═╡ c8eb4b8c-3c38-4256-9dfa-4008776e85a2
 function detect_sources(img)
 	# clipped = sigma_clip(img, 1, fill=NaN)
-	bkg, bkg_err = estimate_background(img, 25)
-	# subt = img1 .- bkg[axes(img)...]
+	box_size = gcd(size(img)...)
+	bkg, bkg_err = estimate_background(img, box_size)
+	# subt = img
+	subt = img - bkg
 	err = bkg #bkg * ones(axes(img))
 	# err = bkg
 	
-	yee = extract_sources(PeakMesh(25, 5), img, err, true)
+	yee = extract_sources(PeakMesh(5, 3), subt, err, true)
 	@debug length(yee)
-	sources_all = first(yee, 12)
+	sources_all = first(yee, 15)
 
-	rows = @NamedTuple{x::Int, y::Int, value::eltype(sources_all.value)}[]
-	sources_sorted = sort(sources_all; by = x -> x.x)
-	for i in 1:length(sources_sorted) - 1
-		if abs(sources_sorted[i].x - sources_sorted[i+1].x) > 5
-			push!(rows, sources_sorted[i])
-		end
-	end
+	# rows = @NamedTuple{x::Int, y::Int, value::eltype(sources_all.value)}[]
+	# sources_sorted = sort(sources_all; by = x -> x.x)
+	# for i in 1:length(sources_sorted) - 1
+	# 	if abs(sources_sorted[i].x - sources_sorted[i+1].x) > 5
+	# 		push!(rows, sources_sorted[i])
+	# 	end
+	# end
 	
-	return Table(rows)
+	# return Table(rows)
 end
 
 # ╔═╡ 2935064f-5f52-4bf9-ab14-7925bb99ddbd
@@ -126,8 +128,8 @@ md"""
 """
 
 # ╔═╡ 727b8192-f49a-4894-a26b-72ce4d5218b3
-AstroImages.set_clims!((2_000, 4_000))
-# AstroImages.set_clims!(Zscale(; contrast=0.5))
+# AstroImages.set_clims!((2_000, 4_000))
+AstroImages.set_clims!(Zscale(; contrast=0.5))
 
 # ╔═╡ a23c40dc-0af3-4c3a-8172-203f58603bbb
 TableOfContents()
@@ -2274,7 +2276,7 @@ version = "1.4.1+2"
 # ╟─8be4195e-4ff5-45a6-a03a-2129f6432f20
 # ╟─0de7b43e-fd43-4400-86c8-6762d66275a6
 # ╠═c8eb4b8c-3c38-4256-9dfa-4008776e85a2
-# ╠═f3e41786-4f43-4244-9d83-a13b128a8965
+# ╟─f3e41786-4f43-4244-9d83-a13b128a8965
 # ╠═c631ea41-9437-457d-b858-1323fdede2ba
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═727b8192-f49a-4894-a26b-72ce4d5218b3
