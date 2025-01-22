@@ -16,6 +16,12 @@ macro bind(def, element)
     #! format: on
 end
 
+# ╔═╡ 4927c658-180f-40d7-a2d0-dd9f00f4f9b2
+using LinearAlgebra
+
+# ╔═╡ 368cd559-b6b5-41f8-a39d-96cb6bdf0900
+using CoordinateTransformations: column_matrix
+
 # ╔═╡ da30b9d1-9770-4933-ac99-928090629943
 begin
 	using Images, CoordinateTransformations, Rotations, ImageDraw
@@ -30,15 +36,6 @@ img1 = load("./data/20240717T080003_317_Occultation.fits");
 img2 = load("./data/20240717T080801_868_Occultation.fits");
 #load("./data/tbm_2023-08-28T04-15-41.356000_average_30_stack.fits");
 
-# ╔═╡ 5556b21e-2f67-45d8-8adc-80b64c310840
-# tform, mm = qd_rigid(img1, img2, (5, 5), π/8)
-
-# ╔═╡ 3d28359b-afa5-4d46-84d6-21588c71a147
-tform = CoordinateTransformations.recenter(RotMatrix(π/32), center(img1))
-
-# ╔═╡ 3e26e6aa-7fc7-4bac-813c-dd6397550f4c
-img2w = warp(img1, tform, axes(img1)) |> AstroImage;
-
 # ╔═╡ 4cdf0da1-261e-4e9c-837c-ccc1a5468fdd
 imgs = [img1, img2];
 
@@ -48,8 +45,67 @@ imgs = [img1, img2];
 # ╔═╡ 590c56d8-a9a4-4870-985c-3cee29e972de
 img = imgs[i];
 
-# ╔═╡ 84f698ea-8e25-4233-8f05-f05d29192003
-# AffineMap(from_points => to_points)
+# ╔═╡ 0cc3b13e-90b6-4327-b563-f6888a9e2c6e
+# From https://github.com/JuliaGeometry/CoordinateTransformations.jl/pull/97/files
+# Compute rigid and similarity transformations between point sets
+
+# For rigid transformations, we use:
+# Kabsch, Wolfgang. "A discussion of the solution for the best rotation to
+# relate two sets of vectors." Acta Crystallographica Section A: Crystal
+# Physics, Diffraction, Theoretical and General Crystallography 34.5 (1978):
+# 827-828.
+# This has been generalized to support weighted points:
+# https://igl.ethz.ch/projects/ARAP/svd_rot.pdf
+# We add the component for similarity transformations from:
+# Umeyama, Shinji. "Least-squares estimation of transformation parameters
+# between two point patterns." IEEE Transactions on Pattern Analysis & Machine
+# Intelligence 13.04 (1991): 376-380.
+
+# See also
+# https://en.wikipedia.org/wiki/Kabsch_algorithm
+
+
+# All matrices are DxN, where N is the number of positions and D is the dimensionality
+
+# Here, P is the probe (to be rotated) and Q is the refereence
+
+# `kabsch_centered` assumes P and Q are already centered at the origin
+# returns the rotation (optionally with scaling) for alignment
+function kabsch_centered(P, Q, w; scale::Bool=false, svd::F = LinearAlgebra.svd) where F
+    @assert size(P) == size(Q)
+    W = Diagonal(w/sum(w))
+    H = P*W*Q'
+    U,Σ,V = svd(H)
+    Ddiag = ones(eltype(H), size(H,1))
+    Ddiag[end] = sign(det(V*U'))
+    c = scale ? sum(Σ .* Ddiag) / sum(P .* (P*W)) : 1
+    return LinearMap(V * Diagonal(c * Ddiag) * U')
+end
+
+# ╔═╡ 8c8f5a94-8b13-4326-a8e0-1a5b05b04af3
+# From https://github.com/JuliaGeometry/CoordinateTransformations.jl/pull/97/files
+"""
+    kabsch(from_points => to_points, w=ones(npoints); scale::Bool=false, svd=LinearAlgebra.svd) → trans
+Compute the rigid transformation (or similarity transformation, if `scale=true`)
+that aligns `from_points` to `to_points` in a least-squares sense.
+Optionally specify the non-negative weights `w` for each point. The default value of the weight
+is 1 for each point.
+For
+differentiability, use `svd = GenericLinearAlgebra.svd` or other differentiable
+singular value decomposition.
+"""
+function kabsch(pr::Pair{<:AbstractMatrix, <:AbstractMatrix}, w::AbstractVector=ones(size(pr.first,2)); scale::Bool=false, kwargs...)
+    P, Q = pr
+    any(<(0), w) && throw(ArgumentError("weights must be non-negative"))
+    all(iszero, w) && throw(ArgumentError("weights must not all be zero"))
+    wn = w/sum(w)
+    centerP, centerQ = P*wn, Q*wn
+    R = kabsch_centered(P .- centerP, Q .- centerQ, w; scale, kwargs...)
+    return inv(Translation(-centerQ)) ∘ R ∘ Translation(-centerP)
+end
+
+# ╔═╡ 7dc720af-373b-4794-af23-e431acb80d2d
+kabsch((from_points, to_points)::Pair, args...; kwargs...) = kabsch(column_matrix(from_points) => column_matrix(to_points), args...; kwargs...)
 
 # ╔═╡ 2cda68bd-035a-42d2-a255-5b7aa08fe385
 function detect_sources(img)
@@ -87,6 +143,40 @@ let
 	p
 end
 
+# ╔═╡ a95b157f-5105-4979-9a76-d2384d10daa0
+sources1 = detect_sources(img1)
+
+# ╔═╡ 5ff2e5c5-187e-47e0-968f-8ad07976b40f
+points1 = map(sources1) do source
+	[source.x, source.y]
+end
+
+# ╔═╡ 8de5bab6-44fd-411d-aac4-28ad2ecb1b6c
+sources2 = detect_sources(img2)
+
+# ╔═╡ e702d315-a90f-4403-ab81-6c4757b92377
+points2 = map(sources2) do source
+	[source.x, source.y]
+end
+
+# ╔═╡ 84f698ea-8e25-4233-8f05-f05d29192003
+tfm = AffineMap(points2 => points1)
+
+# ╔═╡ 65606a75-deef-4d99-9f6d-b22d741d9ea4
+tfm.linear, tfm.translation
+
+# ╔═╡ 8a763b57-02ee-42a6-b11f-9a01db105af1
+tfm_euclidean = kabsch(points2 => points1)
+
+# ╔═╡ 780fbe08-16d6-4e0d-8be5-4c4915bf3894
+tfm_euclidean.linear, tfm_euclidean.translation
+
+# ╔═╡ 6e4d668b-dcbe-4cd6-abe4-2ab65e5c5f8b
+img2w = warp(img2, tfm_euclidean, axes(img1)) |> AstroImage
+
+# ╔═╡ 8d49f9b3-3bfa-44d0-95c0-a63b6353ac92
+implot([img1, img2w][i]; colorbar=false)
+
 # ╔═╡ 3fcd6f61-8efd-4d06-9576-ed7ebfa9a37a
 AstroImages.set_clims!(Zscale(; contrast=0.5))
 
@@ -97,6 +187,7 @@ AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
 ImageDraw = "4381153b-2b60-58ae-a1ba-fd683676385f"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -121,7 +212,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.2"
 manifest_format = "2.0"
-project_hash = "9e57abae357d80b3fd3ebe081c3635eb318d80f8"
+project_hash = "1adf5478da94579dc2a29c2d04afc82fbb79a478"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2365,16 +2456,27 @@ version = "1.4.1+2"
 # ╔═╡ Cell order:
 # ╠═b42330df-14aa-4fe0-9c85-7eec94447fec
 # ╠═a128106b-5e5e-423b-89c1-d8104ffe0619
-# ╠═5556b21e-2f67-45d8-8adc-80b64c310840
-# ╠═3d28359b-afa5-4d46-84d6-21588c71a147
-# ╠═3e26e6aa-7fc7-4bac-813c-dd6397550f4c
 # ╠═4cdf0da1-261e-4e9c-837c-ccc1a5468fdd
 # ╠═590c56d8-a9a4-4870-985c-3cee29e972de
-# ╠═2a4bdbc9-0daf-473b-b4fc-d0bc64c659ba
+# ╟─2a4bdbc9-0daf-473b-b4fc-d0bc64c659ba
 # ╟─4e535ea3-8281-43fc-be34-c067c8a4b462
+# ╟─8d49f9b3-3bfa-44d0-95c0-a63b6353ac92
 # ╠═66531b59-9285-47fe-8b1a-191647b99a31
-# ╠═5bc585a1-06fa-44bd-a198-98ea91e4413d
+# ╠═a95b157f-5105-4979-9a76-d2384d10daa0
+# ╠═8de5bab6-44fd-411d-aac4-28ad2ecb1b6c
 # ╠═84f698ea-8e25-4233-8f05-f05d29192003
+# ╠═65606a75-deef-4d99-9f6d-b22d741d9ea4
+# ╠═4927c658-180f-40d7-a2d0-dd9f00f4f9b2
+# ╠═8a763b57-02ee-42a6-b11f-9a01db105af1
+# ╠═780fbe08-16d6-4e0d-8be5-4c4915bf3894
+# ╟─0cc3b13e-90b6-4327-b563-f6888a9e2c6e
+# ╠═8c8f5a94-8b13-4326-a8e0-1a5b05b04af3
+# ╠═368cd559-b6b5-41f8-a39d-96cb6bdf0900
+# ╠═7dc720af-373b-4794-af23-e431acb80d2d
+# ╠═6e4d668b-dcbe-4cd6-abe4-2ab65e5c5f8b
+# ╠═5ff2e5c5-187e-47e0-968f-8ad07976b40f
+# ╠═e702d315-a90f-4403-ab81-6c4757b92377
+# ╠═5bc585a1-06fa-44bd-a198-98ea91e4413d
 # ╠═2cda68bd-035a-42d2-a255-5b7aa08fe385
 # ╠═3fcd6f61-8efd-4d06-9576-ed7ebfa9a37a
 # ╠═da30b9d1-9770-4933-ac99-928090629943
