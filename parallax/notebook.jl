@@ -48,6 +48,29 @@ imgs = [img1, img2];
 # ╔═╡ 750918ef-5c36-46db-9779-13a084f0867a
 img = imgs[i]
 
+# ╔═╡ c579f69e-af75-410e-a7ab-e78cf86a65ff
+# img2
+src = np.array([5, 191, 437, 674, 442, 187]).reshape((3, 2))
+
+# ╔═╡ 7e29bbdc-9dd5-4866-9dc1-e6be1a1ecb3c
+# img 1
+dst = np.array([80, 96, 477, 609, 516, 123]).reshape((3, 2))
+
+# ╔═╡ 4056582b-bb0e-4493-a131-a62b97126336
+aa.estimate_transform("affine", src, dst)
+
+# ╔═╡ 992b757d-1d69-4c0a-8c79-924881c9de0a
+aa.estimate_transform("similarity", src, dst)
+
+# ╔═╡ 540bc82b-2e7b-4795-8970-2e64362659e6
+aa.estimate_transform("euclidean", src, dst)
+
+# ╔═╡ 631a56c9-85a2-464b-95cb-7c6fbfb62a44
+src_test = np.array([1, 2, 1, 3, 5, 6, 7 ,8]).reshape((4, 2))
+
+# ╔═╡ 827395b0-0f26-4e93-a3ce-2f3b0aae13f1
+aa._generate_invariants(src_test)
+
 # ╔═╡ 3b87bccf-924c-4a44-8e15-1f8487007fbd
 # ╠═╡ disabled = true
 #=╠═╡
@@ -74,38 +97,6 @@ md"""
 
 # ╔═╡ 6002866d-98e7-4ac3-b3aa-dad0b4648691
 TableOfContents()
-
-# ╔═╡ 44b64fcf-1cfa-4487-b366-c301037622ec
-AstroImages.set_clims!(Zscale(; contrast=0.5))
-
-# ╔═╡ d7aebdaa-84ef-48c9-a49f-c010cd11d58b
-@py begin
-	import numpy as np
-	import astroalign as aa
-end
-
-# ╔═╡ c579f69e-af75-410e-a7ab-e78cf86a65ff
-# img2
-src = np.array([5, 191, 437, 674, 442, 187]).reshape((3, 2))
-
-# ╔═╡ 7e29bbdc-9dd5-4866-9dc1-e6be1a1ecb3c
-# img 1
-dst = np.array([80, 96, 477, 609, 516, 123]).reshape((3, 2))
-
-# ╔═╡ 4056582b-bb0e-4493-a131-a62b97126336
-aa.estimate_transform("affine", src, dst)
-
-# ╔═╡ 992b757d-1d69-4c0a-8c79-924881c9de0a
-aa.estimate_transform("similarity", src, dst)
-
-# ╔═╡ 540bc82b-2e7b-4795-8970-2e64362659e6
-aa.estimate_transform("euclidean", src, dst)
-
-# ╔═╡ 631a56c9-85a2-464b-95cb-7c6fbfb62a44
-src_test = np.array([1, 2, 1, 3, 5, 6, 7 ,8]).reshape((4, 2))
-
-# ╔═╡ 827395b0-0f26-4e93-a3ce-2f3b0aae13f1
-aa._generate_invariants(src_test)
 
 # ╔═╡ 34d8d525-1b35-4670-861f-4d634142c780
 function to_py(img)
@@ -153,6 +144,15 @@ imgs_aligned = align_frames([img1, img2]);
 
 # ╔═╡ 80077305-3741-40e1-9292-1d8bbcd9339a
 imgs_aligned[i]
+
+# ╔═╡ 44b64fcf-1cfa-4487-b366-c301037622ec
+AstroImages.set_clims!(Zscale(; contrast=0.5))
+
+# ╔═╡ d7aebdaa-84ef-48c9-a49f-c010cd11d58b
+@py begin
+	import numpy as np
+	import astroalign as aa
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

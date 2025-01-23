@@ -16,6 +16,9 @@ macro bind(def, element)
     #! format: on
 end
 
+# ╔═╡ 44a75c4b-722c-4cc4-839c-956d0704f11c
+using LinearAlgebra
+
 # ╔═╡ db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 begin
 	# Notebook
@@ -65,45 +68,69 @@ md"""
 ## Point selection
 """
 
-# ╔═╡ c8eb4b8c-3c38-4256-9dfa-4008776e85a2
-function detect_sources(img)
-	# clipped = sigma_clip(img, 1, fill=NaN)
+# ╔═╡ 2935064f-5f52-4bf9-ab14-7925bb99ddbd
+function ap_plot(img, sources)
+	aps = CircularAperture.(sources.y, sources.x, 35)
+	p = implot(img; colorbar=false)
+	plot!(p, aps; width=2, color=:lightgreen)
+	return p
+end
+
+# ╔═╡ dc81134b-46a8-4def-ae92-daf74cc91b3e
+md"""
+## Estimate background
+"""
+
+# ╔═╡ 59e483ab-2e53-4d3a-8254-36b8bc3c0963
+function proc(img)
 	box_size = gcd(size(img)...)
 	bkg, bkg_err = estimate_background(img, box_size)
-	# subt = img
-	subt = img - bkg
-	err = bkg #bkg * ones(axes(img))
-	# err = bkg
-	
-	yee = extract_sources(PeakMesh(5, 3), subt, err, true)
-	@debug length(yee)
-	sources_all = first(yee, 15)
+	return bkg, bkg_err, box_size
+end
 
-	# rows = @NamedTuple{x::Int, y::Int, value::eltype(sources_all.value)}[]
-	# sources_sorted = sort(sources_all; by = x -> x.x)
-	# for i in 1:length(sources_sorted) - 1
-	# 	if abs(sources_sorted[i].x - sources_sorted[i+1].x) > 5
-	# 		push!(rows, sources_sorted[i])
-	# 	end
-	# end
+# ╔═╡ 03c63b27-144d-4a71-abb6-edb16f3a05d8
+bkg1, bkg1_err, box_size1 = proc(img1)
+
+# ╔═╡ 8cc61f99-323a-4cd9-8d0a-9962b565ea2b
+bkg2, bkg2_err, box_size2 = proc(img2)
+
+# ╔═╡ 18cbc45e-0d72-4c92-b784-d063430db265
+md"""
+## Extract sources
+"""
+
+# ╔═╡ c8eb4b8c-3c38-4256-9dfa-4008776e85a2
+function detect_sources(img, err)
+	sources_all = extract_sources(PeakMesh(3, 3), img, err, true)
 	
+	@debug length(sources_all)
+	# return first(sources_all, 10)
+
+	rows = @NamedTuple{x::Int, y::Int, value::eltype(sources_all.value)}[]
+	p = sort(sources_all; by = x -> x.x)
+	for i in 1:length(p) - 1
+		# if abs(p[i].x - p[i+1].x) > 3
+		if norm( (p[i].x, p[i].y) .- (p[i+1].x, p[i+1].y) ) > 3
+			push!(rows, p[i])
+		end
+	end
+	sort!(rows; by = x -> x.value, rev=true)
+	
+	return first(Table(rows), 5)
 	# return Table(rows)
 end
 
-# ╔═╡ 2935064f-5f52-4bf9-ab14-7925bb99ddbd
-function ap_plot(img)
-	sources = detect_sources(img)
-	aps = CircularAperture.(sources.y, sources.x, 24)
-	p = implot(img; colorbar=false)
-	plot!(p, aps; width=3, color=:auto)
-	return sources, p
-end
+# ╔═╡ 0e5814c2-17d3-4949-804b-3f7be0622018
+sources1 = detect_sources(img1, bkg1)
 
 # ╔═╡ 9c54bc11-db8f-48ce-9f4b-1210e0cd5973
-sources1, p1 = ap_plot(img1);
+p1 = ap_plot(img1, sources1);
+
+# ╔═╡ 0c91aba1-cd12-41d4-a996-aa91dbfd203e
+sources2 = detect_sources(img2, bkg2)
 
 # ╔═╡ 22e17c6f-d2b1-4bd1-9278-a59a1d1e4548
-sources2, p2 = ap_plot(img2);
+p2 = ap_plot(img2, sources2);
 
 # ╔═╡ 53e64c90-966d-41ad-89d5-4d410ad579f8
 ps = [p1, p2];
@@ -128,7 +155,7 @@ md"""
 """
 
 # ╔═╡ 727b8192-f49a-4894-a26b-72ce4d5218b3
-# AstroImages.set_clims!((2_000, 4_000))
+# AstroImages.set_clims!((2_000, 8_000))
 AstroImages.set_clims!(Zscale(; contrast=0.5))
 
 # ╔═╡ a23c40dc-0af3-4c3a-8172-203f58603bbb
@@ -139,6 +166,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -159,7 +187,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "0b3b3c4f69d00ce492240178ff1a2a7a23aac888"
+project_hash = "ef91dc181f6efb7bda8c70a1d9c6cd8e07dda9af"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2269,12 +2297,20 @@ version = "1.4.1+2"
 # ╟─59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─bd6cd797-bf84-41c7-8154-7babb26a1f8c
-# ╠═2935064f-5f52-4bf9-ab14-7925bb99ddbd
 # ╠═9c54bc11-db8f-48ce-9f4b-1210e0cd5973
 # ╠═22e17c6f-d2b1-4bd1-9278-a59a1d1e4548
 # ╠═53e64c90-966d-41ad-89d5-4d410ad579f8
 # ╟─8be4195e-4ff5-45a6-a03a-2129f6432f20
 # ╟─0de7b43e-fd43-4400-86c8-6762d66275a6
+# ╟─2935064f-5f52-4bf9-ab14-7925bb99ddbd
+# ╟─dc81134b-46a8-4def-ae92-daf74cc91b3e
+# ╠═03c63b27-144d-4a71-abb6-edb16f3a05d8
+# ╠═8cc61f99-323a-4cd9-8d0a-9962b565ea2b
+# ╠═59e483ab-2e53-4d3a-8254-36b8bc3c0963
+# ╠═44a75c4b-722c-4cc4-839c-956d0704f11c
+# ╟─18cbc45e-0d72-4c92-b784-d063430db265
+# ╠═0e5814c2-17d3-4949-804b-3f7be0622018
+# ╠═0c91aba1-cd12-41d4-a996-aa91dbfd203e
 # ╠═c8eb4b8c-3c38-4256-9dfa-4008776e85a2
 # ╟─f3e41786-4f43-4244-9d83-a13b128a8965
 # ╠═c631ea41-9437-457d-b858-1323fdede2ba
