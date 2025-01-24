@@ -78,7 +78,7 @@ function ap_plot(img, sources)
 	plot!(p, aps; width=2, color=:lightgreen)
 	map(sources) do source
 		x, y = source.x, source.y
-		annotate!(p, y, 1.2*x, string("(", y, ", ", x, ")"))
+		annotate!(p, y, 1.2*x, string("(", y, ", ", x, ")"), :lightgreen)
 	end
 	return p
 end
@@ -108,10 +108,9 @@ md"""
 
 # ╔═╡ c8eb4b8c-3c38-4256-9dfa-4008776e85a2
 function detect_sources(img, err)
-	sources_all = extract_sources(PeakMesh(3, 3), img, err, true)
+	sources_all = extract_sources(PeakMesh(), img, err, true)
 	
-	@debug length(sources_all)
-	# return first(sources_all, 10)
+	@debug "Total sources detected" length(sources_all)
 
 	rows = @NamedTuple{x::Int, y::Int, value::eltype(sources_all.value)}[]
 	p = sort(sources_all; by = x -> x.x)
@@ -128,13 +127,13 @@ function detect_sources(img, err)
 end
 
 # ╔═╡ 0e5814c2-17d3-4949-804b-3f7be0622018
-sources1 = detect_sources(img1, bkg1 .* 0)
+sources1 = detect_sources(img1, bkg1)
 
 # ╔═╡ 9c54bc11-db8f-48ce-9f4b-1210e0cd5973
 p1 = ap_plot(img1, sources1);
 
 # ╔═╡ 0c91aba1-cd12-41d4-a996-aa91dbfd203e
-sources2 = detect_sources(img2, bkg2 .* 0)
+sources2 = detect_sources(img2, bkg2)
 
 # ╔═╡ 22e17c6f-d2b1-4bd1-9278-a59a1d1e4548
 p2 = ap_plot(img2, sources2);
@@ -166,7 +165,7 @@ md"""
 point_map = (
 	[191, 5] => [96, 80],
 	[187, 442] => [123, 516],
-	# [400, 505] => [339, 564],
+	[400, 505] => [339, 564],
 	[674, 437] => [609, 477],
 )
 
@@ -185,22 +184,12 @@ end
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
 tfm = AffineMap(from_points => to_points)
 
-# ╔═╡ e32aa514-481f-408f-abfa-916da85f7f65
-# tfm0 = AffineMap([
-# 	9.97462782e-01 -6.98726974e-02
-# 	6.98726974e-02 9.97462782e-01
-# ],
-# 	[8.85356487e+01, -9.41778413e+01]
-# )
-
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
-img2w = warp(img2, tfm, axes(img1)) |> AstroImage;
-
-# ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
-p2w = ap_plot(img2w, sources1);
+img2w = shareheader(img2, warp(img2, tfm, axes(img1)));
 
 # ╔═╡ 027e4cad-95ab-4d98-b987-2fd13384f642
-ps_aligned = [p1, p2w];
+ps_aligned = [img1, img2w];
+# ps_aligned = [p1, p2w];
 
 # ╔═╡ 9de12c4e-5250-43d1-bd0a-e80d6d3f13f3
 @bind i_aligned Slider(eachindex(ps_aligned))
@@ -208,8 +197,11 @@ ps_aligned = [p1, p2w];
 # ╔═╡ 819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
 ps_aligned[i_aligned]
 
+# ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
+p2w = ap_plot(img2w, sources1);
+
 # ╔═╡ 62b24756-fc19-43cd-9939-a3eefccb009a
-bkg2w = warp(bkg2, tfm, axes(img1)) |> AstroImage;
+#bkg2w = warp(bkg2, tfm, axes(img1)) |> AstroImage;
 
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
 md"""
@@ -2387,7 +2379,6 @@ version = "1.4.1+2"
 # ╠═e3fdb2c4-58ca-4d37-8e66-208d7469135c
 # ╠═4ca4c86b-6260-47d2-b2a2-795a611ce17d
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
-# ╠═e32aa514-481f-408f-abfa-916da85f7f65
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╠═62b24756-fc19-43cd-9939-a3eefccb009a
 # ╠═407c5464-c742-4e7f-b4c3-0c3d3f5e0750
