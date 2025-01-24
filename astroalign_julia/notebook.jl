@@ -71,15 +71,13 @@ md"""
 """
 
 # ╔═╡ 9c54bc11-db8f-48ce-9f4b-1210e0cd5973
-p1 = plot_img(img1);
 # p1 = ap_plot(img1, sources1);
 
 # ╔═╡ 22e17c6f-d2b1-4bd1-9278-a59a1d1e4548
-p2 = plot_img(img2);
 # p2 = ap_plot(img2, sources2);
 
 # ╔═╡ 53e64c90-966d-41ad-89d5-4d410ad579f8
-ps = [p1, p2];
+# ps = [p1, p2];
 
 # ╔═╡ bce4f077-80d1-495a-a104-6f5b29a477df
 function tooltip_hm(self, i, pos)
@@ -109,31 +107,19 @@ end
 # ╔═╡ 147695b4-961f-4c09-8f55-3697538c7e7e
 plot_imgs(img1, img2)
 
-# ╔═╡ 4bfea7d1-34cf-4b80-8f13-0fff0ee00465
-# on(events(fig).mousebutton, priority=0) do event
-# 	if event.button == Mouse.left
-# 		x, y = mouseposition(ax.scene)
-# 		scatter!(ax, [x], [y], marker='+', color=:red, markersize=30)
-# 		@debug x y
-# 	end
-# end
-
-# ╔═╡ 36b40d08-a111-4789-9521-f9b1fab063c7
-img1
-
 # ╔═╡ 2935064f-5f52-4bf9-ab14-7925bb99ddbd
-function ap_plot(img, sources)
-	aps = CircularAperture.(sources.y, sources.x, 15)
-	p = implot(img; colorbar=false)
-	plot!(p, aps; width=2, color=:lightgreen)
-	map(sources) do source
-		x, y = source.x, source.y
-		annotate!(p, y, x, (string("(", y, ", ", x, ")\n"), :lightgreen, :bottom, 8))
-	end
-	xlabel!("X (pixels)")
-	ylabel!("Y (pixels)")
-	return p
-end
+# function ap_plot(img, sources)
+# 	aps = CircularAperture.(sources.y, sources.x, 15)
+# 	p = implot(img; colorbar=false)
+# 	plot!(p, aps; width=2, color=:lightgreen)
+# 	map(sources) do source
+# 		x, y = source.x, source.y
+# 		annotate!(p, y, x, (string("(", y, ", ", x, ")\n"), :lightgreen, :bottom, 8))
+# 	end
+# 	xlabel!("X (pixels)")
+# 	ylabel!("Y (pixels)")
+# 	return p
+# end
 
 # ╔═╡ dc81134b-46a8-4def-ae92-daf74cc91b3e
 md"""
@@ -147,41 +133,41 @@ md"""
 # bkg2, bkg2_err, box_size2 = proc(img2)
 
 # ╔═╡ 59e483ab-2e53-4d3a-8254-36b8bc3c0963
-function proc(img)
-	box_size = gcd(size(img)...)
-	bkg, bkg_err = estimate_background(img, box_size)
-	return bkg, bkg_err, box_size
-end
+# function proc(img)
+# 	box_size = gcd(size(img)...)
+# 	bkg, bkg_err = estimate_background(img, box_size)
+# 	return bkg, bkg_err, box_size
+# end
 
 # ╔═╡ 18cbc45e-0d72-4c92-b784-d063430db265
 md"""
 ## Extract sources
 """
 
-# ╔═╡ c8eb4b8c-3c38-4256-9dfa-4008776e85a2
-function detect_sources(img, err)
-	sources_all = extract_sources(PeakMesh(15, 3), img, err, true)
-	
-	@debug "Total sources detected" length(sources_all)
-	# return first(sources_all, 15)
-	rows = @NamedTuple{x::Int, y::Int, value::eltype(sources_all.value)}[]
-	p = sort(sources_all; by = x -> x.x)
-	for i in 1:length(p) - 1
-		# if abs(p[i].x - p[i+1].x) > 3
-		if norm( (p[i].x, p[i].y) .- (p[i+1].x, p[i+1].y) ) > 5
-			push!(rows, p[i])
-		end
-	end
-	sort!(rows; by = x -> x.value, rev=true)
-	
-	return first(Table(rows), 8)
-end
-
 # ╔═╡ 0e5814c2-17d3-4949-804b-3f7be0622018
-sources1 = detect_sources(img1, img1 .* 0)
+# sources1 = detect_sources(img1, img1 .* 0)
 
 # ╔═╡ 0c91aba1-cd12-41d4-a996-aa91dbfd203e
-sources2 = detect_sources(img2, img2 .* 0)
+# sources2 = detect_sources(img2, img2 .* 0)
+
+# ╔═╡ c8eb4b8c-3c38-4256-9dfa-4008776e85a2
+# function detect_sources(img, err)
+# 	sources_all = extract_sources(PeakMesh(15, 3), img, err, true)
+	
+# 	@debug "Total sources detected" length(sources_all)
+# 	# return first(sources_all, 15)
+# 	rows = @NamedTuple{x::Int, y::Int, value::eltype(sources_all.value)}[]
+# 	p = sort(sources_all; by = x -> x.x)
+# 	for i in 1:length(p) - 1
+# 		# if abs(p[i].x - p[i+1].x) > 3
+# 		if norm( (p[i].x, p[i].y) .- (p[i+1].x, p[i+1].y) ) > 5
+# 			push!(rows, p[i])
+# 		end
+# 	end
+# 	sort!(rows; by = x -> x.value, rev=true)
+	
+# 	return first(Table(rows), 8)
+# end
 
 # ╔═╡ f3e41786-4f43-4244-9d83-a13b128a8965
 md"""
@@ -196,6 +182,9 @@ md"""
 ## Alignment
 """
 
+# ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
+# p2w = ap_plot(img2w, sources1);
+
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 # img2 => img1
 # point_map = (
@@ -204,10 +193,16 @@ md"""
 # 	[400, 505] => [339, 564],
 # 	[674, 437] => [609, 477],
 # )
+# point_map = (
+# 	[76, 229] => [83, 245],
+# 	[291, 196] => [297, 212],
+# 	[381, 57] => [387, 73],
+# )
 point_map = (
-	[76, 229] => [83, 245],
-	[291, 196] => [297, 212],
-	[381, 57] => [387, 73],
+	[54, 219] => [80, 211],
+	[124, 309] => [124, 266],
+	[155, 321] => [143, 273],
+	[360, 46] => [266, 106],
 )
 
 # ╔═╡ d5991411-cb7b-4351-bd80-4ec0292b2083
@@ -221,14 +216,11 @@ to_points = first.(point_map)
 # img2
 from_points = last.(point_map)
 
-# ╔═╡ b8e69e0a-5eea-412e-a7aa-1257fe30d144
-@allocations sqrt.(i^2 for i in 1:100)
-
-# ╔═╡ 85d7b363-ede6-496b-883b-cd6452692892
-@allocations map(sqrt, i^2 for i in 1:100)
-
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
-tfm = AffineMap(from_points => to_points)
+tfm = AffineMap(from_points => to_points);
+
+# ╔═╡ faf50636-3a97-4287-b33b-59a489c2d43f
+tfm.linear, tfm.translation
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 img2w = shareheader(img2, warp(img2, tfm, axes(img1)));
@@ -242,9 +234,6 @@ ps_aligned = [img1, img2w];
 
 # ╔═╡ 819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
 aligned
-
-# ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
-p2w = ap_plot(img2w, sources1);
 
 # ╔═╡ 62b24756-fc19-43cd-9939-a3eefccb009a
 #bkg2w = warp(bkg2, tfm, axes(img1)) |> AstroImage;
@@ -2420,10 +2409,8 @@ version = "3.6.0+0"
 # ╠═22e17c6f-d2b1-4bd1-9278-a59a1d1e4548
 # ╠═53e64c90-966d-41ad-89d5-4d410ad579f8
 # ╠═147695b4-961f-4c09-8f55-3697538c7e7e
-# ╠═57ff345e-9d58-4fc5-a177-9fa7f9b8e886
-# ╠═bce4f077-80d1-495a-a104-6f5b29a477df
-# ╠═4bfea7d1-34cf-4b80-8f13-0fff0ee00465
-# ╠═36b40d08-a111-4789-9521-f9b1fab063c7
+# ╟─57ff345e-9d58-4fc5-a177-9fa7f9b8e886
+# ╟─bce4f077-80d1-495a-a104-6f5b29a477df
 # ╠═2935064f-5f52-4bf9-ab14-7925bb99ddbd
 # ╟─dc81134b-46a8-4def-ae92-daf74cc91b3e
 # ╠═03c63b27-144d-4a71-abb6-edb16f3a05d8
@@ -2444,9 +2431,8 @@ version = "3.6.0+0"
 # ╠═d5991411-cb7b-4351-bd80-4ec0292b2083
 # ╠═e3fdb2c4-58ca-4d37-8e66-208d7469135c
 # ╠═4ca4c86b-6260-47d2-b2a2-795a611ce17d
-# ╠═b8e69e0a-5eea-412e-a7aa-1257fe30d144
-# ╠═85d7b363-ede6-496b-883b-cd6452692892
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
+# ╠═faf50636-3a97-4287-b33b-59a489c2d43f
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╠═62b24756-fc19-43cd-9939-a3eefccb009a
 # ╠═407c5464-c742-4e7f-b4c3-0c3d3f5e0750
