@@ -43,6 +43,9 @@ md"""
 We want to try and align the following two images taken by an eVscope:
 """
 
+# ╔═╡ b016b4b4-8589-48bd-bc50-5bb694b8d2b9
+# Data from http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf
+
 # ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 img1 = load("./data/ASTEAST.FTS")[:, :, 1];
 # img1 = load("./data/20240717T080003_317_Occultation.fits");
@@ -53,6 +56,9 @@ img2 = load("./data/ASTWEST.FTS")[:, :, 1];
 
 # ╔═╡ 864135ec-c8db-4c70-a0e4-21a645db7edd
 imgs = [img1, img2];
+
+# ╔═╡ 01123986-479a-4a49-a728-9cc02e0046cd
+header(img1)
 
 # ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 @bind img Slider(imgs)
@@ -93,8 +99,8 @@ function plot_imgs(img1, img2)
 
 	fig = Figure()
 
-	ax1 = Axis(fig[1, 1]; title="img1")
-	ax2 = Axis(fig[1, 2]; title="img2")
+	ax1 = Axis(fig[1, 1]; title="img1", yreversed=false)
+	ax2 = Axis(fig[1, 2]; title="img2", yreversed=true)
 	
 	heatmap!(ax1, img1; colorrange=zscale(img1), inspector_label=tooltip_hm)
 	heatmap!(ax2, img2; colorrange=zscale(img2), inspector_label=tooltip_hm)
@@ -226,7 +232,7 @@ tfm.linear, tfm.translation
 img2w = shareheader(img2, warp(img2, tfm, axes(img1)));
 
 # ╔═╡ 027e4cad-95ab-4d98-b987-2fd13384f642
-ps_aligned = [img1, img2w];
+ps_aligned = [img1, img2w] .|> permutedims;
 # ps_aligned = [p1, p2w];
 
 # ╔═╡ 9de12c4e-5250-43d1-bd0a-e80d6d3f13f3
@@ -238,6 +244,19 @@ aligned
 # ╔═╡ 62b24756-fc19-43cd-9939-a3eefccb009a
 #bkg2w = warp(bkg2, tfm, axes(img1)) |> AstroImage;
 
+# ╔═╡ 8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
+md"""
+## Parallax distance
+"""
+
+# ╔═╡ f55bff1b-6abd-43f6-aec0-678d76e18bbe
+# img2 (pixel_coords => (RA, DEC))
+pixel_map = (
+	[55, 222] => ["15 30 46.54", "+11 15 01.5"],
+	[267, 187] => ["15 30 39.35", "+11 15 15.6"],
+	[358, 48] => ["15 30 36.20", "+11 16 21.4"],
+)
+
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
 md"""
 ## Notebook setup 🔧
@@ -247,7 +266,7 @@ md"""
 begin
 # AstroImages defaults
 # AstroImages.set_clims!((2_000, 8_000))
-AstroImages.set_clims!(Zscale(; contrast=0.5))
+AstroImages.set_clims!(Zscale(; contrast=0.15))
 AstroImages.set_cmap!(:cividis)
 end
 
@@ -2398,9 +2417,11 @@ version = "3.6.0+0"
 # ╔═╡ Cell order:
 # ╟─75d03ef4-d8b2-11ef-076a-058846f3b6ba
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
+# ╠═b016b4b4-8589-48bd-bc50-5bb694b8d2b9
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
 # ╠═864135ec-c8db-4c70-a0e4-21a645db7edd
+# ╠═01123986-479a-4a49-a728-9cc02e0046cd
 # ╟─bfc419f1-e12d-489f-b5c3-622ae9e83b0c
 # ╟─59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
@@ -2409,7 +2430,7 @@ version = "3.6.0+0"
 # ╠═22e17c6f-d2b1-4bd1-9278-a59a1d1e4548
 # ╠═53e64c90-966d-41ad-89d5-4d410ad579f8
 # ╠═147695b4-961f-4c09-8f55-3697538c7e7e
-# ╟─57ff345e-9d58-4fc5-a177-9fa7f9b8e886
+# ╠═57ff345e-9d58-4fc5-a177-9fa7f9b8e886
 # ╟─bce4f077-80d1-495a-a104-6f5b29a477df
 # ╠═2935064f-5f52-4bf9-ab14-7925bb99ddbd
 # ╟─dc81134b-46a8-4def-ae92-daf74cc91b3e
@@ -2436,6 +2457,8 @@ version = "3.6.0+0"
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╠═62b24756-fc19-43cd-9939-a3eefccb009a
 # ╠═407c5464-c742-4e7f-b4c3-0c3d3f5e0750
+# ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
+# ╠═f55bff1b-6abd-43f6-aec0-678d76e18bbe
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═727b8192-f49a-4894-a26b-72ce4d5218b3
 # ╠═f949e528-282b-4de7-a9da-c337a18e92a6
