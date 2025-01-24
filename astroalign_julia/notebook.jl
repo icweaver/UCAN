@@ -162,30 +162,39 @@ md"""
 """
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
+# img2 => img1
 point_map = (
-	# (96, 80) => (191, 5),
-	(121, 517) => (187, 442),
-	(339, 564) => (400, 505),
-	(609, 477) => (674, 437),
+	[191, 5] => [96, 80],
+	[187, 442] => [121, 517],
+	[400, 505] => [339, 564],
+	# [674, 437] => [609, 477],
 )
 
 # ╔═╡ e3fdb2c4-58ca-4d37-8e66-208d7469135c
 # img1
-to_points = map(point_map) do(p1, p2)
-	reverse(collect(p1))
-end |> collect
+to_points = map(point_map) do (p1, p2)
+	p1
+end
 
 # ╔═╡ 4ca4c86b-6260-47d2-b2a2-795a611ce17d
 # img2
-from_points = map(point_map) do(p1, p2)
-	reverse(collect(p2))
-end |> collect
+from_points = map(point_map) do (p1, p2)
+	p2
+end
 
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
 tfm = AffineMap(from_points => to_points)
 
+# ╔═╡ e32aa514-481f-408f-abfa-916da85f7f65
+# tfm0 = AffineMap([
+# 	9.97462782e-01 -6.98726974e-02
+# 	6.98726974e-02 9.97462782e-01
+# ],
+# 	[8.85356487e+01, -9.41778413e+01]
+# )
+
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
-img2w = warp(img2, tfm, axes(img1)) |> AstroImage
+img2w = warp(img2, tfm, axes(img1)) |> AstroImage;
 
 # ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
 p2w = ap_plot(img2w, sources1);
@@ -2375,6 +2384,7 @@ version = "1.4.1+2"
 # ╠═e3fdb2c4-58ca-4d37-8e66-208d7469135c
 # ╠═4ca4c86b-6260-47d2-b2a2-795a611ce17d
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
+# ╠═e32aa514-481f-408f-abfa-916da85f7f65
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╠═407c5464-c742-4e7f-b4c3-0c3d3f5e0750
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
