@@ -19,6 +19,9 @@ end
 # ╔═╡ 44a75c4b-722c-4cc4-839c-956d0704f11c
 using LinearAlgebra
 
+# ╔═╡ 407c5464-c742-4e7f-b4c3-0c3d3f5e0750
+using ImageTransformations
+
 # ╔═╡ db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 begin
 	# Notebook
@@ -73,6 +76,10 @@ function ap_plot(img, sources)
 	aps = CircularAperture.(sources.y, sources.x, 35)
 	p = implot(img; colorbar=false)
 	plot!(p, aps; width=2, color=:lightgreen)
+	map(sources) do source
+		x, y = source.x, source.y
+		annotate!(p, y, 1.2*x, string("(", y, ", ", x, ")"))
+	end
 	return p
 end
 
@@ -149,6 +156,49 @@ md"""
 # ╔═╡ c631ea41-9437-457d-b858-1323fdede2ba
 
 
+# ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
+md"""
+## Alignment
+"""
+
+# ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
+point_map = (
+	# (96, 80) => (191, 5),
+	(121, 517) => (187, 442),
+	(339, 564) => (400, 505),
+	(609, 477) => (674, 437),
+)
+
+# ╔═╡ e3fdb2c4-58ca-4d37-8e66-208d7469135c
+# img1
+to_points = map(point_map) do(p1, p2)
+	reverse(collect(p1))
+end |> collect
+
+# ╔═╡ 4ca4c86b-6260-47d2-b2a2-795a611ce17d
+# img2
+from_points = map(point_map) do(p1, p2)
+	reverse(collect(p2))
+end |> collect
+
+# ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
+tfm = AffineMap(from_points => to_points)
+
+# ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
+img2w = warp(img2, tfm, axes(img1)) |> AstroImage
+
+# ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
+p2w = ap_plot(img2w, sources1);
+
+# ╔═╡ 027e4cad-95ab-4d98-b987-2fd13384f642
+ps_aligned = [p1, p2w];
+
+# ╔═╡ 9de12c4e-5250-43d1-bd0a-e80d6d3f13f3
+@bind i_aligned Slider(eachindex(ps_aligned))
+
+# ╔═╡ 819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
+ps_aligned[i_aligned]
+
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
 md"""
 ## Notebook setup 🔧
@@ -166,6 +216,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
+ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -175,6 +226,7 @@ TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 [compat]
 AstroImages = "~0.5.0"
 CoordinateTransformations = "~0.6.3"
+ImageTransformations = "~0.10.1"
 Photometry = "~0.9.3"
 Plots = "~1.40.9"
 PlutoUI = "~0.7.60"
@@ -187,7 +239,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "ef91dc181f6efb7bda8c70a1d9c6cd8e07dda9af"
+project_hash = "70a1a3f1439e161a45e9c89e60d4089576453708"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2302,7 +2354,7 @@ version = "1.4.1+2"
 # ╠═53e64c90-966d-41ad-89d5-4d410ad579f8
 # ╟─8be4195e-4ff5-45a6-a03a-2129f6432f20
 # ╟─0de7b43e-fd43-4400-86c8-6762d66275a6
-# ╟─2935064f-5f52-4bf9-ab14-7925bb99ddbd
+# ╠═2935064f-5f52-4bf9-ab14-7925bb99ddbd
 # ╟─dc81134b-46a8-4def-ae92-daf74cc91b3e
 # ╠═03c63b27-144d-4a71-abb6-edb16f3a05d8
 # ╠═8cc61f99-323a-4cd9-8d0a-9962b565ea2b
@@ -2314,6 +2366,17 @@ version = "1.4.1+2"
 # ╠═c8eb4b8c-3c38-4256-9dfa-4008776e85a2
 # ╟─f3e41786-4f43-4244-9d83-a13b128a8965
 # ╠═c631ea41-9437-457d-b858-1323fdede2ba
+# ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
+# ╟─819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
+# ╟─9de12c4e-5250-43d1-bd0a-e80d6d3f13f3
+# ╠═027e4cad-95ab-4d98-b987-2fd13384f642
+# ╠═aaf9b34c-4735-46d6-b1c8-a899997c6174
+# ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
+# ╠═e3fdb2c4-58ca-4d37-8e66-208d7469135c
+# ╠═4ca4c86b-6260-47d2-b2a2-795a611ce17d
+# ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
+# ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
+# ╠═407c5464-c742-4e7f-b4c3-0c3d3f5e0750
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═727b8192-f49a-4894-a26b-72ce4d5218b3
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
