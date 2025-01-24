@@ -128,13 +128,13 @@ function detect_sources(img, err)
 end
 
 # ╔═╡ 0e5814c2-17d3-4949-804b-3f7be0622018
-sources1 = detect_sources(img1, bkg1)
+sources1 = detect_sources(img1, bkg1 .* 0)
 
 # ╔═╡ 9c54bc11-db8f-48ce-9f4b-1210e0cd5973
 p1 = ap_plot(img1, sources1);
 
 # ╔═╡ 0c91aba1-cd12-41d4-a996-aa91dbfd203e
-sources2 = detect_sources(img2, bkg2)
+sources2 = detect_sources(img2, bkg2 .* 0)
 
 # ╔═╡ 22e17c6f-d2b1-4bd1-9278-a59a1d1e4548
 p2 = ap_plot(img2, sources2);
@@ -165,9 +165,9 @@ md"""
 # img2 => img1
 point_map = (
 	[191, 5] => [96, 80],
-	[187, 442] => [121, 517],
-	[400, 505] => [339, 564],
-	# [674, 437] => [609, 477],
+	[187, 442] => [123, 516],
+	# [400, 505] => [339, 564],
+	[674, 437] => [609, 477],
 )
 
 # ╔═╡ e3fdb2c4-58ca-4d37-8e66-208d7469135c
@@ -208,14 +208,17 @@ ps_aligned = [p1, p2w];
 # ╔═╡ 819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
 ps_aligned[i_aligned]
 
+# ╔═╡ 62b24756-fc19-43cd-9939-a3eefccb009a
+bkg2w = warp(bkg2, tfm, axes(img1)) |> AstroImage;
+
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
 md"""
 ## Notebook setup 🔧
 """
 
 # ╔═╡ 727b8192-f49a-4894-a26b-72ce4d5218b3
-# AstroImages.set_clims!((2_000, 8_000))
-AstroImages.set_clims!(Zscale(; contrast=0.5))
+AstroImages.set_clims!((2_000, 8_000))
+# AstroImages.set_clims!(Zscale(; contrast=0.5))
 
 # ╔═╡ a23c40dc-0af3-4c3a-8172-203f58603bbb
 TableOfContents()
@@ -2386,6 +2389,7 @@ version = "1.4.1+2"
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
 # ╠═e32aa514-481f-408f-abfa-916da85f7f65
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
+# ╠═62b24756-fc19-43cd-9939-a3eefccb009a
 # ╠═407c5464-c742-4e7f-b4c3-0c3d3f5e0750
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═727b8192-f49a-4894-a26b-72ce4d5218b3
