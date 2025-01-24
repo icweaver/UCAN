@@ -16,9 +16,6 @@ macro bind(def, element)
     #! format: on
 end
 
-# ╔═╡ 44a75c4b-722c-4cc4-839c-956d0704f11c
-using LinearAlgebra
-
 # ╔═╡ 407c5464-c742-4e7f-b4c3-0c3d3f5e0750
 using ImageTransformations
 
@@ -29,7 +26,7 @@ begin
 	# Viz
 	using AstroImages, Plots
 	# `astroalign` logic
-	using Photometry, CoordinateTransformations, TypedTables
+	using Photometry, CoordinateTransformations, TypedTables, LinearAlgebra
 end
 
 # ╔═╡ 75d03ef4-d8b2-11ef-076a-058846f3b6ba
@@ -56,10 +53,10 @@ img2 = load("./data/20240717T080801_868_Occultation.fits");
 imgs = [img1, img2];
 
 # ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
-@bind i_img Slider(eachindex(imgs); show_value=true)
+@bind img Slider(imgs)
 
 # ╔═╡ bfc419f1-e12d-489f-b5c3-622ae9e83b0c
-imgs[i_img]
+img
 
 # ╔═╡ 51186ae1-baac-4868-950f-1c9a86d720d8
 md"""
@@ -73,13 +70,15 @@ md"""
 
 # ╔═╡ 2935064f-5f52-4bf9-ab14-7925bb99ddbd
 function ap_plot(img, sources)
-	aps = CircularAperture.(sources.y, sources.x, 35)
+	aps = CircularAperture.(sources.y, sources.x, 15)
 	p = implot(img; colorbar=false)
 	plot!(p, aps; width=2, color=:lightgreen)
 	map(sources) do source
 		x, y = source.x, source.y
-		annotate!(p, y, 1.2*x, string("(", y, ", ", x, ")"), :lightgreen)
+		annotate!(p, y, x, (string("(", y, ", ", x, ")\n"), :lightgreen, :bottom, 8))
 	end
+	xlabel!("X (pixels)")
+	ylabel!("Y (pixels)")
 	return p
 end
 
@@ -142,10 +141,10 @@ p2 = ap_plot(img2, sources2);
 ps = [p1, p2];
 
 # ╔═╡ 0de7b43e-fd43-4400-86c8-6762d66275a6
-@bind i_p Slider(eachindex(ps); show_value=true)
+@bind ps_i Slider(ps)
 
 # ╔═╡ 8be4195e-4ff5-45a6-a03a-2129f6432f20
-ps[i_p]
+ps_i
 
 # ╔═╡ f3e41786-4f43-4244-9d83-a13b128a8965
 md"""
@@ -192,10 +191,10 @@ ps_aligned = [img1, img2w];
 # ps_aligned = [p1, p2w];
 
 # ╔═╡ 9de12c4e-5250-43d1-bd0a-e80d6d3f13f3
-@bind i_aligned Slider(eachindex(ps_aligned))
+@bind aligned Slider(ps_aligned)
 
 # ╔═╡ 819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
-ps_aligned[i_aligned]
+aligned
 
 # ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
 p2w = ap_plot(img2w, sources1);
@@ -2358,12 +2357,11 @@ version = "1.4.1+2"
 # ╠═53e64c90-966d-41ad-89d5-4d410ad579f8
 # ╟─8be4195e-4ff5-45a6-a03a-2129f6432f20
 # ╟─0de7b43e-fd43-4400-86c8-6762d66275a6
-# ╠═2935064f-5f52-4bf9-ab14-7925bb99ddbd
+# ╟─2935064f-5f52-4bf9-ab14-7925bb99ddbd
 # ╟─dc81134b-46a8-4def-ae92-daf74cc91b3e
 # ╠═03c63b27-144d-4a71-abb6-edb16f3a05d8
 # ╠═8cc61f99-323a-4cd9-8d0a-9962b565ea2b
 # ╠═59e483ab-2e53-4d3a-8254-36b8bc3c0963
-# ╠═44a75c4b-722c-4cc4-839c-956d0704f11c
 # ╟─18cbc45e-0d72-4c92-b784-d063430db265
 # ╠═0e5814c2-17d3-4949-804b-3f7be0622018
 # ╠═0c91aba1-cd12-41d4-a996-aa91dbfd203e
