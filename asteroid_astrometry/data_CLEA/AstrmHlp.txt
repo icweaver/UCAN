@@ -1,0 +1,535 @@
+*Log In*
+To Log In to this CLEA exercise:
+
+    1) Select "File"->"Login" from the main menu.  The login dialog will
+    appear.
+
+    2) Enter the appropriate name(s) in the fields provided.
+
+    3) The laboratory table number may already be set.  If it is not, or
+    is incorrect, enter the correct table number.
+
+    4) Press "OK".  The selections on the file menu that control the
+    exercise will be activated, while the "Login..." selection will be
+    deactivated. (You cannot return to the login dialog after you have
+    completed it.)
+
+The information entered on the login dialog is used to generate names
+for data files, and will appear on data and printouts that are produced
+by the exercise.  If you have entered no information, a box will warn
+you of this when you press "OK". If you then select "Cancel" on the
+warning box, you will return to the login dialog. If you select "OK" on
+the warning box, the program will continue without a login name, in
+which case generated data and files will be identified as "NoLog".
+
+*Set Image File Type*
+Select "File"->"Set Image File Type..." from the main menu to set the
+image file type.  Select the file format from the list of supported 
+types. Note that the ST-4 file type is separated from the other SBIG 
+file types (ST-4X, ST-5, -6, -7, -8, -9, STV, PixCel).  This form also 
+contains a box where you can specify how the time parameter carried in 
+the file header relates to the start time of the exposure.  This 
+selection defaults to the start of the exposure for FITS and SBIG 
+files.  (These defaults may be changed via "File"->"Preferences...".)
+This selection is disabled for ST-4 files, since no time parameter is 
+carried in the file.
+
+*Load Image Files*
+Image files are loaded by selecting "File"->"Load"->"Image #" from the
+main menu.  A maximum of four images can be loaded at any time.  When
+you attempt to load a new image over an existing one you will be asked
+to confirm that this is what you wish to do.  The "Multiple Load"
+selection allows you to specify up to four images for loading at the 
+same time (hold down the "Ctrl" button while selecting the images).
+Note that files selected under "Multiple Load" may not load in the
+order specified, which will affect the blinking order.  If this happens 
+you can change the blinking order during the blink setup (see "Blinking
+Procedure").
+
+You should set the file type (see "Set Image File Type") before loading
+the first image, and before loading an image of a different file type.
+If the coordinates of a new image are significantly different, or
+contain a new target object, you should specify a new field before
+loading it (see "Clear Current Images and/or Reference Fields").
+
+*Clear Current Images and/or Reference Fields*
+You should clear the current settings before loading new images if the
+new field centers are significantly different (for example, enough to
+invalidate the current selection of reference stars), or the new image
+relates to a different target object.  To change the target object,
+select "File"->"Clear Images/Ref. Fields"->"Images and Reference Fields"
+from the main menu.  For a new field but the same target, select
+"File"->"Clear Images/Ref. Fields"-> "Reference Fields Only" (you can
+also do this during processing if you wish to invalidate an image
+measurement operation and redo it).  Both operations clear the reference
+star field and parameters.  The software will ask for verification
+before performing the clear/reset operations.
+
+*Display Loaded Images*
+To display a loaded image, select "Images"->"View/Adjust..." from the
+main menu, then select the image number(s) from the small form that
+appears.  From the image display window you can make adjustments to the
+image, view and print the image header and display information, and
+print the image itself.  See the individual help topics for more
+information.
+
+*Change Display Size*
+Images wider than 1/2 the screen-width are scaled initially by the
+software so that two complete images can be displayed side by side. The
+magnification of the displayed image (relative to the image file)
+appears at the upper left-hand corner.  You can change the size of a
+displayed image as follows: Place the cursor over any part of the
+displayed image and press the RIGHT mouse button, then select "Resize
+Image..." from the pop-up menu that appears.  Set the desired size via
+the form that appears.  Note that you cannot make an image larger than
+its original (file) size in pixels using this technique. (See the Help
+topic "Zoom/Unzoom an Image".)
+
+*Zoom/Unzoom an Image*
+You can zoom (magnify) a selected portion of an image as follows: Place
+the cursor over any part of the displayed image and press the RIGHT
+mouse button, then select "Zoom Image..." from the pop-up menu that
+appears.  (You can alternatively select "Image"->"Zoom" from the menu on
+the image display window.)  The appearance of the cursor will change.
+Place the cursor at the upper-left corner of the region you wish to
+magnify, then press and hold the RIGHT mouse button while dragging the
+cursor downward and/or to the right to outline the zoom region.  Release
+the mouse button when the region is the desired size. (Note that the
+zoom region will always be square.)  You can reposition the zoom region
+simply by repeating the process from a different starting point.  The
+magnification (based on the image file, not the displayed image) appears
+at the upper left of the zoom region.  Once you have outlined the zoom
+region, double-click the LEFT mouse button over any part of the image to
+zoom.  To return to the unzoomed display, double-click again over any
+part of the zoomed image.  To clear the zoom region, select "Image"->
+"Clear Zoom" from the display menu.  The cursor will return to its
+normal appearance.
+
+*Adjust Brightness, Contrast*
+To adjust image brightness and contrast, place the cursor anywhere on
+the displayed image and press the RIGHT mouse button.  Select "Adjust
+Image..." from the pop-up menu and vary the image display using the
+sliders provided.
+
+To apply the same settings to other images, check "Use Settings as
+Defaults" and press "OK" to exit the form.  Any images you load after
+doing this will automatically have their contrast and brightness
+adjusted to the settings you have selected.  To apply the new default
+settings to a image that is already loaded, display it and select
+"Adjust Image..." as described above, then press the button labeled
+"Restore Default Settings".  Note that you can always return to the
+original display (brightness and contrast settings at 0.0) by pressing
+"Restore Original Display".  (Also see the Help topic "Initial
+Background Level and Display Range".)
+
+Note that this software does not provide for re-writing an adjusted
+image to a file.  (There are many software packages available that do
+this, usually providing a large selection of output formats.)
+
+*Change Image Orientation*
+To change the image orientation, place the cursor anywhere on the
+displayed image and press the RIGHT mouse button.  Select "Adjust
+Image..." from the pop-up menu and click on the appropriate orientation
+arrow(s).  The image display will not change orientation until you press
+"OK", but indicators will appear to show which change(s) you have
+selected.
+
+*Invert Display*
+You can invert image displays to show a "negative" image (black on white
+vs. white on black).  Place the cursor anywhere on the displayed image
+and press the RIGHT mouse button.  Select "Adjust Image..." from the
+pop-up menu and click on the box labeled "Invert Display" (a check mark
+will appear). The display will not appear inverted until you press "OK".
+To return to a "positive" display, click the "Invert Display" box again
+so that the check mark disappears.
+
+*Initial Background Level & Display Range*
+When image files are loaded, the software performs a statistical
+analysis of the raw pixel values and uses these measures to establish
+the initial background level and display range for the image.  This
+process attempts to maximize the visibility of fainter stars against the
+background, which can result in decreased visibility of extended sources
+(nebulae).  Information about the pixel values and the adjusted image
+range is available from the image display window.  Select "Image"->
+"Information"->"Image..." from the menu.
+
+For SBIG files (other than ST-4) the image header contains the
+background and range used to display the image when it was last saved.
+You can instruct the software to use either these values or the
+statistically derived ones described above.  Place the cursor anywhere
+on the displayed image and press the RIGHT mouse button.  Select "Adjust
+Image..." from the pop-up menu, and make your selection in the box
+labeled "Bkgrnd, Range".  (This selection is not available for FITS or
+ST-4 files.)
+
+Once an image is loaded, brightness and contrast can be adjusted - see
+the Help topic "Adjust Brightness, Contrast".
+
+*Display/Print Header & Display Information*
+Image file header information is available for display and printing.
+From the image display window, select "Image"->"Information"->"File
+Header...".  To display information on the pixel values and adjusted
+background and display range (see the Help topic "Initial Background
+Level & Display Range"), select "Image"->"Information"->"Image...".
+
+Any displayed list or report can be printed and/or saved as text, and
+can be searched for matches to a user-supplied text string.  Select the
+desired action under "List" on the text display window.
+
+*Print Images*
+To print an image, select "Image"->"Print Image..." from the menu on the
+image display window.  You may want to try printing both a "positive"
+and a "negative" image (see the Help topic "Invert Display") to see
+which is more satisfactory.
+
+*Blinking Procedure*
+Image blinking is used to detect moving objects and objects that vary in
+brightness.  The following procedure outlines the technique (items in
+parentheses are references to relevant Help topics):
+
+    1)  Load at least two images of the same field ("Load Image Files").
+
+    2)  Display the images ("Display Loaded Images"), and, to the degree
+    possible, adjust brightness and contrast so that image visibility
+    and background level are the same on all ("Adjust Brightness,
+    Contrast").
+
+    3)  Select "Images"->"Blink" from the main menu.
+
+    4)  The first image will appear, and you will be asked to select two
+    alignment stars.  You should select two well-exposed stars that
+    appear on all images, and are well separated in both dimensions
+    (stars near diagonally opposite corners are ideal).
+
+    5)  When you finish selecting the stars on the 1st image, you will
+    be asked to locate them on the 2nd image.  The display will help you
+    by marking where the 1st star is on the 1st image. After you locate
+    it on the 2nd image, the display will mark where the 2nd star should
+    be based on your positioning of the 1st.  If it is correct you can
+    press "Continue" without marking the 2nd star.  This process will
+    continue until the alignment stars have been located on all images.
+
+    6)  If the indicated position of the 2nd star is incorrect by more
+    than a small amount, you have probably made an error in finding the
+    1st star on the image.  Press "Cancel" on the instruction box and
+    restart the alignment process ("Blink Adjustments").
+
+    7)  When you finish identifying the alignment stars on all images, a
+    small form will appear allowing you to set the blinking order (if,
+    for example, you did not load the images in the correct order).
+    When you are satisfied with the blink order, press "OK" then select
+    "Blink" on the blink window menu to start the blinking process.
+    Blinking ceases when you select "Stop" on the same menu.  You may
+    then modify and/or restart the blinking process ("Blink
+    Adjustments").
+
+    8) When you have found the target (moving) object, stop the
+    blinking.  If you wish, you can now identify the target on each
+    image for measurement.  Select "Identify Target" on the blink window
+    menu and follow the prompts.  If you choose not to identify the
+    target at this time you can do it later during the measurement
+    process.
+
+    9)  If the entire display appears to be jumping back and forth
+    during blinking, you have either miss-identified one or both
+    alignment stars on one or more images or you have selected a moving
+    object as an alignment star.  Stop the blinking and see the Help
+    topic "Blink Adjustments".
+
+*Blink Adjustments*
+You can interrupt the blinking process at any point (when the blinking
+is stopped) by pressing "Cancel" on the instruction box.  When the
+instruction box disappears, select "Adjust" on the blink window menu or
+press the RIGHT mouse button with the cursor anywhere over the image.
+Selections will appear allowing you to reselect the alignment stars,
+change the blink order and blink rate, select and blink a magnified
+sub-region (see "Blink a Sub-region"), and adjust the image displays
+
+*Blink a Sub-Region*
+To blink a magnified sub-region of the full image, select "Set Blink
+Region (Zoom)..." under "Adjust" on the blink window menu, or on the
+pop-up that appears when you press the RIGHT mouse button over the
+image. The appearance of the cursor will change.  Position the cursor at
+the upper left corner of the region you wish to magnify, then press and
+hold the RIGHT mouse button while dragging the cursor downward and/or to
+the right to outline the zoom region.  Release the mouse button when the
+region is the desired size.  (Note that the zoom region will always be
+square.)  You can reposition the zoom region simply by repeating the
+process from a different starting point.  The magnification (based on
+the image file, not the displayed image) appears at the upper left of
+the zoom region.  When you have outlined the region you wish to blink,
+press "Blink" on the menu and the selected region of each image will be
+shown magnified in the blink window.  When "Stop" is pressed, the image
+will again be shown full size, but the blink region will be outlined
+(and can be repositioned).  To return to blinking the full image, select
+"Adjust"->"Blink Full Image (Unzoom)..." and the blink region outline
+will disappear.
+
+*Measure Images*
+To begin measuring a loaded image, select "Images"->"Measure"->"Image #"
+from the main menu.  The first item that appears is the Observation
+Parameters form, which is used to enter the object identification and
+observation date and time.  The software will fill in the date and time
+with information from the file header.  For FITS files, the software may
+also fill in the object name from the file header.
+
+If you have not already loaded a reference star field, or have cleared
+it (see the Help topic "Clear Current Images and/or Reference Fields"),
+the Field Parameters form will appear.  Enter the field center
+coordinates, field size, and magnitude limit for the reference stars in
+the indicated boxes.  If you have specified the USNO SA1.0 or SA2.0 as a
+supplementary catalog to the GSC, you can choose whether or not to
+include it on this form.  For the USNO catalogs, you can also choose
+which magnitudes to use.  For best results, set the magnitude limit to a
+value close to your actual limiting magnitude, perhaps 1/2 magnitude
+fainter.
+
+Once you have specified the reference field parameters, the catalog(s) 
+will be searched for reference stars, and the reference star window 
+will be displayed alongside the image window.  A small form box will 
+appear on the screen which will guide you through the measurement 
+process; follow its instructions.  The main steps in this process are 
+as follows:
+
+    1)  Select a suitable number of reference stars on the reference
+    field display.  The minimum number required depends on the
+    mathematical model chosen for the solution (see the Help topic
+    "Mathematical Solution Models").  You should always use more than
+    the minimum required.  Note that stars can be selected separately as
+    position and/or magnitude references.  (See the Help topic
+    "Magnitudes".)
+
+    2)  Identify these same stars on the image display.  The software
+    will assist you after the first three are identified.
+
+    3)  Identify the unknown on the image display.  You may have already
+    done this at the conclusion of the blinking process.
+
+    4)  Identify a clear sky background near the unknown.  Normally the
+    software will use a border region around the unknown (see "Set "Box"
+    Parameters").  If you respond "No" to the "Target Sky OK?" prompt,
+    you will be asked to locate a star-free area for background
+    readings.
+
+When you have completed these steps, an astrometric solution will be
+computed, and an Astrometric Solution Report will appear on the screen.
+If you accept this solution you will be asked if you want to add this
+result to the Astrometric Results Report.  Both the Astrometric Solution
+Report and the Astrometric Results Report are described under separate
+Help topics. You should also read the Help topic "Cursor Pointing
+Accuracy" for information on the selection of stars on the reference and
+image displays.
+
+You may choose not to accept the solution, perhaps to change your
+selection of reference stars to eliminate those with high residuals, or
+to try a different mathematical solution model - see the following
+paragraph for details.  If you accept the solution but do not
+immediately add it to the Results report, you can do so later.  Select
+"Astrometric Solution"->"Add to Report List" from the menu on the image
+display window.
+
+You can interrupt the measurement process at any time and return to any
+previous step.  Simply press "Cancel" on the small control form box.
+Another form box will appear from which you can select what you wish to
+do next.  To terminate the entire measurement process, press "Cancel" on
+the 2nd box.  If you select "Add/Delete Reference Stars" or "Select
+Reference Stars", you can make changes to the reference field.  Press
+the RIGHT mouse button with the cursor anywhere over the reference field
+image to access the pop-up menu.  You can also change the solution model
+at this time by selecting "Astrometric Solution" from the reference
+window menu.
+
+*Set "Box" Parameters*
+To set the size of the regions around each star image involved in
+centroiding and obtaining the sky background level, access the "Box"
+Parameters form.  Press the RIGHT mouse button with the cursor over any
+image or reference display, and select "Box Parameters".  (You can also
+select "File"->"Preferences"->"Options and Parameters" from the main
+menu and press the button labeled "Box".)  The form that appears enables
+you to set the box width for the peak search, the diameter of the region
+used for centroiding, and the width of the sky border.  See the Help
+topic "Cursor Pointing Accuracy" for more information.
+
+*Mathematical Solution Models*
+The astrometric solution relates measured positions on the image (x,y)
+to the so-called Standard Coordinates (X,Y), which are mathematically
+linked to Right Ascension and Declination on the sky (see Section VI-3
+of the Software Users' Guide for the CLEA exercise "Astrometry of
+Asteroids").  The "Toolkit" offers a choice of three solution models, as
+follows:
+
+    1. The Linear Model
+    This is the standard or "Six Constant" model described in many
+    references on astrometry.  The equations defining this model are:
+
+                    X = a*x + b*y + c
+                    Y = d*x + e*y + d
+
+    This model accounts for many instrumental errors, including
+    displacement of the origin, rotation of the measurement coordinate
+    system, non-perpendicularity of axes, and scale errors.  It does not
+    remove errors caused by a tilt of the CCD with respect to the
+    optical axis, sphericity of the focal surface, or coma.
+
+    2. The Cross-Term Model
+    This model adds a cross-term (x*y) to each equation.  The defining
+    equations are then:
+
+                X = a*x + b*y + c*x*y + d
+                Y = e*x + f*y + g*x*y + h
+
+    The cross-term model partially accounts for tilt errors. This is the
+    model employed by Herbert Raab in "Astrometrica".
+
+    3. The Full Quadratic Model
+    This model includes all quadratic terms.  The defining equations
+    become:
+
+            X = a*x + b*y + c*x*y + d*x*x + e*y*y + f
+            Y = g*x + h*y + i*x*y + j*x*x + k*y*y + l
+
+    This model accounts for all the errors noted under (1) above.
+
+In each case, a "solution" is the determination of the coefficients (the
+so-called "Plate Constants") (a,b,c,...) by measuring (x,y) for standard
+stars and computing (X,Y) from their known RA and Dec.  Since the
+solutions for X and Y are handled separately, a solution for model (1)
+requires a minimum of 3 standard stars, model (2) a minimum of 4, and
+model (3) a minimum of 6.  In practice, two to three (or more) times the
+minimum number should be used.  In this overdetermined case, the
+coefficients are determined by least-squares techniques, and residuals
+can be computed.
+
+To change the solution model in use, select "File"->"Preferences"->
+"Options and Parameters" from the main menu and make a selection under
+"Astrometric Solution".  Alternatively, select "Astrometric Solution"
+from the menu on the reference star display.  The solution model is
+identified and the computed plate constants are shown on the Astrometric
+Solution Report.
+
+*Cursor Pointing Accuracy*
+Although care should always be taken in positioning the cursor during
+the measurement process, the software is designed to minimize the
+effects of cursor positioning errors and ensure general repeatability of
+results to the last significant figure.  This is accomplished through a
+two-stage centroiding process that first searches the vicinity of the
+cursor position for a peak in the data, and then uses that, rather than
+the cursor position, as the point around which the mathematical
+centroiding algorithm is applied.
+
+Cursor positioning is generally adequate if the box that appears when
+the mouse button is released is reasonably centered on the correct star
+image.  (Centering may not appear exact due to non-symmetry of star
+images, the "quantization" of the box positions to pixel addresses, and
+other causes.  This will generally cause all selected stars in the image
+to appear off-center by the same amount.)  It is usually best not to
+select stars with nearby companions as reference stars.  If you must do
+so, or the unknown itself is very near another image, be sure to verify
+from the position of the encircling box that the correct selection has
+been made.  In some cases it may be necessary to adjust the centroiding
+parameters (see "Set "Box" Parameters").  Although the software attempts
+to identify and eliminate "hot" pixels by averaging the surrounding
+values, such an occurrence can affect the computed centroid by throwing
+off the initial search for a nearby peak.
+
+*Magnitudes*
+Irregardless of the residuals and estimated errors stated on the
+Astrometric Solution Report, magnitudes computed using the GSC are VERY
+unreliable, to the point of being useful only as an indication of
+differential variability of an object.  This is due primarily to
+problems inherent to the magnitudes given in the GSC, which are not and
+should not be considered photometric standards.  Among other problems,
+the passbands are difficult to determine, and can vary from field to
+field.
+
+The situation with the USNO catalogs (A1.0/2.0,SA1.0/2.0) magnitudes is
+marginally better, but the photometry "Read Me" file included with the
+A1.0 catalog begins with the sentence:
+
+    "The photometric calibration of the USNO-A1.0 is about as poor as
+    one can have and still claim that the magnitudes mean something."
+
+Although the photometric calibration for bright stars in the A2.0 was 
+improved, the statement is made:
+
+    "... the faint photometric calibration of the USNO-A2.0 may not be
+    any better than for the USNO-A1.0."
+
+In any event, we recommend that, if possible, only USNO catalog stars be
+used as magnitude references; keeping the above statements in mind in
+regards to results obtained.  The USNO catalog "red" magnitudes are
+probably the best choice for use with unfiltered CCD images.
+
+For more information on this topic see the Software User's Guide for the
+CLEA exercise "Astrometry of Asteroids".
+
+*Astrometric Solution Report*
+An Astrometric Solution Report is displayed whenever a solution is
+computed for an image.  Once a solution is available, the report can
+also be accessed via "Solution Results..."->"View/Print" from the menu
+on the image display window.
+
+The Astrometric Solution Report gives the measured position, magnitude,
+and estimated residuals for the target object, and the estimated error
+(sigma) of the solution.  The measured position and residuals for each
+reference star is also given, in order of decreasing position residual.
+(You may be able to improve the solution by repeating it, eliminating
+reference stars that show large residuals.)  Also shown are the computed
+position of the field center, the "plate" constants, and the scale and
+field dimensions.
+
+The Astrometric Solution Report can be printed or saved as a text file,
+if desired.  Make the appropriate selection under menu item "List".
+
+*Astrometric Results Report*
+The Astrometric Results Report is a list of measured positions and
+magnitudes, along with the observation date and time, for each measured
+object.  The list can be printed, saved as text, or saved in a format
+that can be read by most spreadsheet software.  To access the report,
+select "Report"->"View/Print/Save Text..." from the main menu.
+
+*Compute Projected Baselines*
+A feature of this software is the ability to compute projected baselines
+between two Earth locations for minor planet parallax measurements.  The
+following procedure outlines the technique:
+
+    1. Select "Report"->"Compute Baseline..." from the main menu.
+
+    2. Enter the observation time and position of the target object on
+    the form that appears.  If you are computing the baseline for an
+    observation that you have measured and recorded, press the button
+    labeled "Obs. Data" and select the observation from the Astrometric
+    Results Report that appears.  The data will automatically be
+    transferred for you.
+
+    3. Press the button labeled "Site 1" and enter the data for the
+    first observation site.  If the site data has been saved, you can
+    press the button labeled "File..." and then "Find Site...". If your
+    site appears on the list, either double-click it, or select it and
+    then select "Action"->"Access Selected Record" from the menu.  If
+    you have to enter the site data by hand, you can save it for the
+    future by selecting "File"->"Save Site Data".  When you have
+    finished setting the Site 1 parameters press "OK".
+
+    4. Repeat Step 3, pressing the button labeled "Site 2".
+
+    5. Press "OK" on the baseline form.  The projected baseline will be
+    computed and a report will appear.  The report can be printed or
+    saved as text if desired.
+
+*Using a Spreadsheet Program*
+You may be able to access a spreadsheet program to analyze your data
+directly from this exercise.  If the selection is enabled, select
+"Report"->"Access Spreadsheet" from the main menu.  If you have recently
+saved a file for use in the spreadsheet (see the Help topic "Astrometric
+Results Report"), that file will be automatically loaded for you when
+the spreadsheet program opens.  If you wish to load a file into the
+spreadsheet yourself, remember that the file type is .CSV. You may find
+this under the heading "Text Files" in the spreadsheet file load form.
+
+*Close the Program*
+To close the program, select "File"->"Exit" from the main menu, or use 
+any of the standard Windows features (System Menu or "X" box) to close 
+the main window.  You will be reminded of any unsaved data and given a 
+chance to save it before the program terminates.
+

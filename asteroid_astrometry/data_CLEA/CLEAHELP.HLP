@@ -1,0 +1,24 @@
+**On Help**
+            General Characteristics of CLEA Help Windows:
+
+  O   Select from topic list.  List can be accessed from currently
+      displayed Help window.
+
+  O   Text search capability for topic lists and Help windows.
+
+  O   Scrollable - Vertically as required.
+
+  O   Printable - Print any Help window using Windows print facility.
+
+  O   Resizable - Horizontally and Vertically.  Can also be maximized
+      (full screen) and minimized (icon).
+
+  O   Movable - Can be placed anywhere on screen.
+
+  O   Remain on screen until closed.  (Can be repositioned and left on
+      screen for help during operation of exercise.)
+
+  O   Close from menu or Control-menu box in upper left corner.
+
+  O   Utilize ordinary text files (create with text editor or word
+      processor) for topic lists and display text.
