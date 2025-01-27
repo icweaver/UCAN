@@ -27,11 +27,13 @@ begin
 	using AstroImages, WGLMakie
 	# Analysis
 	using CoordinateTransformations, ImageTransformations, TypedTables, LinearAlgebra
+
+	WGLMakie.Page()
 end
 
 # ╔═╡ 75d03ef4-d8b2-11ef-076a-058846f3b6ba
 md"""
-# Parallax Lab
+# Asteroid Motion Lab
 
 Data from <http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf>
 """
@@ -44,10 +46,10 @@ We want to track an asteroid's movement from one eVscope
 """
 
 # ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
-img1 = load("./data/ASTEAST.FTS")[:, :, 1];
+img1 = load("./data/92JB05.FTS")[:, :, 1];
 
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
-img2 = load("./data/ASTWEST.FTS")[:, :, 1];
+img2 = load("./data/92JB14.FTS")[:, :, 1];
 
 # ╔═╡ 864135ec-c8db-4c70-a0e4-21a645db7edd
 imgs = [img1, img2];
@@ -63,7 +65,7 @@ img
 
 # ╔═╡ 51186ae1-baac-4868-950f-1c9a86d720d8
 md"""
-Flipping back and forth, it looks like there is some translation and rotatation that we would like to undo.
+Flipping back and forth, it looks like there is some drift that we would like to undo.
 """
 
 # ╔═╡ bd6cd797-bf84-41c7-8154-7babb26a1f8c
@@ -134,11 +136,16 @@ md"""
 # 	[291, 196] => [297, 212],
 # 	[381, 57] => [387, 73],
 # )
+# point_map = (
+# 	[54, 219] => [80, 211],
+# 	[124, 309] => [124, 266],
+# 	[155, 321] => [143, 273],
+# 	[360, 46] => [266, 106],
+# )
 point_map = (
-	[54, 219] => [80, 211],
-	[124, 309] => [124, 266],
-	[155, 321] => [143, 273],
-	[360, 46] => [266, 106],
+	[87, 291] => [83, 244],
+	[301, 257] => [297, 211],
+	[391, 118] => [388, 72],
 )
 
 # ╔═╡ d5991411-cb7b-4351-bd80-4ec0292b2083
@@ -176,7 +183,7 @@ aligned
 
 # ╔═╡ 8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 md"""
-## Parallax distance
+## Travel distance
 """
 
 # ╔═╡ f55bff1b-6abd-43f6-aec0-678d76e18bbe
@@ -213,6 +220,9 @@ end
 
 # ╔═╡ a23c40dc-0af3-4c3a-8172-203f58603bbb
 TableOfContents()
+
+# ╔═╡ 4fbda6eb-cedd-477e-8e98-35e1b0328a38
+WGLMakie.Page(listen_url="localhost")
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2014,7 +2024,7 @@ version = "3.6.0+0"
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
 # ╠═864135ec-c8db-4c70-a0e4-21a645db7edd
 # ╟─01123986-479a-4a49-a728-9cc02e0046cd
-# ╟─bfc419f1-e12d-489f-b5c3-622ae9e83b0c
+# ╠═bfc419f1-e12d-489f-b5c3-622ae9e83b0c
 # ╟─59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─bd6cd797-bf84-41c7-8154-7babb26a1f8c
@@ -2045,5 +2055,6 @@ version = "3.6.0+0"
 # ╠═f949e528-282b-4de7-a9da-c337a18e92a6
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
 # ╠═db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
+# ╠═4fbda6eb-cedd-477e-8e98-35e1b0328a38
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
