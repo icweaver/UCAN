@@ -43,14 +43,17 @@ md"""
 We want to try and align the following two images taken by two eVscopes separated by a large distance:
 """
 
+# ╔═╡ d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
+const OBSERVATORIES = ["Foggy Bottom Observatory, Hamilton, NY: 0.4 m", " NUR Observatory, Flagstaff, AZ: 0.8 m"]
+
 # ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
-img1 = load("./data/ASTEAST.FTS")[:, :, 1];
+img_east = load("./data/ASTEAST.FTS")[:, :, 1];
 
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
-img2 = load("./data/ASTWEST.FTS")[:, :, 1];
+img_west = load("./data/ASTWEST.FTS")[:, :, 1];
 
 # ╔═╡ 864135ec-c8db-4c70-a0e4-21a645db7edd
-imgs = [img1, img2];
+imgs = [img_east, img_west];
 
 # ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 @bind img Slider(imgs)
@@ -81,64 +84,59 @@ function tooltip_hm(self, i, pos)
 end
 
 # ╔═╡ 24307901-95dd-45ad-8950-0457cc0c6a92
-function plot_img(gp, img, title)
-	ax, p = image(gp, img;
-		colorrange = zscale(img),
+function plot_img!(fig, img;
+	title = "title here",
+	colorrange = zscale(img),
+	colorbar = true,
+)
+	ax, p = image(fig[1, 1], img;
+		colorrange,
 		inspector_label = tooltip_hm,
+		axis = (
+			aspect = DataAspect(),
+			# aspect = 1,
+			# limits = ((0, 320), (0, 320)),
+			xlabel = "X (pixels)",
+			ylabel = "Y (pixels)",
+			title,
+		),
 	)
-	ax.aspect = 1
-	ax.xlabel = "X (pixels)"
-	ax.ylabel = "Y (pixels)"
-	ax.title = title
+
+	if colorbar
+		Colorbar(fig[1, 2], p; label="Counts")
+	end
+
 	return ax, p
 end
 
-# ╔═╡ 57ff345e-9d58-4fc5-a177-9fa7f9b8e886
-function plot_imgs(img1, img2)
-	# colorrange = Zscale(contrast=0.5).((img1, img2)) |> Iterators.flatten |> extrema
+# ╔═╡ 147695b4-961f-4c09-8f55-3697538c7e7e
+fig_comparison = let
 	fig = Figure()
 	
-	plot_img(fig[1, 1], img1, "img1")
-	plot_img(fig[1, 2], img2, "img2")
-
+	ax_east, _ = plot_img!(fig[1, 1], img_east; title=OBSERVATORIES[1])
 	colsize!(fig.layout, 1, Aspect(1, 1.0))
+	
+	ax_west, _ = plot_img!(fig[1, 2], img_west; title=OBSERVATORIES[2])
 	colsize!(fig.layout, 2, Aspect(1, 1.0))
+	
+	linkaxes!(ax_east, ax_west)
+	
 	resize_to_layout!(fig)
 	
-	# Colorbar(fig[1, 3], hm; label="ADU")
-	DataInspector(fig)
-	return fig
+	fig
 end
 
-# ╔═╡ 147695b4-961f-4c09-8f55-3697538c7e7e
-plot_imgs(img1, img2)
+# ╔═╡ 4de34939-b77a-418a-adfe-4cc025d1ba8c
+let
+	fpath = "./img_comparison.png"
+	save(fpath, fig_comparison)
+	@debug "Saved:" fpath
+end
 
 # ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
 md"""
 ## Alignment
 """
-
-# ╔═╡ f27e8512-cbb3-4d1b-b746-1e6602d304bb
-md"""
-## Eyeballing the distance traveled
-"""
-
-# ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
- # Number of pixels that asteroid moved
- # Note that the coords are relative to the first image
-sqrt((240 - 223)^2 + (163 - 152)^2)
-
-# ╔═╡ 6d49f686-ab50-4526-9d2c-91848abd8909
-# Colgate plate scale: 0.99" per pixe
-
-# ╔═╡ 2cb250cf-7fde-4972-80ee-335ee0707941
-20 * 0.99 # arcseconds that the asteroid moved
-
-# ╔═╡ bf38cee5-5449-43bb-95db-3179009d13a9
-# Not bad just doing this by eye. Can we do better?
-
-# ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
-# p2w = ap_plot(img2w, sources1);
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 # img2 => img1
@@ -160,9 +158,6 @@ point_map = (
 	[360, 46] => [266, 106],
 )
 
-# ╔═╡ d5991411-cb7b-4351-bd80-4ec0292b2083
-map(first, point_map)
-
 # ╔═╡ e3fdb2c4-58ca-4d37-8e66-208d7469135c
 # img1
 to_points = first.(point_map)
@@ -172,31 +167,62 @@ to_points = first.(point_map)
 from_points = last.(point_map)
 
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
-tfm = AffineMap(from_points => to_points);
-
-# ╔═╡ faf50636-3a97-4287-b33b-59a489c2d43f
-tfm.linear, tfm.translation
+tfm = AffineMap(from_points => to_points); tfm.linear, tfm.translation
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
-img2w = shareheader(img2, warp(img2, tfm, axes(img1)));
+img_westw = shareheader(img_west, warp(img_west, tfm, axes(img_east)));
 
-# ╔═╡ 027e4cad-95ab-4d98-b987-2fd13384f642
-ps_aligned = [img1, img2w]; #.|> permutedims;
-# ps_aligned = [p1, p2w];
+# ╔═╡ 84c11014-8890-4348-96b6-8e701e458de4
+imgs_stacked = [img_east.data, img_westw.data];
 
-# ╔═╡ 9de12c4e-5250-43d1-bd0a-e80d6d3f13f3
-@bind aligned Slider(ps_aligned)
-
-# ╔═╡ 819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
-aligned
-
-# ╔═╡ eaab4ecd-cef3-49f2-873c-7ce34a787ee7
-let
+# ╔═╡ a1f90a33-cb38-4a07-bbd8-9256d3c96ad6
+begin
 	fig = Figure()
-	plot_img(fig[1, 1], aligned, "aligned")
-	DataInspector(fig)
+	
+	i = Observable(1)
+	title = @lift OBSERVATORIES[$i]
+	img_i = @lift imgs_stacked[$i]
+	colorrange = @lift zscale($img_i)
+
+	plot_img!(fig, img_i; title, colorrange, colorbar=false)
+
 	fig
 end
+
+# ╔═╡ 9df9e70b-ed96-486d-8f1b-e680526ed787
+begin
+record(fig, "blink.gif", 1:2; framerate=1) do t
+	i[] = t
+end
+
+LocalResource("./blink.gif")
+end
+
+# ╔═╡ f27e8512-cbb3-4d1b-b746-1e6602d304bb
+md"""
+## Eyeballing the distance traveled
+"""
+
+# ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
+ # Number of pixels that asteroid moved
+ # Note that the coords are relative to the first image
+sqrt((240 - 223)^2 + (163 - 152)^2)
+
+# ╔═╡ 6d49f686-ab50-4526-9d2c-91848abd8909
+# Colgate plate scale: 0.99" per pixe
+
+# ╔═╡ 2cb250cf-7fde-4972-80ee-335ee0707941
+20 * 0.99 # arcseconds that the asteroid moved
+
+# ╔═╡ bf38cee5-5449-43bb-95db-3179009d13a9
+# Not bad just doing this by eye. Can we do better?
+
+# ╔═╡ 027e4cad-95ab-4d98-b987-2fd13384f642
+ps_aligned = [img1.data, img2.data]; #.|> permutedims;
+# ps_aligned = [p1, p2w];
+
+# ╔═╡ aaf9b34c-4735-46d6-b1c8-a899997c6174
+# p2w = ap_plot(img2w, sources1);
 
 # ╔═╡ 62b24756-fc19-43cd-9939-a3eefccb009a
 #bkg2w = warp(bkg2, tfm, axes(img1)) |> AstroImage;
@@ -2037,6 +2063,7 @@ version = "3.6.0+0"
 # ╔═╡ Cell order:
 # ╟─75d03ef4-d8b2-11ef-076a-058846f3b6ba
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
+# ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
 # ╠═864135ec-c8db-4c70-a0e4-21a645db7edd
@@ -2046,28 +2073,26 @@ version = "3.6.0+0"
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─bd6cd797-bf84-41c7-8154-7babb26a1f8c
 # ╠═147695b4-961f-4c09-8f55-3697538c7e7e
+# ╟─4de34939-b77a-418a-adfe-4cc025d1ba8c
+# ╟─24307901-95dd-45ad-8950-0457cc0c6a92
 # ╠═43505dff-da5e-4b5b-be85-052554658789
-# ╠═24307901-95dd-45ad-8950-0457cc0c6a92
-# ╠═57ff345e-9d58-4fc5-a177-9fa7f9b8e886
 # ╠═bce4f077-80d1-495a-a104-6f5b29a477df
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
-# ╟─819f7d8f-2bf4-4a9b-8812-88f5b2d473bd
-# ╟─9de12c4e-5250-43d1-bd0a-e80d6d3f13f3
-# ╠═eaab4ecd-cef3-49f2-873c-7ce34a787ee7
-# ╟─f27e8512-cbb3-4d1b-b746-1e6602d304bb
+# ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
+# ╠═e3fdb2c4-58ca-4d37-8e66-208d7469135c
+# ╠═4ca4c86b-6260-47d2-b2a2-795a611ce17d
+# ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
+# ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
+# ╠═84c11014-8890-4348-96b6-8e701e458de4
+# ╠═a1f90a33-cb38-4a07-bbd8-9256d3c96ad6
+# ╠═9df9e70b-ed96-486d-8f1b-e680526ed787
+# ╠═f27e8512-cbb3-4d1b-b746-1e6602d304bb
 # ╠═0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
 # ╠═6d49f686-ab50-4526-9d2c-91848abd8909
 # ╠═2cb250cf-7fde-4972-80ee-335ee0707941
 # ╠═bf38cee5-5449-43bb-95db-3179009d13a9
 # ╠═027e4cad-95ab-4d98-b987-2fd13384f642
 # ╠═aaf9b34c-4735-46d6-b1c8-a899997c6174
-# ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
-# ╠═d5991411-cb7b-4351-bd80-4ec0292b2083
-# ╠═e3fdb2c4-58ca-4d37-8e66-208d7469135c
-# ╠═4ca4c86b-6260-47d2-b2a2-795a611ce17d
-# ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
-# ╠═faf50636-3a97-4287-b33b-59a489c2d43f
-# ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╠═62b24756-fc19-43cd-9939-a3eefccb009a
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╠═f55bff1b-6abd-43f6-aec0-678d76e18bbe
