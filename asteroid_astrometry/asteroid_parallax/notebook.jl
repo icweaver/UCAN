@@ -30,7 +30,7 @@ begin
 	AstroImages.set_cmap!(colormap)
 	
 	# Analysis
-	using CoordinateTransformations, ImageTransformations, TypedTables, LinearAlgebra
+	using CoordinateTransformations, ImageTransformations, TypedTables, LinearAlgebra, OrderedCollections
 end
 
 # ╔═╡ 75d03ef4-d8b2-11ef-076a-058846f3b6ba
@@ -48,28 +48,25 @@ We want to try and align the following two images taken by two eVscopes separate
 """
 
 # ╔═╡ d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
-OBSERVATORIES = Dict(
-	"Foggy Bottom Observatory Hamilton, NY: 0.4 m" => load("./data/ASTEAST.FTS")[:, :, 1],
-	"NUR Observatory, Flagstaff, AZ: 0.8 m" => load("./data/ASTWEST.FTS")[:, :, 1],
+OBSERVATORIES = OrderedDict(
+	"FBO Colgate, Hamilton, NY: 0.4 m" => load("./data/ASTEAST.FTS")[:, :, 1],
+	"NURO, Flagstaff, AZ: 0.8 m" => load("./data/ASTWEST.FTS")[:, :, 1],
 );
 
 # ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
-img_east = OBSERVATORIES["Foggy Bottom Observatory Hamilton, NY: 0.4 m"];
+img_east = OBSERVATORIES["FBO Colgate, Hamilton, NY: 0.4 m"];
 
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
-img_west = OBSERVATORIES["NUR Observatory, Flagstaff, AZ: 0.8 m"];
-
-# ╔═╡ 84b679c0-c905-42f5-950c-df3a0a16ea05
-imgs = [img_east, img_west];
+img_west = OBSERVATORIES["NURO, Flagstaff, AZ: 0.8 m"];
 
 # ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
-@bind img Slider(imgs)
-
-# ╔═╡ 5454e93a-5539-4d4f-8f4c-377ca2480080
-img
+@bind observatory Select(collect(keys(OBSERVATORIES)))
 
 # ╔═╡ 10c77d40-dcb9-4620-b9c1-a47a56621a0c
-header(img)
+OBSERVATORIES[observatory]
+
+# ╔═╡ 21afa6af-1df0-4c47-b106-1b9d1e161aa7
+header(OBSERVATORIES[observatory])
 
 # ╔═╡ 51186ae1-baac-4868-950f-1c9a86d720d8
 md"""
@@ -81,122 +78,67 @@ md"""
 ## Point selection
 """
 
-# ╔═╡ 99a26c14-46b0-44ce-9148-3f9c565b62be
-heatmap(z=img_west.data) |> plot
-
-# ╔═╡ 472a1ba4-3dfe-4434-8499-f9845576f198
-
-
-# ╔═╡ 05b2f9fe-61d2-4640-bbae-78d6d7465597
-const MAXPIXELS = 10^6
-
 # ╔═╡ 83ba19c1-8ce2-4152-b2cb-88613db63e07
 _length1(A::AbstractArray) = length(eachindex(A))
 
 # ╔═╡ 79d7afc4-0f24-4d3c-90a6-b1be4f08b471
 _length1(A) = length(A)
 
-# ╔═╡ 64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
-function trace_hm(img; colorbar=nothing)
-	imgv = copy(img)
-	# Restriction prescription from AstroImages.jl/Images.jl
-	while _length1(imgv) > MAXPIXELS
-		imgv = restrict(imgv)
+# ╔═╡ 2d5e1364-5879-486d-9024-e4572b0bfb36
+details("Makie.jl alternative",
+	md"""
+	```julia
+	using WGLmakie
+	set_theme!(theme_light())
+	update_theme!(Heatmap=(; colormap=:cividis))
+	let
+		fig = Figure()
+		
+		ax_east, _ = plot_img!(fig[1, 1], img_east; title=OBSERVATORIES[1])
+		colsize!(fig.layout, 1, Aspect(1, 1.0))
+		
+		ax_west, _ = plot_img!(fig[1, 2], img_west; title=OBSERVATORIES[2])
+		colsize!(fig.layout, 2, Aspect(1, 1.0))
+		
+		linkaxes!(ax_east, ax_west)
+		
+		resize_to_layout!(fig)
+		
+		fig
 	end
-	imgv = permutedims(imgv)
-	zmin, zmax = zscale(imgv)
-	return heatmap(x=dims(imgv, X).val, y=dims(imgv, Y).val, z=imgv.data;
-		zmin,
-		zmax,
-		colorscale = :Cividis,
-		colorbar,
+
+	function plot_img!(fig, img;
+		title = "title here",
+		colorrange = zscale(img),
+		colorbar = true,
 	)
-end
-
-# ╔═╡ fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
-let
-	fig = make_subplots(;
-	rows = 1,	
-	cols = 2,
-		shared_xaxes = true,
-		shared_yaxes = true,
-		column_titles = keys(OBSERVATORIES) |> collect,
-		# x_title = "X (pixels)",
-	)
+		ax, p = image(fig[1, 1], img;
+			colorrange,
+			inspector_label = tooltip_hm,
+			axis = (
+				aspect = DataAspect(),
+				# aspect = 1,
+				# limits = ((0, 320), (0, 320)),
+				xlabel = "X (pixels)",
+				ylabel = "Y (pixels)",
+				title,
+			),
+		)
 	
-	hm_east = trace_hm(img_east; colorbar=attr(x=0.45, thickness=10))
-	hm_west = trace_hm(img_west; colorbar=attr(x=1, thickness=10))
+		if colorbar
+			Colorbar(fig[1, 2], p; label="Counts")
+		end
 	
-	add_trace!(fig, hm_east; col=1)
-	add_trace!(fig, hm_west; col=2)
-	update_xaxes!(fig, scaleanchor=:y, title="X (pixels)")
-	update_yaxes!(fig, scaleanchor=:x)
+		return ax, p
+	end
 
-	relayout!(fig, Layout(yaxis_title="yea"))
-
-	fig
-end
-
-# ╔═╡ 147695b4-961f-4c09-8f55-3697538c7e7e
-# Makie
-# using WGLmakie
-# set_theme!(theme_light())
-# update_theme!(Heatmap=(; colormap), Image=(; colormap))
-# fig_comparison = let
-# 	fig = Figure()
-	
-# 	ax_east, _ = plot_img!(fig[1, 1], img_east; title=OBSERVATORIES[1])
-# 	colsize!(fig.layout, 1, Aspect(1, 1.0))
-	
-# 	ax_west, _ = plot_img!(fig[1, 2], img_west; title=OBSERVATORIES[2])
-# 	colsize!(fig.layout, 2, Aspect(1, 1.0))
-	
-# 	linkaxes!(ax_east, ax_west)
-	
-# 	resize_to_layout!(fig)
-	
-# 	fig
-# end
-
-# ╔═╡ 4de34939-b77a-418a-adfe-4cc025d1ba8c
-# let
-# 	fpath = "./img_comparison.png"
-# 	save(fpath, fig_comparison)
-# 	@debug "Saved:" fpath
-# end
-
-# ╔═╡ 24307901-95dd-45ad-8950-0457cc0c6a92
-# # Makie
-# function plot_img_makie!(fig, img;
-# 	title = "title here",
-# 	colorrange = zscale(img),
-# 	colorbar = true,
-# )
-# 	ax, p = Makie.image(fig[1, 1], img;
-# 		colorrange,
-# 		inspector_label = tooltip_hm,
-# 		axis = (
-# 			aspect = DataAspect(),
-# 			# aspect = 1,
-# 			# limits = ((0, 320), (0, 320)),
-# 			xlabel = "X (pixels)",
-# 			ylabel = "Y (pixels)",
-# 			title,
-# 		),
-# 	)
-
-# 	if colorbar
-# 		Colorbar(fig[1, 2], p; label="Counts")
-# 	end
-
-# 	return ax, p
-# end
-
-# ╔═╡ bce4f077-80d1-495a-a104-6f5b29a477df
-# function tooltip_hm(self, i, pos)
-# 	x, y, val = round.(Int, pos, RoundNearestTiesUp)
-# 	return "H[$(x), $(y)] = $(val)"
-# end
+	function tooltip_hm(self, i, pos)
+		x, y, val = round.(Int, pos, RoundNearestTiesUp)
+		return "H[$(x), $(y)] = $(val)"
+	end
+	```
+	"""
+)
 
 # ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
 md"""
@@ -204,73 +146,49 @@ md"""
 """
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
-# img2 => img1
-# point_map = (
-# 	[191, 5] => [96, 80],
-# 	[187, 442] => [123, 516],
-# 	[400, 505] => [339, 564],
-# 	[674, 437] => [609, 477],
-# )
-# point_map = (
-# 	[76, 229] => [83, 245],
-# 	[291, 196] => [297, 212],
-# 	[381, 57] => [387, 73],
-# )
 point_map = (
-	[54, 219] => [80, 211],
-	[124, 309] => [124, 266],
-	[155, 321] => [143, 273],
-	[360, 46] => [266, 106],
+	[53, 220] => [81, 211],
+	[268, 187] => [211, 191],
+	[358, 48] => [266, 108],
 )
 
-# ╔═╡ e3fdb2c4-58ca-4d37-8e66-208d7469135c
-# img1
-to_points = first.(point_map)
-
-# ╔═╡ 4ca4c86b-6260-47d2-b2a2-795a611ce17d
-# img2
-from_points = last.(point_map)
-
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
-tfm = AffineMap(from_points => to_points); tfm.linear, tfm.translation
-
-# ╔═╡ 944cd526-8999-48f2-b382-a0a8534a95cf
-@which AffineMap(from_points => to_points)
+tfm = AffineMap(last.(point_map) => first.(point_map)); tfm.linear, tfm.translation
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 img_westw = shareheader(img_west, warp(img_west, tfm, axes(img_east)));
 
-# ╔═╡ 84c11014-8890-4348-96b6-8e701e458de4
-imgs_stacked = [img_east.data, img_westw.data];
+# ╔═╡ 28a823e7-66ee-4688-b0a3-1ebd776f129f
+@bind img_compare Select([img_east => "reference", img_westw => "stacked"])
 
-# ╔═╡ a1f90a33-cb38-4a07-bbd8-9256d3c96ad6
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	fig = Figure()
-	
-	i = Observable(1)
-	title = @lift OBSERVATORIES[$i]
-	img_i = @lift imgs_stacked[$i]
-	colorrange = @lift zscale($img_i)
+# ╔═╡ 983a1c03-0344-4905-8cf2-b799003eb94c
+img_compare
 
-	plot_img!(fig, img_i; title, colorrange, colorbar=false)
+# ╔═╡ 648a4d59-f481-4d2c-9cf3-52b03c5b96bb
+details("Makie.jl alternative",
+md"""
+```julia
+fig = Figure()
 
-	fig
-end
-  ╠═╡ =#
+i = Observable(1)
+title = @lift OBSERVATORIES[$i]
+img_i = @lift imgs_stacked[$i]
+colorrange = @lift zscale($img_i)
 
-# ╔═╡ 9df9e70b-ed96-486d-8f1b-e680526ed787
-# ╠═╡ disabled = true
-#=╠═╡
-begin
+plot_img!(fig, img_i; title, colorrange, colorbar=false)
+
+fig
+```
+
+```julia
 record(fig, "blink.gif", 1:2; framerate=1) do t
 	i[] = t
 end
 
 LocalResource("./blink.gif")
-end
-  ╠═╡ =#
+```
+"""
+)
 
 # ╔═╡ 8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 md"""
@@ -308,6 +226,62 @@ md"""
 # ╔═╡ a23c40dc-0af3-4c3a-8172-203f58603bbb
 TableOfContents()
 
+# ╔═╡ 05b2f9fe-61d2-4640-bbae-78d6d7465597
+const MAXPIXELS = 10^6
+
+# ╔═╡ 64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
+function trace_hm(img; colorbar_x=0)
+	imgv = copy(img)
+	# Restriction prescription from AstroImages.jl/Images.jl
+	# so plotting doesn't blow up for large images
+	while _length1(imgv) > MAXPIXELS
+		imgv = restrict(imgv)
+	end
+	imgv = permutedims(imgv)
+	zmin, zmax = zscale(imgv)
+	return heatmap(x=dims(imgv, X).val, y=dims(imgv, Y).val, z=imgv.data;
+		zmin,
+		zmax,
+		colorscale = :Cividis,
+		colorbar=attr(x=colorbar_x, thickness=10, title="Counts"),
+	)
+end
+
+# ╔═╡ fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
+function plot_pair(img1, img2)
+	# Set up some subplots
+	fig = make_subplots(;
+		rows = 1,	
+		cols = 2,
+		shared_xaxes = true,
+		shared_yaxes = true,
+		column_titles = keys(OBSERVATORIES) |> collect,
+	)
+	
+	# Make the subplot titles a smidgen bit smaller
+	update_annotations!(fig, font_size=14)
+	
+	# Manually place the colorbars so they don't clash
+	add_trace!(fig, trace_hm(img1; colorbar_x=0.45), col=1)
+	add_trace!(fig, trace_hm(img2; colorbar_x=1), col=2)
+
+	# Keep the images true to size
+	update_xaxes!(fig, matches="x", scaleanchor=:y, title="X (pixels)")
+	update_yaxes!(fig, matches="y", scaleanchor=:x)
+
+	# Add a shared y-label
+	relayout!(fig, Layout(yaxis_title="Y (pixels)"), font_size=10, template="plotly_white", uirevision=1)
+
+	# Display
+	fig
+end
+
+# ╔═╡ 2bbcab7e-ee23-4136-b686-5472e61cd117
+plot_pair(img_east, img_west)
+
+# ╔═╡ 84c11014-8890-4348-96b6-8e701e458de4
+plot_pair(img_east, img_westw.data)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -315,6 +289,7 @@ AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
@@ -323,6 +298,7 @@ TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 AstroImages = "~0.5.0"
 CoordinateTransformations = "~0.6.3"
 ImageTransformations = "~0.10.1"
+OrderedCollections = "~1.7.0"
 PlutoPlotly = "~0.6.2"
 PlutoUI = "~0.7.61"
 TypedTables = "~1.4.6"
@@ -334,7 +310,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "6d2611edf1944db865fe0dceb9949563cdf83af1"
+project_hash = "435e5cdb13a9cd19317de6cb2469b222eb3d4d84"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1416,33 +1392,25 @@ version = "17.4.0+2"
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
-# ╠═84b679c0-c905-42f5-950c-df3a0a16ea05
 # ╟─59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
-# ╟─5454e93a-5539-4d4f-8f4c-377ca2480080
 # ╟─10c77d40-dcb9-4620-b9c1-a47a56621a0c
+# ╟─21afa6af-1df0-4c47-b106-1b9d1e161aa7
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─bd6cd797-bf84-41c7-8154-7babb26a1f8c
-# ╠═99a26c14-46b0-44ce-9148-3f9c565b62be
+# ╠═2bbcab7e-ee23-4136-b686-5472e61cd117
 # ╠═fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
-# ╠═472a1ba4-3dfe-4434-8499-f9845576f198
-# ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
-# ╠═83ba19c1-8ce2-4152-b2cb-88613db63e07
-# ╠═79d7afc4-0f24-4d3c-90a6-b1be4f08b471
-# ╠═64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
-# ╠═147695b4-961f-4c09-8f55-3697538c7e7e
-# ╠═4de34939-b77a-418a-adfe-4cc025d1ba8c
-# ╠═24307901-95dd-45ad-8950-0457cc0c6a92
-# ╠═bce4f077-80d1-495a-a104-6f5b29a477df
+# ╟─83ba19c1-8ce2-4152-b2cb-88613db63e07
+# ╟─79d7afc4-0f24-4d3c-90a6-b1be4f08b471
+# ╟─64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
+# ╟─2d5e1364-5879-486d-9024-e4572b0bfb36
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
-# ╠═e3fdb2c4-58ca-4d37-8e66-208d7469135c
-# ╠═4ca4c86b-6260-47d2-b2a2-795a611ce17d
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
-# ╠═944cd526-8999-48f2-b382-a0a8534a95cf
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
+# ╟─28a823e7-66ee-4688-b0a3-1ebd776f129f
+# ╟─983a1c03-0344-4905-8cf2-b799003eb94c
 # ╠═84c11014-8890-4348-96b6-8e701e458de4
-# ╠═a1f90a33-cb38-4a07-bbd8-9256d3c96ad6
-# ╠═9df9e70b-ed96-486d-8f1b-e680526ed787
+# ╟─648a4d59-f481-4d2c-9cf3-52b03c5b96bb
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╠═0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
 # ╠═6d49f686-ab50-4526-9d2c-91848abd8909
@@ -1453,6 +1421,7 @@ version = "17.4.0+2"
 # ╠═bf38cee5-5449-43bb-95db-3179009d13a9
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
+# ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
 # ╠═db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
