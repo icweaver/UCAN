@@ -77,7 +77,7 @@ end
 	Using a bit of trigonometry, we can then work out the distance to our finger based on how much it appears to shift. We will explore this method more later in the lab.
 
 !!! note " "
-	It turns out that the farther away an object is, the smaller its shift will appear to be, until it is so small that our eyes are just not strong enough to discern the shift anymore. This is true even if we replace our eyes with the largest telescopes on Earth. One way around this is to place our eyes farther apart (i.e., increase the baseline) to increase the apparent shift, and this is exactly what NASA did fairly recently with the [New Horizons](https://science.nasa.gov/mission/new-horizons/) mission, which sent a satellite with a few telescopes onboard out to the furthest reaches of our solar system and beyond.
+	It turns out that the farther away an object is, the smaller its shift will appear to be, until it is so small that our eyes are just not strong enough to discern the shift anymore. This is also why the background appears to be static, and this still holds even if we replace our eyes with the largest telescopes on Earth. One way around this is to place our eyes farther apart (i.e., increase the baseline) to increase the apparent shift of our closer foreground object, and this is exactly what NASA did fairly recently with the [New Horizons](https://science.nasa.gov/mission/new-horizons/) mission, which sent a satellite with a few telescopes onboard out to the furthest reaches of our solar system and beyond.
 
 	On April 22-23, 2020, at a distance of over 4 billion miles from Earth, New Horizons turned on one of its telescopes and took a look at our closest star, [Proxima Centauri](https://imagine.gsfc.nasa.gov/features/cosmic/nearest_star_info.html). What it captured clearly showed a jump relative to its background when compared to the same image taken back on Earth at the same time:
 
@@ -86,7 +86,7 @@ end
 	_Source: [NASA New Horizons Mission](https://www.nasa.gov/solar-system/nasas-new-horizons-conducts-the-first-interstellar-parallax-experiment/)_
 
 !!! note " "
-	For the first time, the parallax method had been used to measure the distance to another star. We do not have 4 billion miles to work with here on Earth, so instead we will use simultaneous observations from two separate ground-based telescopes to measure the distance to a near-Earth asteroid.
+	For the first time, the parallax method had been used to measure the distance to another star. We do not have 4 billion miles to work with here on Earth, so instead we will use simultaneous observations from two separate ground-based telescopes to measure the distance to a near-Earth asteroid. Keeping track of these distances is a crucial step for detecting, and [potentially diverting](https://science.nasa.gov/mission/dart/), objects that may be on a collision course with Earth.
 """
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
@@ -249,6 +249,7 @@ d = 206_265 * b / θ / 1.486e8 # AU
 	* Compute ΔRA, ΔDEC
 	* Larger baseline
 	* Centroid, fit PSF
+	* What other ways can parallax be measured? (e.g., movement of Earth around the Sun)
 """
 
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
