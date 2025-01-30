@@ -19,7 +19,8 @@ end
 # ╔═╡ db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 begin
 	# Notebook
-	using PlutoUI, CommonMark
+	using PlutoUI
+	using MarkdownLiteral: @mdx
 	
 	# Viz
 	using AstroImages, PlutoPlotly
@@ -34,26 +35,31 @@ begin
 end
 
 # ╔═╡ 75d03ef4-d8b2-11ef-076a-058846f3b6ba
-md"""
-# Parallax Lab
+@mdx """
+<h1>Parallax Lab</h1>
 
-Data from <http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf>
+!!! note " "
+	Data from [Gettysburg College](http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf)
 """
 
 # ╔═╡ 4cc6fb84-cefe-4571-850c-762643ff4ffc
-md"""
-## Using the notebook
+@mdx """
+<h2>Using the notebook</h2>
 
-This lab uses [Pluto.jl](https://plutojl.org/) to share data analysis in a reproducible format. For more information on useage, see their documentation page here. Some of our other [past Unistellar labs](https://www.seti.org/unistellar-education-materials) may also be useful for additional useage examples:
+!!! note " "
+	This lab uses [Pluto.jl](https://plutojl.org/) to share data analysis in a reproducible format. For more information on useage, see the [documentation here](https://plutojl.org/en/docs/). Some of our other [past Unistellar labs](https://www.seti.org/unistellar-education-materials) may also be useful for additional useage examples:
 
-* [Unistellar Spectroscopy Lab](https://www.seti.org/unistellar-education-materials#Spectroscopy-Lab)
-* [Unistellar Eclipsing Binary Lab](https://www.seti.org/unistellar-education-materials#Eclipsing-Binary-Lab)
-* [Unistellar Asteroid Occultation Lab](https://www.seti.org/unistellar-education-materials#Asteroid-Occultation-Lab)
+	* [Unistellar Spectroscopy Lab](https://www.seti.org/unistellar-education-materials#Spectroscopy-Lab)
+	* [Unistellar Eclipsing Binary Lab](https://www.seti.org/unistellar-education-materials#Eclipsing-Binary-Lab)
+	* [Unistellar Asteroid Occultation Lab](https://www.seti.org/unistellar-education-materials#Asteroid-Occultation-Lab)
+
+!!! warning "Interactivity"
+	For full interactivity, please click on the `Edit or run this notebook` button in the top right corner. We recommend using the `On your computer` option to download a local copy of this lab. Pluto.jl will handle installation automatically on most platforms (e.g., MacOS, Windows, Linux, ChromeOS).
 """
 
 # ╔═╡ 7d10737f-1691-43e5-891f-118e41cd771a
-cm"""
-## Introduction
+@mdx """
+<h2>Introduction</h2>
 
 !!! note " "
 	Left eye right eye. Here's the parallax of our nearest star:
@@ -63,12 +69,12 @@ cm"""
 	_Source: [NASA New Horizons Mission](https://www.nasa.gov/solar-system/nasas-new-horizons-conducts-the-first-interstellar-parallax-experiment/)_
 
 !!! note " "
-	Let's try an experiment closer to home:
+	Let's try an experiment closer to home.
 """
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
-md"""
-## Sample data
+@mdx """
+<h2>Data</h2>
 
 !!! note " "
 	We want to try and align the following two images taken by two eVscopes separated by a large distance:
@@ -96,19 +102,19 @@ OBSERVATORIES[observatory]
 header(OBSERVATORIES[observatory])
 
 # ╔═╡ 51186ae1-baac-4868-950f-1c9a86d720d8
-cm"""
-!!! note ""
+@mdx """
+!!! note " "
 	Flipping back and forth, it looks like there is some translation and rotatation that we would like to undo.
 """
 
 # ╔═╡ bd6cd797-bf84-41c7-8154-7babb26a1f8c
-md"""
-## Point selection
+@mdx """
+<h2>Point selection</h2>
 """
 
 # ╔═╡ 2d5e1364-5879-486d-9024-e4572b0bfb36
 details("Makie.jl alternative",
-	cm"""
+	@mdx """
 	```julia
 	using WGLmakie
 	set_theme!(theme_light())
@@ -156,15 +162,22 @@ details("Makie.jl alternative",
 
 	function tooltip_hm(self, i, pos)
 		x, y, val = round.(Int, pos, RoundNearestTiesUp)
-		return "H[$(x), $(y)] = $(val)"
+		return "H[\$(x), \$(y)] = \$(val)"
 	end
 	```
 	"""
 )
 
 # ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
-md"""
-## Alignment
+@mdx """
+<h2>Alignment</h2>
+
+!!! note " "
+	Let's pick some points. Will use to transform the source image onto the destination image.
+
+	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
+
+	_Source: [JuliaImages Org](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
 """
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
@@ -187,7 +200,7 @@ img_westw = shareheader(img_west, warp(img_west, tfm, axes(img_east)));
 img_compare
 
 # ╔═╡ 5a0b3e26-7271-4b08-aa67-68c3af1421c0
-cm"""
+@mdx """
 And here's a quick blink
 """
 
@@ -199,14 +212,14 @@ And here's a quick blink
 
 # ╔═╡ 648a4d59-f481-4d2c-9cf3-52b03c5b96bb
 details("Makie.jl alternative",
-cm"""
+@mdx """
 ```julia
 fig = Figure()
 
 i = Observable(1)
-title = @lift OBSERVATORIES[$i]
-img_i = @lift imgs_stacked[$i]
-colorrange = @lift zscale($img_i)
+title = @lift OBSERVATORIES[\$i]
+img_i = @lift imgs_stacked[\$i]
+colorrange = @lift zscale(\$img_i)
 
 plot_img!(fig, img_i; title, colorrange, colorbar=false)
 
@@ -224,8 +237,8 @@ LocalResource("./blink.gif")
 )
 
 # ╔═╡ 8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
-md"""
-## Parallax distance
+@mdx """
+<h2>Parallax distance</h2>
 """
 
 # ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
@@ -249,11 +262,19 @@ d = 206_265 * b / θ / 1.486e8 # AU
 100.0 * (d - 0.3) / 0.3 # percent diff
 
 # ╔═╡ bf38cee5-5449-43bb-95db-3179009d13a9
-"Not bad just doing this by eye. Can we do better?" |> msg
+@mdx """
+!!! note " "
+	Not bad just doing this by eye. Can we do better?
+
+	* Different transformation params
+	* Compute ΔRA, ΔDEC
+	* Larger baseline
+	* Centroid, fit PSF
+"""
 
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
-md"""
-## Notebook setup 🔧
+@mdx """
+<h1>Notebook setup 🔧</h1>
 """
 
 # ╔═╡ a23c40dc-0af3-4c3a-8172-203f58603bbb
@@ -320,10 +341,10 @@ plot_pair(img_east, img_westw.data)
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
-CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+MarkdownLiteral = "736d6165-7244-6769-4267-6b50796e6954"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -331,9 +352,9 @@ TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 
 [compat]
 AstroImages = "~0.5.0"
-CommonMark = "~0.8.15"
 CoordinateTransformations = "~0.6.3"
 ImageTransformations = "~0.10.1"
+MarkdownLiteral = "~0.1.1"
 OrderedCollections = "~1.7.0"
 PlutoPlotly = "~0.6.2"
 PlutoUI = "~0.7.61"
@@ -346,7 +367,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "4988f5ce58b86c7703e485259c74dbcffb1687a0"
+project_hash = "75c1c6e339d03232fdc085681fff3f1734f622f7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -906,6 +927,12 @@ deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
 
+[[deps.MarkdownLiteral]]
+deps = ["CommonMark", "HypertextLiteral"]
+git-tree-sha1 = "0d3fa2dd374934b62ee16a4721fe68c418b92899"
+uuid = "736d6165-7244-6769-4267-6b50796e6954"
+version = "0.1.1"
+
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
@@ -1437,7 +1464,7 @@ version = "17.4.0+2"
 # ╟─75d03ef4-d8b2-11ef-076a-058846f3b6ba
 # ╟─4cc6fb84-cefe-4571-850c-762643ff4ffc
 # ╟─7d10737f-1691-43e5-891f-118e41cd771a
-# ╠═65d2286a-2786-4f96-8193-d0c4fe77d57a
+# ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
@@ -1468,7 +1495,7 @@ version = "17.4.0+2"
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
 # ╠═202acfd6-1123-4e16-8d93-b9071006666c
 # ╠═0043f0a6-d309-4527-a554-d37c73c36dfa
-# ╠═bf38cee5-5449-43bb-95db-3179009d13a9
+# ╟─bf38cee5-5449-43bb-95db-3179009d13a9
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
 # ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
