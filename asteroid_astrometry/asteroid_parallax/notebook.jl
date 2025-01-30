@@ -184,7 +184,13 @@ img_compare
 <h3>Distance on sky</h3>
 
 !!! note " "
-	Measure some stuff
+	Measure some stuff. If our image stacking was successful, then correpsonding objects in each image should be in roughly the same spot as we zoom in. We can use this to measure how far the asteroid moved along the plane of the sky.
+"""
+
+# ╔═╡ 840be451-c623-4bcb-97b6-6fed1932bf8e
+@mdx """
+!!! note " "
+	Enter below to calc
 """
 
 # ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
@@ -1447,6 +1453,7 @@ version = "17.4.0+2"
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
+# ╟─840be451-c623-4bcb-97b6-6fed1932bf8e
 # ╠═0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6d49f686-ab50-4526-9d2c-91848abd8909
