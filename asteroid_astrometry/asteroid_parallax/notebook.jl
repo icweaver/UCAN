@@ -119,62 +119,6 @@ header(OBSERVATORIES[observatory])
 	_Source: [JuliaImages Org](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
 """
 
-# ╔═╡ 2d5e1364-5879-486d-9024-e4572b0bfb36
-details("Makie.jl alternative",
-	@mdx """
-	```julia
-	using WGLmakie
-	set_theme!(theme_light())
-	update_theme!(Heatmap=(; colormap=:cividis))
-	let
-		fig = Figure()
-		
-		ax_east, _ = plot_img!(fig[1, 1], img_east; title=OBSERVATORIES[1])
-		colsize!(fig.layout, 1, Aspect(1, 1.0))
-		
-		ax_west, _ = plot_img!(fig[1, 2], img_west; title=OBSERVATORIES[2])
-		colsize!(fig.layout, 2, Aspect(1, 1.0))
-		
-		linkaxes!(ax_east, ax_west)
-		
-		resize_to_layout!(fig)
-		
-		fig
-	end
-
-	function plot_img!(fig, img;
-		title = "title here",
-		colorrange = zscale(img),
-		colorbar = true,
-	)
-		ax, p = image(fig[1, 1], img;
-			colorrange,
-			inspector_label = tooltip_hm,
-			axis = (
-				aspect = DataAspect(),
-				# aspect = 1,
-				# limits = ((0, 320), (0, 320)),
-				xlabel = "X (pixels)",
-				ylabel = "Y (pixels)",
-				title,
-			),
-		)
-	
-		if colorbar
-			Colorbar(fig[1, 2], p; label="Counts")
-		end
-	
-		return ax, p
-	end
-
-	function tooltip_hm(self, i, pos)
-		x, y, val = round.(Int, pos, RoundNearestTiesUp)
-		return "H[\$(x), \$(y)] = \$(val)"
-	end
-	```
-	"""
-)
-
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 point_map = (
 	[53, 220] => [81, 211],
@@ -242,32 +186,6 @@ img_compare
 !!! note " "
 	Measure some stuff
 """
-
-# ╔═╡ 648a4d59-f481-4d2c-9cf3-52b03c5b96bb
-details("Makie.jl alternative",
-@mdx """
-```julia
-fig = Figure()
-
-i = Observable(1)
-title = @lift OBSERVATORIES[\$i]
-img_i = @lift imgs_stacked[\$i]
-colorrange = @lift zscale(\$img_i)
-
-plot_img!(fig, img_i; title, colorrange, colorbar=false)
-
-fig
-```
-
-```julia
-record(fig, "blink.gif", 1:2; framerate=1) do t
-	i[] = t
-end
-
-LocalResource("./blink.gif")
-```
-"""
-)
 
 # ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
  # Number of pixels that asteroid moved
@@ -1512,7 +1430,6 @@ version = "17.4.0+2"
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╟─2bbcab7e-ee23-4136-b686-5472e61cd117
-# ╟─2d5e1364-5879-486d-9024-e4572b0bfb36
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 # ╟─6193211b-8ec0-4f88-87df-35247c01353a
 # ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
@@ -1530,7 +1447,6 @@ version = "17.4.0+2"
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
-# ╟─648a4d59-f481-4d2c-9cf3-52b03c5b96bb
 # ╠═0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6d49f686-ab50-4526-9d2c-91848abd8909
