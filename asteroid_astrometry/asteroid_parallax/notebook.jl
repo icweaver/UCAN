@@ -107,9 +107,16 @@ header(OBSERVATORIES[observatory])
 	Flipping back and forth, it looks like there is some translation and rotatation that we would like to undo.
 """
 
-# ╔═╡ bd6cd797-bf84-41c7-8154-7babb26a1f8c
+# ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
 @mdx """
-<h2>Point selection</h2>
+<h2>Image alignment</h2>
+
+!!! note " "
+	Let's pick some points. Will use to transform the source image onto the destination image.
+
+	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
+
+	_Source: [JuliaImages Org](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
 """
 
 # ╔═╡ 2d5e1364-5879-486d-9024-e4572b0bfb36
@@ -168,18 +175,6 @@ details("Makie.jl alternative",
 	"""
 )
 
-# ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
-@mdx """
-<h2>Alignment</h2>
-
-!!! note " "
-	Let's pick some points. Will use to transform the source image onto the destination image.
-
-	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
-
-	_Source: [JuliaImages Org](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
-"""
-
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 point_map = (
 	[53, 220] => [81, 211],
@@ -187,8 +182,19 @@ point_map = (
 	[358, 48] => [266, 108],
 )
 
+# ╔═╡ 6193211b-8ec0-4f88-87df-35247c01353a
+@mdx"""
+!!! note " "
+	If curious, the corresponding warp info is below. It will update in real time in the local version of this notebook.
+
+	
+"""
+
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
-tfm = AffineMap(last.(point_map) => first.(point_map)); tfm.linear, tfm.translation
+tfm = AffineMap(last.(point_map) => first.(point_map));
+
+# ╔═╡ 568347fb-92a3-4435-8204-80a1a0a1eaef
+PlutoUI.ExperimentalLayout.hbox([tfm.linear, tfm.translation])
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 img_westw = shareheader(img_west, warp(img_west, tfm, axes(img_east)));
@@ -201,7 +207,8 @@ img_compare
 
 # ╔═╡ 5a0b3e26-7271-4b08-aa67-68c3af1421c0
 @mdx """
-And here's a quick blink
+!!! note " "
+	And here's a quick blink
 """
 
 # ╔═╡ 13e464bb-30d2-4e6e-b038-69871acbba65
@@ -209,6 +216,25 @@ And here's a quick blink
 
 # ╔═╡ cd32b1d0-f455-4822-ad19-6560044d6c4a
 [img_east, img_westw][i]
+
+# ╔═╡ 2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
+@mdx """
+!!! note " "
+	Asteroid!
+"""
+
+# ╔═╡ 8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
+@mdx """
+<h2>Parallax distance</h2>
+
+!!! note " "
+	Game plan: Get angle on sky, combine with telescope baseline to compute distance to asteroid
+"""
+
+# ╔═╡ 3e475b77-638c-4bb2-81c6-d7146b72c41f
+@mdx """
+<h3>Distance on sky</h3>
+"""
 
 # ╔═╡ 648a4d59-f481-4d2c-9cf3-52b03c5b96bb
 details("Makie.jl alternative",
@@ -236,15 +262,15 @@ LocalResource("./blink.gif")
 """
 )
 
-# ╔═╡ 8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
-@mdx """
-<h2>Parallax distance</h2>
-"""
-
 # ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
  # Number of pixels that asteroid moved
  # Note that the coords are relative to the first image
 θ = sqrt((240 - 222)^2 + (162 - 158)^2)
+
+# ╔═╡ 864d23ed-d44e-4d3b-887c-73e49a909071
+@mdx """
+<h3>Distance to asteroid</h3>
+"""
 
 # ╔═╡ 6d49f686-ab50-4526-9d2c-91848abd8909
 # Colgate plate scale: 0.99" per pixe
@@ -260,6 +286,11 @@ d = 206_265 * b / θ / 1.486e8 # AU
 
 # ╔═╡ 0043f0a6-d309-4527-a554-d37c73c36dfa
 100.0 * (d - 0.3) / 0.3 # percent diff
+
+# ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
+@mdx """
+<h2>Wrapping up</h2>
+"""
 
 # ╔═╡ bf38cee5-5449-43bb-95db-3179009d13a9
 @mdx """
@@ -1472,29 +1503,34 @@ version = "17.4.0+2"
 # ╟─10c77d40-dcb9-4620-b9c1-a47a56621a0c
 # ╟─21afa6af-1df0-4c47-b106-1b9d1e161aa7
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
-# ╟─bd6cd797-bf84-41c7-8154-7babb26a1f8c
-# ╟─2bbcab7e-ee23-4136-b686-5472e61cd117
-# ╟─fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
-# ╟─64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
-# ╟─2d5e1364-5879-486d-9024-e4572b0bfb36
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
+# ╟─2bbcab7e-ee23-4136-b686-5472e61cd117
+# ╟─2d5e1364-5879-486d-9024-e4572b0bfb36
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
+# ╟─6193211b-8ec0-4f88-87df-35247c01353a
+# ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╠═28a823e7-66ee-4688-b0a3-1ebd776f129f
 # ╠═983a1c03-0344-4905-8cf2-b799003eb94c
-# ╠═5a0b3e26-7271-4b08-aa67-68c3af1421c0
+# ╟─5a0b3e26-7271-4b08-aa67-68c3af1421c0
 # ╠═13e464bb-30d2-4e6e-b038-69871acbba65
 # ╠═cd32b1d0-f455-4822-ad19-6560044d6c4a
+# ╟─2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
+# ╟─fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
+# ╟─64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
+# ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
+# ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
 # ╟─648a4d59-f481-4d2c-9cf3-52b03c5b96bb
-# ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╠═0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
+# ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6d49f686-ab50-4526-9d2c-91848abd8909
 # ╠═6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
 # ╠═202acfd6-1123-4e16-8d93-b9071006666c
 # ╠═0043f0a6-d309-4527-a554-d37c73c36dfa
+# ╟─9159cb78-6d0e-4c12-8f42-6b8e8316d167
 # ╟─bf38cee5-5449-43bb-95db-3179009d13a9
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
