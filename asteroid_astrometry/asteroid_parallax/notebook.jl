@@ -68,12 +68,23 @@ end
 <h2>Introduction</h2>
 
 !!! note " "
-	Look at an object nearby you. Blink one eye and then the other while focusing on it. The object's apparent location should appear to shift relative to its background. You've just made a parallax observation! Thanks to the change in perspective afforded by viewing through each of our eyes, we are able to see our object from a different angle (literally), as in the schematic below:
+	A nice way to visualize parallax is to look at your thumb or finger at arm's length and blink your eyes back and forth. It should appear to jump back and forth relative to its background. Thanks to the change in perspective afforded by viewing through each of our eyes, we are able to see our finger from a different angle (literally), as in the schematic below:
 
 	$(Resource("https://upload.wikimedia.org/wikipedia/commons/2/2e/Parallax_Example.png"))
 
-	
+	_Source: [JustinWick](https://upload.wikimedia.org/wikipedia/commons/2/2e/Parallax_Example.png)_
 
+	Using a bit of trigonometry, we can then work out the distance to our finger based on how much it appears to shift. We will explore this method more later in the lab.
+"""
+
+# ╔═╡ 4b8c8c16-570b-4ab6-b1b5-1a093b522148
+@mdx """
+!!! note " "
+	It turns out that the farther away an object is, the smaller its shift will appear to be, until it is so small that our eyes are just not strong enough to discern the shift anymore. This is true even if we replace our eyes with the largest telescopes on Earth. One way around this is to place our eyes farther apart (i.e., increase the baseline) to increase the apparent shift, and this is exactly what NASA did fairly recently with the [New Horizons](https://science.nasa.gov/mission/new-horizons/) mission.
+
+
+	In 2020, we were able to use this phenomenon to measure the distance to our nearest star, Proxima Cen B, by using two eyes that were very far apart.
+!!! note " "
 	$(Resource("https://upload.wikimedia.org/wikipedia/commons/e/e2/New_Horizons_Proxima_Centauri_Parallax_Animation.gif"))
 	
 	_Source: [NASA New Horizons Mission](https://www.nasa.gov/solar-system/nasas-new-horizons-conducts-the-first-interstellar-parallax-experiment/)_
@@ -1435,7 +1446,8 @@ version = "17.4.0+2"
 # ╔═╡ Cell order:
 # ╟─75d03ef4-d8b2-11ef-076a-058846f3b6ba
 # ╟─4cc6fb84-cefe-4571-850c-762643ff4ffc
-# ╠═7d10737f-1691-43e5-891f-118e41cd771a
+# ╟─7d10737f-1691-43e5-891f-118e41cd771a
+# ╠═4b8c8c16-570b-4ab6-b1b5-1a093b522148
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
