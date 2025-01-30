@@ -185,9 +185,7 @@ point_map = (
 # ╔═╡ 6193211b-8ec0-4f88-87df-35247c01353a
 @mdx"""
 !!! note " "
-	If curious, the corresponding warp info is below. It will update in real time in the local version of this notebook.
-
-	
+	If curious, this is known as an [affine transformation](https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations) and the corresponding rotation and translation parameters are shown below. It will update in real time in the local version of this notebook.
 """
 
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
