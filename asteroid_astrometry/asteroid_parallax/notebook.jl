@@ -39,7 +39,13 @@ end
 <h1>Parallax Lab</h1>
 
 !!! note " "
-	Data from [Gettysburg College](http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf)
+	In this lab we will estimate the distance to near-Earth object (NEO) based on its measured parallax. For more on taking these types of science observations, see our [Unistellar Planetary Defense](https://science.unistellar.com/planetary-defense/) page here.
+
+	Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing general parallax observations, as well as understand the principles behind other astronomical software at a broad level.
+	
+
+!!! todo
+	Using sample data from [Gettysburg College](http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf). Replace with Unistellar data when it thaws.
 """
 
 # ╔═╡ 4cc6fb84-cefe-4571-850c-762643ff4ffc
@@ -62,7 +68,11 @@ end
 <h2>Introduction</h2>
 
 !!! note " "
-	Left eye right eye. Here's the parallax of our nearest star:
+	Look at an object nearby you. Blink one eye and then the other while focusing on it. The object's apparent location should appear to shift relative to its background. You've just made a parallax observation! Thanks to the change in perspective afforded by viewing through each of our eyes, we are able to see our object from a different angle (literally), as in the schematic below:
+
+	$(Resource("https://upload.wikimedia.org/wikipedia/commons/2/2e/Parallax_Example.png"))
+
+	
 
 	$(Resource("https://upload.wikimedia.org/wikipedia/commons/e/e2/New_Horizons_Proxima_Centauri_Parallax_Animation.gif"))
 	
@@ -1425,7 +1435,7 @@ version = "17.4.0+2"
 # ╔═╡ Cell order:
 # ╟─75d03ef4-d8b2-11ef-076a-058846f3b6ba
 # ╟─4cc6fb84-cefe-4571-850c-762643ff4ffc
-# ╟─7d10737f-1691-43e5-891f-118e41cd771a
+# ╠═7d10737f-1691-43e5-891f-118e41cd771a
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
