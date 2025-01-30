@@ -180,12 +180,12 @@ point_map = (
 	[53, 220] => [81, 211],
 	[268, 187] => [211, 191],
 	[358, 48] => [266, 108],
-)
+);
 
 # ╔═╡ 6193211b-8ec0-4f88-87df-35247c01353a
 @mdx"""
 !!! note " "
-	If curious, this is known as an [affine transformation](https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations) and the corresponding rotation and translation parameters are shown below. It will update in real time in the local version of this notebook.
+	If curious, this is known as an [affine transformation](https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations) and the corresponding linear transformation and translation parameters are shown below. It will update in real time in the local version of this notebook each time `point_map` is modified.
 """
 
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
@@ -193,6 +193,12 @@ tfm = AffineMap(last.(point_map) => first.(point_map));
 
 # ╔═╡ 568347fb-92a3-4435-8204-80a1a0a1eaef
 PlutoUI.ExperimentalLayout.hbox([tfm.linear, tfm.translation])
+
+# ╔═╡ a3a65c1c-a44e-475e-8044-35c453709483
+@mdx """
+!!! note " "
+	We now apply this transform and stack our images together.
+"""
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 img_westw = shareheader(img_west, warp(img_west, tfm, axes(img_east)));
@@ -206,14 +212,14 @@ img_compare
 # ╔═╡ 5a0b3e26-7271-4b08-aa67-68c3af1421c0
 @mdx """
 !!! note " "
-	And here's a quick blink
+	Click back and forth to blink or view the movie below:
 """
 
 # ╔═╡ 13e464bb-30d2-4e6e-b038-69871acbba65
 @bind i Clock(max_value=2, repeat=true, start_running=true)
 
 # ╔═╡ cd32b1d0-f455-4822-ad19-6560044d6c4a
-[img_east, img_westw][i]
+(img_east, img_westw)[i]
 
 # ╔═╡ 2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
 @mdx """
@@ -232,6 +238,9 @@ img_compare
 # ╔═╡ 3e475b77-638c-4bb2-81c6-d7146b72c41f
 @mdx """
 <h3>Distance on sky</h3>
+
+!!! note " "
+	Measure some stuff
 """
 
 # ╔═╡ 648a4d59-f481-4d2c-9cf3-52b03c5b96bb
@@ -268,6 +277,9 @@ LocalResource("./blink.gif")
 # ╔═╡ 864d23ed-d44e-4d3b-887c-73e49a909071
 @mdx """
 <h3>Distance to asteroid</h3>
+
+!!! note " "
+	Measure more stuff
 """
 
 # ╔═╡ 6d49f686-ab50-4526-9d2c-91848abd8909
@@ -288,10 +300,7 @@ d = 206_265 * b / θ / 1.486e8 # AU
 # ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
 @mdx """
 <h2>Wrapping up</h2>
-"""
 
-# ╔═╡ bf38cee5-5449-43bb-95db-3179009d13a9
-@mdx """
 !!! note " "
 	Not bad just doing this by eye. Can we do better?
 
@@ -354,7 +363,7 @@ function plot_pair(img1, img2)
 	update_yaxes!(fig, matches="y", scaleanchor=:x)
 
 	# Add a shared y-label
-	relayout!(fig, Layout(yaxis_title="Y (pixels)"), font_size=10, template="plotly_white", uirevision=1)
+	relayout!(fig, Layout(yaxis_title="Y (pixels)"), font_size=10, template="plotly_white", margin=attr(t=20), uirevision=1)
 
 	# Display
 	fig
@@ -1508,12 +1517,13 @@ version = "17.4.0+2"
 # ╟─6193211b-8ec0-4f88-87df-35247c01353a
 # ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
+# ╟─a3a65c1c-a44e-475e-8044-35c453709483
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
-# ╠═28a823e7-66ee-4688-b0a3-1ebd776f129f
-# ╠═983a1c03-0344-4905-8cf2-b799003eb94c
+# ╟─28a823e7-66ee-4688-b0a3-1ebd776f129f
+# ╟─983a1c03-0344-4905-8cf2-b799003eb94c
 # ╟─5a0b3e26-7271-4b08-aa67-68c3af1421c0
-# ╠═13e464bb-30d2-4e6e-b038-69871acbba65
-# ╠═cd32b1d0-f455-4822-ad19-6560044d6c4a
+# ╟─13e464bb-30d2-4e6e-b038-69871acbba65
+# ╟─cd32b1d0-f455-4822-ad19-6560044d6c4a
 # ╟─2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
 # ╟─fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
 # ╟─64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
@@ -1529,7 +1539,6 @@ version = "17.4.0+2"
 # ╠═202acfd6-1123-4e16-8d93-b9071006666c
 # ╠═0043f0a6-d309-4527-a554-d37c73c36dfa
 # ╟─9159cb78-6d0e-4c12-8f42-6b8e8316d167
-# ╟─bf38cee5-5449-43bb-95db-3179009d13a9
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
 # ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
