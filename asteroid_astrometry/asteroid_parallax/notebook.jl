@@ -51,10 +51,20 @@ This lab uses [Pluto.jl](https://plutojl.org/) to share data analysis in a repro
 * [Unistellar Asteroid Occultation Lab](https://www.seti.org/unistellar-education-materials#Asteroid-Occultation-Lab)
 """
 
-# ╔═╡ c4ff967f-da00-4a21-a889-92f0c0d61adf
-function msg2(s)
-	header, body... = s.content
-end
+# ╔═╡ 7d10737f-1691-43e5-891f-118e41cd771a
+cm"""
+## Introduction
+
+!!! note " "
+	Left eye right eye. Here's the parallax of our nearest star:
+
+	$(Resource("https://upload.wikimedia.org/wikipedia/commons/e/e2/New_Horizons_Proxima_Centauri_Parallax_Animation.gif"))
+	
+	_Source: [NASA New Horizons Mission](https://www.nasa.gov/solar-system/nasas-new-horizons-conducts-the-first-interstellar-parallax-experiment/)_
+
+!!! note " "
+	Let's try an experiment closer to home:
+"""
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
 md"""
@@ -238,6 +248,9 @@ d = 206_265 * b / θ / 1.486e8 # AU
 # ╔═╡ 0043f0a6-d309-4527-a554-d37c73c36dfa
 100.0 * (d - 0.3) / 0.3 # percent diff
 
+# ╔═╡ bf38cee5-5449-43bb-95db-3179009d13a9
+"Not bad just doing this by eye. Can we do better?" |> msg
+
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
 md"""
 ## Notebook setup 🔧
@@ -245,28 +258,6 @@ md"""
 
 # ╔═╡ a23c40dc-0af3-4c3a-8172-203f58603bbb
 TableOfContents()
-
-# ╔═╡ c286c139-cf7c-45e3-8fd4-e67bcc5a7de9
-# Add some decoration around prose
-msg(s) = cm"""
-!!! note " "
-	$(s)
-"""
-
-# ╔═╡ 7d10737f-1691-43e5-891f-118e41cd771a
-yee = cm"""
-# Level One
-
-## Level Two.1
-
-## Level Two.2
-""" |> msg
-
-# ╔═╡ 9d4fd6d2-4a55-4a2d-a933-c42af9d57f36
-yee.t
-
-# ╔═╡ bf38cee5-5449-43bb-95db-3179009d13a9
-"Not bad just doing this by eye. Can we do better?" |> msg
 
 # ╔═╡ 05b2f9fe-61d2-4640-bbae-78d6d7465597
 # Heuristic for keeping plotted images from blowing up
@@ -1445,10 +1436,8 @@ version = "17.4.0+2"
 # ╔═╡ Cell order:
 # ╟─75d03ef4-d8b2-11ef-076a-058846f3b6ba
 # ╟─4cc6fb84-cefe-4571-850c-762643ff4ffc
-# ╠═7d10737f-1691-43e5-891f-118e41cd771a
-# ╠═9d4fd6d2-4a55-4a2d-a933-c42af9d57f36
-# ╠═c4ff967f-da00-4a21-a889-92f0c0d61adf
-# ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
+# ╟─7d10737f-1691-43e5-891f-118e41cd771a
+# ╠═65d2286a-2786-4f96-8193-d0c4fe77d57a
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
@@ -1482,7 +1471,6 @@ version = "17.4.0+2"
 # ╠═bf38cee5-5449-43bb-95db-3179009d13a9
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
-# ╠═c286c139-cf7c-45e3-8fd4-e67bcc5a7de9
 # ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
 # ╠═db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 # ╟─00000000-0000-0000-0000-000000000001
