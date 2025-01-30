@@ -39,7 +39,7 @@ end
 <h1>Parallax Lab</h1>
 
 !!! note " "
-	In this lab we will estimate the distance to near-Earth object (NEO) based on its measured parallax. For more on taking these types of science observations, see our [Unistellar Planetary Defense](https://science.unistellar.com/planetary-defense/) page here.
+	In this lab we will estimate the distance to a near-Earth object (NEO) based on its measured parallax. For more on taking these types of science observations, see our [Unistellar Planetary Defense](https://science.unistellar.com/planetary-defense/) page here.
 
 	Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing general parallax observations, as well as understand the principles behind other astronomical software at a broad level.
 	
@@ -75,22 +75,18 @@ end
 	_Source: [JustinWick](https://upload.wikimedia.org/wikipedia/commons/2/2e/Parallax_Example.png)_
 
 	Using a bit of trigonometry, we can then work out the distance to our finger based on how much it appears to shift. We will explore this method more later in the lab.
-"""
 
-# ╔═╡ 4b8c8c16-570b-4ab6-b1b5-1a093b522148
-@mdx """
 !!! note " "
-	It turns out that the farther away an object is, the smaller its shift will appear to be, until it is so small that our eyes are just not strong enough to discern the shift anymore. This is true even if we replace our eyes with the largest telescopes on Earth. One way around this is to place our eyes farther apart (i.e., increase the baseline) to increase the apparent shift, and this is exactly what NASA did fairly recently with the [New Horizons](https://science.nasa.gov/mission/new-horizons/) mission.
+	It turns out that the farther away an object is, the smaller its shift will appear to be, until it is so small that our eyes are just not strong enough to discern the shift anymore. This is true even if we replace our eyes with the largest telescopes on Earth. One way around this is to place our eyes farther apart (i.e., increase the baseline) to increase the apparent shift, and this is exactly what NASA did fairly recently with the [New Horizons](https://science.nasa.gov/mission/new-horizons/) mission, which sent a satellite with a few telescopes onboard out to the furthest reaches of our solar system and beyond.
 
+	On April 22-23, 2020, at a distance of over 4 billion miles from Earth, New Horizons turned on one of its telescopes and took a look at our closest star, [Proxima Centauri](https://imagine.gsfc.nasa.gov/features/cosmic/nearest_star_info.html). What it captured clearly showed a jump relative to its background when compared to the same image taken back on Earth at the same time:
 
-	In 2020, we were able to use this phenomenon to measure the distance to our nearest star, Proxima Cen B, by using two eyes that were very far apart.
-!!! note " "
 	$(Resource("https://upload.wikimedia.org/wikipedia/commons/e/e2/New_Horizons_Proxima_Centauri_Parallax_Animation.gif"))
 	
 	_Source: [NASA New Horizons Mission](https://www.nasa.gov/solar-system/nasas-new-horizons-conducts-the-first-interstellar-parallax-experiment/)_
 
 !!! note " "
-	Let's try an experiment closer to home.
+	For the first time, the parallax method had been used to measure the distance to another star. We do not have 4 billion miles to work with here on Earth, so instead we will use simultaneous observations from two separate ground-based telescopes to measure the distance to a near-Earth asteroid.
 """
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
@@ -1447,7 +1443,6 @@ version = "17.4.0+2"
 # ╟─75d03ef4-d8b2-11ef-076a-058846f3b6ba
 # ╟─4cc6fb84-cefe-4571-850c-762643ff4ffc
 # ╟─7d10737f-1691-43e5-891f-118e41cd771a
-# ╠═4b8c8c16-570b-4ab6-b1b5-1a093b522148
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
