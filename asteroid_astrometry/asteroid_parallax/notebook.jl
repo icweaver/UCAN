@@ -157,13 +157,15 @@ header(OBSERVATORIES[observatory])
 	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
 
 	_Source: [JuliaImages Org](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
+
+	Using the comparison plotin the previous section, identify the ``(X, Y)`` pixel coordinates for three stars in the source image and corresponding stars in the destination image, respectively. Record these values in the `point_map` variable below, where ``\\boldsymbol{p} = (p_X, p_Y) \\Rightarrow \\boldsymbol{q} = (q_X, q_Y)``.
 """
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 point_map = (
-	[53, 220] => [81, 211],
-	[268, 187] => [211, 191],
-	[358, 48] => [266, 108],
+	[53, 220] => [81, 211], # Star 1
+	[268, 187] => [211, 191], # Star 2
+	[358, 48] => [266, 108], # Star 3
 );
 
 # ╔═╡ 6193211b-8ec0-4f88-87df-35247c01353a
@@ -1481,7 +1483,7 @@ version = "17.4.0+2"
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
-# ╟─6193211b-8ec0-4f88-87df-35247c01353a
+# ╠═6193211b-8ec0-4f88-87df-35247c01353a
 # ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
 # ╟─a3a65c1c-a44e-475e-8044-35c453709483
