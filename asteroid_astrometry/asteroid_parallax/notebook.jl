@@ -121,7 +121,7 @@ img_west = OBSERVATORIES["NURO, Flagstaff, AZ: 0.8 m"];
 	Replace with eVscope data and baseline distance when available.
 
 !!! note " "
-	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizon's example, all objects in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
+	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizon's example, _all of the objects_ in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
 """
 
 # ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
@@ -133,10 +133,16 @@ OBSERVATORIES[observatory]
 # ╔═╡ 21afa6af-1df0-4c47-b106-1b9d1e161aa7
 header(OBSERVATORIES[observatory])
 
+# ╔═╡ 8bbccbde-4850-4f9d-941a-b163e2133afc
+@mdx """
+!!! note " "
+	Below is a side-by-side comparison with the size of each image (in pixels) displayed to better show the discrepancies. Try zooming or panning around to see how the images compare.
+"""
+
 # ╔═╡ 51186ae1-baac-4868-950f-1c9a86d720d8
 @mdx """
 !!! note " "
-	Due to various factors like differences in telescope size, sensors, and pointings, the images are out of sync with each other. To get them back in sync, we can perform an image alignment procedure. Once this is completed, the background stars should appear essentially motionless when compared with each other, making the parallax shift from the closer-in asteroid more apparent.
+	Due to various factors like differences in telescope size, sensors, and pointings, the images are out of sync with each other. To synchronize, we can perform an image alignment procedure. Once this is completed, the background stars should appear essentially motionless when compared with each other, making the parallax shift from the closer-in asteroid more apparent.
 """
 
 # ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
@@ -144,10 +150,9 @@ header(OBSERVATORIES[observatory])
 <h2>Image alignment</h2>
 
 !!! note " "
-	We start by assuming about that one image, say `img_west`, can be rotated, translated, and scaled to fit onto `img_east`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images. 
+	We start by assuming about one image, say `img_west`, can be rotated, translated, and/or scaled to fit onto `img_east`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images.
 
-
-	Let's pick some points. Will use to transform the source image onto the destination image.
+	We will use the [`AffineMap`](https://github.com/JuliaGeometry/CoordinateTransformations.jl?tab=readme-ov-file#affine-maps) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `image_west` that we would like to correspond to ending (destination) points (e.g., point ``\\boldsymbol{q}``) as in the schematic below:
 
 	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
 
@@ -1471,9 +1476,10 @@ version = "17.4.0+2"
 # ╟─59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 # ╟─10c77d40-dcb9-4620-b9c1-a47a56621a0c
 # ╟─21afa6af-1df0-4c47-b106-1b9d1e161aa7
-# ╟─51186ae1-baac-4868-950f-1c9a86d720d8
-# ╠═867445e3-e2f7-4cca-bf70-26dfcae825dd
+# ╟─8bbccbde-4850-4f9d-941a-b163e2133afc
 # ╟─2bbcab7e-ee23-4136-b686-5472e61cd117
+# ╟─51186ae1-baac-4868-950f-1c9a86d720d8
+# ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 # ╟─6193211b-8ec0-4f88-87df-35247c01353a
 # ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
