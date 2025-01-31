@@ -94,7 +94,7 @@ end
 <h2>Data</h2>
 
 !!! note " "
-	We want to try and align the following two images taken by two eVscopes separated by a large distance:
+	For this lab, we will use observations taken from the following two `OBSERVATORIES` located ``x`` miles apart:
 """
 
 # ╔═╡ d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
@@ -103,11 +103,26 @@ OBSERVATORIES = OrderedDict(
 	"NURO, Flagstaff, AZ: 0.8 m" => load("./data/ASTWEST.FTS")[:, :, 1],
 );
 
+# ╔═╡ b4119602-990d-47b0-8ea5-7f14e17d9e9f
+@mdx """
+!!! note " "
+	and store them into `img_east` and `img_west` for convenience:
+"""
+
 # ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 img_east = OBSERVATORIES["FBO Colgate, Hamilton, NY: 0.4 m"];
 
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
 img_west = OBSERVATORIES["NURO, Flagstaff, AZ: 0.8 m"];
+
+# ╔═╡ f4d52a6a-644e-4ff1-861f-a0531c596040
+@mdx """
+!!! todo
+	Replace with eVscope data and baseline distance when available.
+
+!!! note " "
+	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizon's example, all objects in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
+"""
 
 # ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 @bind observatory Select(collect(keys(OBSERVATORIES)))
@@ -121,7 +136,7 @@ header(OBSERVATORIES[observatory])
 # ╔═╡ 51186ae1-baac-4868-950f-1c9a86d720d8
 @mdx """
 !!! note " "
-	Flipping back and forth, it looks like there is some translation and rotatation that we would like to undo.
+	Due to various factors like differences in telescopes, sensors, and pointings, the images are out of sync with each other. To get them back in sync, we can perform an image alignement procedure. Once this is completed, the background stars sohuld appear essentially motionless when compared with each other, making the parallax shift from the closer-in asteroid much more apparent.
 """
 
 # ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
@@ -1446,13 +1461,15 @@ version = "17.4.0+2"
 # ╟─7d10737f-1691-43e5-891f-118e41cd771a
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
+# ╟─b4119602-990d-47b0-8ea5-7f14e17d9e9f
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
+# ╟─f4d52a6a-644e-4ff1-861f-a0531c596040
 # ╟─59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
 # ╟─10c77d40-dcb9-4620-b9c1-a47a56621a0c
 # ╟─21afa6af-1df0-4c47-b106-1b9d1e161aa7
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
-# ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
+# ╠═867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╟─2bbcab7e-ee23-4136-b686-5472e61cd117
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 # ╟─6193211b-8ec0-4f88-87df-35247c01353a
