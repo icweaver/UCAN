@@ -136,7 +136,7 @@ header(OBSERVATORIES[observatory])
 # ╔═╡ 51186ae1-baac-4868-950f-1c9a86d720d8
 @mdx """
 !!! note " "
-	Due to various factors like differences in telescopes, sensors, and pointings, the images are out of sync with each other. To get them back in sync, we can perform an image alignement procedure. Once this is completed, the background stars sohuld appear essentially motionless when compared with each other, making the parallax shift from the closer-in asteroid much more apparent.
+	Due to various factors like differences in telescope size, sensors, and pointings, the images are out of sync with each other. To get them back in sync, we can perform an image alignment procedure. Once this is completed, the background stars should appear essentially motionless when compared with each other, making the parallax shift from the closer-in asteroid more apparent.
 """
 
 # ╔═╡ 867445e3-e2f7-4cca-bf70-26dfcae825dd
@@ -144,6 +144,9 @@ header(OBSERVATORIES[observatory])
 <h2>Image alignment</h2>
 
 !!! note " "
+	We start by assuming about that one image, say `img_west`, can be rotated, translated, and scaled to fit onto `img_east`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images. 
+
+
 	Let's pick some points. Will use to transform the source image onto the destination image.
 
 	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
