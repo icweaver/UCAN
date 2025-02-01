@@ -301,7 +301,7 @@ end |> x -> round(Int, x)
 """
 
 # ╔═╡ 6bed5463-00a8-4c73-b0dc-6c7397c7a099
-b = 3172 # baseline in kilometers
+b = 3172 # Baseline (kilometers)
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
 @mdx """
@@ -312,13 +312,21 @@ b = 3172 # baseline in kilometers
 """
 
 # ╔═╡ 53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
-d = 0.00138 * b / θ
+d = 0.00138 * b / θ # Distance to asteroid (AU)
 
 # ╔═╡ 202acfd6-1123-4e16-8d93-b9071006666c
-d0 = 0.26173026681968
+d0 = 0.26173026681968 # Actual distance
 
 # ╔═╡ 0043f0a6-d309-4527-a554-d37c73c36dfa
-100.0 * (d - d0) / d0 # percent diff
+accuracy = 100.0 * (d - d0) / d0 # Percent diff
+
+# ╔═╡ 2c5f91b7-4baf-4bbe-8634-c69223916e8f
+@mdx """
+!!! note " "
+	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation.
+
+	This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)!
+"""
 
 # ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
 @mdx """
@@ -1565,8 +1573,9 @@ version = "17.4.0+2"
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
-# ╠═202acfd6-1123-4e16-8d93-b9071006666c
-# ╠═0043f0a6-d309-4527-a554-d37c73c36dfa
+# ╟─2c5f91b7-4baf-4bbe-8634-c69223916e8f
+# ╟─202acfd6-1123-4e16-8d93-b9071006666c
+# ╟─0043f0a6-d309-4527-a554-d37c73c36dfa
 # ╟─9159cb78-6d0e-4c12-8f42-6b8e8316d167
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
