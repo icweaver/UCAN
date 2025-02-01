@@ -98,14 +98,14 @@ OBSERVATORIES = OrderedDict(
 # ╔═╡ b4119602-990d-47b0-8ea5-7f14e17d9e9f
 @mdx """
 !!! note " "
-	and store them into `img_east` and `img_west` for convenience:
+	and store them into `img_1` and `img_2` for convenience:
 """
 
 # ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
-img_east = OBSERVATORIES["FBO Colgate, Hamilton, NY: 0.4 m"];
+img_1 = OBSERVATORIES["FBO Colgate, Hamilton, NY: 0.4 m"];
 
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
-img_west = OBSERVATORIES["NURO, Flagstaff, AZ: 0.8 m"];
+img_2 = OBSERVATORIES["NURO, Flagstaff, AZ: 0.8 m"];
 
 # ╔═╡ f4d52a6a-644e-4ff1-861f-a0531c596040
 @mdx """
@@ -142,9 +142,9 @@ header(OBSERVATORIES[observatory])
 <h2>Image alignment</h2>
 
 !!! note " "
-	We start by assuming about one image, say `img_west`, can be rotated, translated, and/or scaled to fit onto `img_east`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images.
+	We start by assuming about one image, say `img_2`, can be rotated, translated, and/or scaled to fit onto `img_1`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images.
 
-	We will use the [`AffineMap`](https://github.com/JuliaGeometry/CoordinateTransformations.jl?tab=readme-ov-file#affine-maps) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `image_west` that we would like to correspond to ending (destination) points (e.g., point ``\\boldsymbol{q}``) as in the schematic below:
+	We will use the [`AffineMap`](https://github.com/JuliaGeometry/CoordinateTransformations.jl?tab=readme-ov-file#affine-maps) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `img_2` that we would like to correspond to ending (destination) points (e.g., point ``\\boldsymbol{q}``) in `img_1` as in the schematic below:
 
 	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
 
@@ -179,7 +179,7 @@ PlutoUI.ExperimentalLayout.hbox([tfm.linear, tfm.translation])
 """
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
-img_westw = shareheader(img_west, warp(img_west, tfm, axes(img_east)));
+img_2w = shareheader(img_2, warp(img_2, tfm, axes(img_1)));
 
 # ╔═╡ 4ed0072f-6159-4893-b21b-e035e51a6689
 details(md"What is `shareheader` and `axes`?",
@@ -197,7 +197,7 @@ We are using [AstroImages.jl](https://juliaastro.org/dev/modules/AstroImages/) t
 """
 
 # ╔═╡ 28a823e7-66ee-4688-b0a3-1ebd776f129f
-@bind img_compare Select([img_east => "reference", img_westw => "stacked"])
+@bind img_compare Select([img_1 => "img_1", img_2w => "img_2 (stacked)"])
 
 # ╔═╡ 983a1c03-0344-4905-8cf2-b799003eb94c
 img_compare
@@ -215,7 +215,7 @@ img_compare
 @bind i Clock(max_value=2, repeat=true, start_running=true)
 
 # ╔═╡ cd32b1d0-f455-4822-ad19-6560044d6c4a
-(img_east, img_westw)[i]
+(img_1, img_2w)[i]
 
 # ╔═╡ 2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
 @mdx """
@@ -267,12 +267,12 @@ img_compare
 @bind asteroid_px PlutoUI.combine() do Child
 	@mdx """
 	Left (destination) image:\\
-	X $(Child("dest_x", NumberField(1:10)))
-	Y $(Child("dest_y", NumberField(1:10)))
+	X $(Child("dest_x", NumberField(1:300; default=240)))
+	Y $(Child("dest_y", NumberField(1:10; default=222)))
 
 	Right (source) image:\\
-	X $(Child("src_x", NumberField(1:10)))
-	Y $(Child("src_y", NumberField(1:10)))
+	X $(Child("src_x", NumberField(1:10; default=162)))
+	Y $(Child("src_y", NumberField(1:10; default=158)))
 	"""
 end
 
@@ -396,10 +396,10 @@ function plot_pair(img1, img2)
 end
 
 # ╔═╡ 2bbcab7e-ee23-4136-b686-5472e61cd117
-plot_pair(img_east, img_west)
+plot_pair(img_1, img_2)
 
 # ╔═╡ 84c11014-8890-4348-96b6-8e701e458de4
-plot_pair(img_east, img_westw.data)
+plot_pair(img_1, img_2w.data)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
