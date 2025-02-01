@@ -250,22 +250,41 @@ img_compare
 	where ``b`` is measured in kilometers, and ``\\theta`` is measured in arseconds for convenience. We turn next to measuring the parallax shift on sky (``\\theta``).
 
 	!!! tip "Fun fact"
-		Due to symmetry, θ/2 is known as the "parallax angle". When an object 1 AU away appears to shift through a parallax angle of 1 arcsecond, then by definition it is 1 [parsec](https://en.wikipedia.org/wiki/Parsec) away.
+		Due to symmetry, θ/2 is known as the "parallax angle". When an object appears to shift through a parallax angle of 1 arcsecond for a given half-baseline of 1 AU, then by definition the object is 1 [parsec](https://en.wikipedia.org/wiki/Parsec) away.
 """
 
 # ╔═╡ 3e475b77-638c-4bb2-81c6-d7146b72c41f
 @mdx """
-<h3>Distance on sky</h3>
+<h3>Parallax shift</h3>
 
 !!! note " "
-	Measure some stuff. If our image stacking was successful, then correpsonding objects in each image should be in roughly the same spot as we zoom in. We can use this to measure how far the asteroid moved along the plane of the sky.
+	To measure this shift, we can first estimate how many pixels the asteroid appears to move between our two stacked images, and then use the pixel scale of our reference (destination) image to convert to an angle.
+
+	Thanks to our image stacking routine, the correpsonding objects in each image should be in roughly the same spot as we zoom in. Use the graph below to fill out the coordinates for the asteroid's location in each image: 
 """
 
-# ╔═╡ 840be451-c623-4bcb-97b6-6fed1932bf8e
-@mdx """
-!!! note " "
-	Enter below to calc
-"""
+# ╔═╡ 983de6ee-76f1-4e26-af2e-3b19854364d2
+@bind asteroid_px PlutoUI.combine() do Child
+	@mdx """
+	Left (destination) image:\\
+	X $(Child("dest_x", NumberField(1:10)))
+	Y $(Child("dest_y", NumberField(1:10)))
+
+	Right (source) image:\\
+	X $(Child("src_x", NumberField(1:10)))
+	Y $(Child("src_y", NumberField(1:10)))
+	"""
+end
+
+# ╔═╡ 527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
+plate_scale = 0.99 # ""/px
+
+# ╔═╡ aabbcb9d-4310-437f-b7da-03b385916400
+yee = let
+	ΔX = asteroid_px.dest_x - asteroid_px.src_x
+	ΔY = asteroid_px.dest_y - asteroid_px.src_y
+	sqrt(ΔX^2 + ΔY^2) * plate_scale
+end
 
 # ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
  # Number of pixels that asteroid moved
@@ -1541,7 +1560,9 @@ version = "17.4.0+2"
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
-# ╟─840be451-c623-4bcb-97b6-6fed1932bf8e
+# ╠═983de6ee-76f1-4e26-af2e-3b19854364d2
+# ╠═527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
+# ╠═aabbcb9d-4310-437f-b7da-03b385916400
 # ╠═0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6d49f686-ab50-4526-9d2c-91848abd8909
