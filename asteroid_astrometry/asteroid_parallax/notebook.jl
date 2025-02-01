@@ -109,7 +109,7 @@ img_2 = OBSERVATORIES["NURO, Flagstaff, AZ: 0.8 m"];
 
 # ╔═╡ f4d52a6a-644e-4ff1-861f-a0531c596040
 @mdx """
-!!! todo
+!!! warning "TODO"
 	Replace with eVscope data and baseline distance when available.
 
 !!! note " "
@@ -150,7 +150,7 @@ header(OBSERVATORIES[observatory])
 
 	_Source: [JuliaImages Org](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
 
-	Using the comparison plotin the previous section, identify the ``(X, Y)`` pixel coordinates for three stars in the source image and corresponding stars in the destination image, respectively. Record these values in the `point_map` variable below, where ``\\boldsymbol{p} = (p_X, p_Y) \\Rightarrow \\boldsymbol{q} = (q_X, q_Y)``.
+	Using the comparison plot in the previous section, identify the ``(X, Y)`` pixel coordinates for at least three stars in the source image and corresponding stars in the destination image, respectively. Record these values in the `point_map` variable below, where ``\\boldsymbol{p} = (p_X, p_Y) \\Rightarrow \\boldsymbol{q} = (q_X, q_Y)``.
 """
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
@@ -323,9 +323,7 @@ accuracy = 100.0 * (d - d0) / d0 # Percent diff
 # ╔═╡ 2c5f91b7-4baf-4bbe-8634-c69223916e8f
 @mdx """
 !!! note " "
-	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation.
-
-	This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)!
+	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)!
 """
 
 # ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
