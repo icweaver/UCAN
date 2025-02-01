@@ -44,7 +44,7 @@ end
 	Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing general parallax observations, as well as understand the principles behind other astronomical software at a broad level.
 	
 
-!!! todo
+!!! warning "TODO"
 	Using sample data from [Gettysburg College](http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf). Replace with Unistellar data when it thaws.
 """
 
@@ -53,7 +53,7 @@ end
 <h2>Using the notebook</h2>
 
 !!! note " "
-	This lab uses [Pluto.jl](https://plutojl.org/) to share data analysis in a reproducible format. For more information on useage, see the [documentation here](https://plutojl.org/en/docs/). Some of our other [past Unistellar labs](https://www.seti.org/unistellar-education-materials) may also be useful for additional useage examples:
+	This lab uses [Pluto.jl](https://plutojl.org/) to share data analysis in a reproducible format. For more information on useage, see the [documentation here](https://plutojl.org/en/docs/). Some of our other [past Unistellar labs](https://www.seti.org/unistellar-education-materials) may also be useful for additional usage examples:
 
 	* [Unistellar Spectroscopy Lab](https://www.seti.org/unistellar-education-materials#Spectroscopy-Lab)
 	* [Unistellar Eclipsing Binary Lab](https://www.seti.org/unistellar-education-materials#Eclipsing-Binary-Lab)
@@ -237,7 +237,7 @@ img_compare
 	
 	```math
 	\\begin{align}
-	\\tan\\frac{\\theta}{2} &= \\frac{b/2}{d} \\approx \\frac{\\theta}{2} \\ , \\\\
+	\\tan\\frac{\\theta}{2} &= \\frac{b/2}{d} \\approx \\frac{\\theta}{2} \\text{ [small angle approx.]} \\ , \\\\
 	
 	d\\text{ (AU)} &\\approx \\frac{b\\text{ km}}{\\theta\\text{ arcsec}}
 		\\times \\frac{1\\text{ AU}}{1.496\\times10^{8}\\text{ km}}
@@ -260,19 +260,16 @@ img_compare
 !!! note " "
 	To measure this shift, we can first estimate how many pixels the asteroid appears to move between our two stacked images, and then use the pixel scale of our reference (destination) image to convert to an angle.
 
-	Thanks to our image stacking routine, the correpsonding objects in each image should be in roughly the same spot as we zoom in. Use the plots below to fill out the coordinates for the asteroid's location in each image: 
+	Thanks to our image stacking routine, the correpsonding objects in each image should be in roughly the same spot as we zoom in. Use the plots below to fill out the coordinates for the asteroid's location in each image:
 """
 
-# ╔═╡ 983de6ee-76f1-4e26-af2e-3b19854364d2
+# ╔═╡ 117751ce-7c9e-461f-9ef9-6310ff0ecfac
 @bind asteroid_px PlutoUI.combine() do Child
 	@mdx """
-	Left (destination) image:\\
-	X $(Child("dest_x", NumberField(1:size(img_1, 1); default=240)))
-	Y $(Child("dest_y", NumberField(1:size(img_1, 2); default=162)))
-
-	Right (source) image:\\
-	X $(Child("src_x", NumberField(1:size(img_2, 1); default=222)))
-	Y $(Child("src_y", NumberField(1:size(img_2, 2); default=158)))
+	|image|X|Y
+	|------------------|------------------|---|
+	|left (destination)|$(Child("dest_x", NumberField(1:size(img_1, 1); default=240)))|$(Child("dest_y", NumberField(1:size(img_1, 2); default=162)))
+	|right (source)|$(Child("src_x", NumberField(1:size(img_2, 1); default=222)))|$(Child("src_y", NumberField(1:size(img_2, 2); default=158)))
 	"""
 end
 
@@ -315,7 +312,7 @@ b = 3172 # Baseline (kilometers)
 d = 0.00138 * b / θ # Distance to asteroid (AU)
 
 # ╔═╡ 202acfd6-1123-4e16-8d93-b9071006666c
-d0 = 0.26173026681968 # Actual distance
+d0 = 0.26173027005421 # Actual distance
 
 # ╔═╡ 0043f0a6-d309-4527-a554-d37c73c36dfa
 accuracy = 100.0 * (d - d0) / d0 # Percent diff
@@ -324,6 +321,23 @@ accuracy = 100.0 * (d - d0) / d0 # Percent diff
 @mdx """
 !!! note " "
 	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)!
+"""
+
+# ╔═╡ d7a8c870-e1ff-49a6-a392-0a3a3238c57a
+header(img_1)
+
+# ╔═╡ dd382487-c181-4aad-b9c5-2e9bc422ed01
+@mdx """
+!!! tip
+	To query the distance to other asteroids at a given date:
+	
+	* edit field 2 in the Horizons System to search for the asteroid by name
+	* edit field 4 to specify the desired date range to query. For this target, we specified data within three minutes of the `DATE-OBS` field reported in the header of our image files.
+	* click `Generate Ephemeris`
+	* Read of the `delta` field in the data table generated (you may need to scroll down a bit). This will be the distance to the asteroid measured in AU. [See here](https://ssd.jpl.nasa.gov/horizons/manual.html#obsquan) for definitions of the other table column names.
+	* The associated Small-Body Database Lookup tool on this site also provides a 3D view of the asteroid's approximate orbit at this time:
+
+	Resource
 """
 
 # ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
@@ -1564,7 +1578,7 @@ version = "17.4.0+2"
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
-# ╟─983de6ee-76f1-4e26-af2e-3b19854364d2
+# ╟─117751ce-7c9e-461f-9ef9-6310ff0ecfac
 # ╟─43a16d76-7de9-4f19-b1e4-a03457fd1e11
 # ╟─527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
 # ╟─aabbcb9d-4310-437f-b7da-03b385916400
@@ -1574,6 +1588,8 @@ version = "17.4.0+2"
 # ╟─2c5f91b7-4baf-4bbe-8634-c69223916e8f
 # ╟─202acfd6-1123-4e16-8d93-b9071006666c
 # ╟─0043f0a6-d309-4527-a554-d37c73c36dfa
+# ╠═d7a8c870-e1ff-49a6-a392-0a3a3238c57a
+# ╠═dd382487-c181-4aad-b9c5-2e9bc422ed01
 # ╟─9159cb78-6d0e-4c12-8f42-6b8e8316d167
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb

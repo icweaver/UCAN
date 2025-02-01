@@ -46,36 +46,6 @@ In this lab we will observe an asteroid passing in front of a star in real time 
 Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing astronomical photometry, as well as understand the principles behind other astronomical software at a broad level. For an example of applying these tools to a similar set of eVscope observations, see our [Unistellar Eclipsing Binary lab](https://icweaver.github.io/UCAN/EBs/EB_lab.html).
 """
 
-# ╔═╡ 922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
-cm"""
-!!! note "Using this notebook"
-	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page, or [click on this direct link](https://computationalthinking.mit.edu/Fall23/installation/) which includes a video and written instructions for getting started with Julia and Pluto 🌱.
-
-	!!! tip "First time running"
-		**Note**: This notebook will download all of the analysis packages and data needed for us, so the first time it runs may take a little while (~ a few minutes depending on your internet connection and platform). Clicking on the `Status` tab in the bottom right will bring up a progress window that we can use to monitor this process, and it also includes an option at the bottom marked `Notify when done` that can be selected to give us a notification pop-up in our browser when everything is finished.
-
-	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/EBs/EB_lab.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
-
-	!!! tip "Advanced: bring your own editor"
-		This works in the opposite direction too; any changes you make to the source file, say in your favorite editor, will automatically be reflected in the notebook in your browser! To enable this feature, just add this keyword to the function that was used to start Pluto:
-
-		```julia-repl
-		julia> using Pluto
-		
-		julia> Pluto.run(auto_reload_from_file=true)
-		
-		# This will be on by default in an upcoming release =]
-		```
-
-		The location of the file for this notebook is displayed in the bar at the very top of this page, and can also be modified there if you want to change where this notebook lives.
-
-	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
-
-	$(msg(msg_adding_colors))
-
-	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined. For more examples of using these notebooks for Unistellar science, check out our recent [Spectroscopy Lab](https://icweaver.github.io/UCAN/spectroscopy/notebook.html)!
-"""
-
 # ╔═╡ 0439db40-1572-4dac-af7e-d09d28631a37
 md"""
 With this requisite information out of the way, let's get started!
@@ -321,6 +291,36 @@ first(df_sci, 10) |> pretty
 # ╔═╡ fc17ef61-5747-4a35-8ae7-2d7c3ba6b075
 msg(x; title="Details") = details(title, x)
 
+# ╔═╡ 922e2770-d5c8-4a1b-8d1b-1eb20b1652b0
+cm"""
+!!! note "Using this notebook"
+	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page, or [click on this direct link](https://computationalthinking.mit.edu/Fall23/installation/) which includes a video and written instructions for getting started with Julia and Pluto 🌱.
+
+	!!! tip "First time running"
+		**Note**: This notebook will download all of the analysis packages and data needed for us, so the first time it runs may take a little while (~ a few minutes depending on your internet connection and platform). Clicking on the `Status` tab in the bottom right will bring up a progress window that we can use to monitor this process, and it also includes an option at the bottom marked `Notify when done` that can be selected to give us a notification pop-up in our browser when everything is finished.
+
+	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/EBs/EB_lab.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
+
+	!!! tip "Advanced: bring your own editor"
+		This works in the opposite direction too; any changes you make to the source file, say in your favorite editor, will automatically be reflected in the notebook in your browser! To enable this feature, just add this keyword to the function that was used to start Pluto:
+
+		```julia-repl
+		julia> using Pluto
+		
+		julia> Pluto.run(auto_reload_from_file=true)
+		
+		# This will be on by default in an upcoming release =]
+		```
+
+		The location of the file for this notebook is displayed in the bar at the very top of this page, and can also be modified there if you want to change where this notebook lives.
+
+	Periodically throughout the notebook we will include collapsible sections like the one below to provide additional information about items outside the scope of this lab that may be of interest (e.g., plotting, working with javascript, creating widgets).
+
+	$(msg(msg_adding_colors))
+
+	In the local version of this notebook, an "eye" icon will appear at the top left of each cell on hover to reveal the underlying code behind it and a `Live Docs` button will also be available in the bottom right of the page to pull up documentation for any function that is currently selected. In both local and online versions of this notebook, user defined functions and variables are also underlined, and (ctrl) clicking on them will jump to where they are defined. For more examples of using these notebooks for Unistellar science, check out our recent [Spectroscopy Lab](https://icweaver.github.io/UCAN/spectroscopy/notebook.html)!
+"""
+
 # ╔═╡ 7654e284-65ac-4a12-afdb-ca318aa9fda9
 md"""
 !!! note ""
@@ -564,7 +564,7 @@ UnitfulAstro = "~1.2.1"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.2"
+julia_version = "1.11.3"
 manifest_format = "2.0"
 project_hash = "057696c03399dcbf70e796d26d57cc2ffc15bf28"
 
