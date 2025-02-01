@@ -49,8 +49,8 @@ end
 """
 
 # ╔═╡ 4cc6fb84-cefe-4571-850c-762643ff4ffc
-@mdx """
-<h2>Using the notebook</h2>
+md"""
+## Using the notebook
 
 !!! note " "
 	This lab uses [Pluto.jl](https://plutojl.org/) to share data analysis in a reproducible format. For more information on useage, see the [documentation here](https://plutojl.org/en/docs/). Some of our other [past Unistellar labs](https://www.seti.org/unistellar-education-materials) may also be useful for additional usage examples:
@@ -208,7 +208,7 @@ img_compare
 	For convenience, we also provide an animated version below, which blinks the images back and forth automatically.
 
 	!!! warning "Note"
-		This requires running the notebook locally to run the animation.
+		This requires running the notebook locally to view the animation.
 """
 
 # ╔═╡ 13e464bb-30d2-4e6e-b038-69871acbba65
@@ -323,36 +323,37 @@ accuracy = 100.0 * (d - d0) / d0 # Percent diff
 	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)!
 """
 
-# ╔═╡ d7a8c870-e1ff-49a6-a392-0a3a3238c57a
-header(img_1)
-
 # ╔═╡ dd382487-c181-4aad-b9c5-2e9bc422ed01
-@mdx """
+md"""
 !!! tip
 	To query the distance to other asteroids at a given date:
 	
 	* edit field 2 in the Horizons System to search for the asteroid by name
 	* edit field 4 to specify the desired date range to query. For this target, we specified data within three minutes of the `DATE-OBS` field reported in the header of our image files.
 	* click `Generate Ephemeris`
-	* Read of the `delta` field in the data table generated (you may need to scroll down a bit). This will be the distance to the asteroid measured in AU. [See here](https://ssd.jpl.nasa.gov/horizons/manual.html#obsquan) for definitions of the other table column names.
-	* The associated Small-Body Database Lookup tool on this site also provides a 3D view of the asteroid's approximate orbit at this time:
+	* Read off the `delta` field in the data table generated (you may need to scroll down a bit). This will be the distance to the asteroid measured in AU. [See here](https://ssd.jpl.nasa.gov/horizons/manual.html#obsquan) for definitions of the other table column names.
+	* The associated [Small-Body Database Lookup](https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/) tool on this site also provides a 3D simulation of the asteroid's approximate orbit over time (below) and other quick facts.
 
-	Resource
+	![fig1](https://github.com/icweaver/UCAN/blob/main/asteroid_astrometry/asteroid_parallax/data/orbit_sim.png?raw=true)
 """
 
 # ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
-@mdx """
-<h2>Wrapping up</h2>
+"""
+## Wrapping up
 
 !!! note " "
-	Not bad just doing this by eye. Can we do better?
+	In this lab, we used simultaneous asteroid observations taken over a large enough baseline to measure the parallax effect. We then used this measurement to estimate the distance to the asteroid to within $(abs(round(Int, accuracy)))%. Not bad for essentially approximating the asteroid's apparent motion by eye!
 
-	* Different transformation params
-	* Compute ΔRA, ΔDEC
-	* Larger baseline
-	* Centroid, fit PSF
-	* What other ways can parallax be measured? (e.g., movement of Earth around the Sun)
-"""
+	What were some additional sources of error that could have contributed to this inaccuracy? What are some ways that we could improve these measurements? After considering, scroll over the section below to view a few potential improvements and extensions to our previous work.
+
+	!!! hint " "
+		* **Baseline:** Since ``\\theta`` goes like ``\\frac{b}{d}``, taking measurements over a larger baseline would yield a larger parallax shift that we could then measure to a more accurate degree.
+		* **Equatorial coordinates:** We could use a tool like [astrometry.net](https://nova.astrometry.net/) to [plate solve](https://en.wikipedia.org/wiki/Astrometric_solving) our images. This would allow us to directly calculate the ``\\Delta\\text{RA}`` and ``\\Delta\\text{DEC}`` of the asteroid to a high precision instead of relying on pixel coordinates.
+		* **Image transformation parameters:** We relied on an affine transformation to stack our images. While flexible, the increased number of parameters relative to simpler transformation schemes can introduce additional error. Perhaps only rotatation and translation would be enough, although this might require using telescopes with comparable plate scales (like an eVscope!).
+		* **Center identification:** Regardless of the stacking scheme and coordinate system chosen, our parallax measurement is only as good as our ability to identify the approximate center of the asteroid in each image. Fitting a point spread function ([PSF](https://en.wikipedia.org/wiki/Point_spread_function)) would be useful for accurately identifying the center coordinates of our asteroid, instead of eyeballing it as we did in this lab.
+
+	To date, [almost 40_000 near-Earth asteroids](https://cneos.jpl.nasa.gov/stats/totals.html) have been discovered, and that number is expected to rise not only from the last bits of data released by the now concluded [WISE/NEOWISE](https://science.nasa.gov/mission/neowise/) mission in November 2024, but also from the [Near-Earth Object Surveyor](https://science.nasa.gov/mission/neo-surveyor/) telescope that is scheduled for launch in 2028. Keeping track of these asteroids and their measured distances will be a crucial component for [Planetary Defense](https://science.nasa.gov/planetary-defense/).
+""" |> Markdown.parse
 
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
 @mdx """
@@ -1588,8 +1589,7 @@ version = "17.4.0+2"
 # ╟─2c5f91b7-4baf-4bbe-8634-c69223916e8f
 # ╟─202acfd6-1123-4e16-8d93-b9071006666c
 # ╟─0043f0a6-d309-4527-a554-d37c73c36dfa
-# ╠═d7a8c870-e1ff-49a6-a392-0a3a3238c57a
-# ╠═dd382487-c181-4aad-b9c5-2e9bc422ed01
+# ╟─dd382487-c181-4aad-b9c5-2e9bc422ed01
 # ╟─9159cb78-6d0e-4c12-8f42-6b8e8316d167
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
