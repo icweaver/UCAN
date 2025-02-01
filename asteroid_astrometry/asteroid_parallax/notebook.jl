@@ -228,7 +228,7 @@ img_compare
 <h2>Parallax distance</h2>
 
 !!! note " "
-	Returning to our schematic in the Introduction, let's modify it a bit by annotating the baseline distance ``(b)`` between observers, the distance ``(d)`` to what is being observed, and the apparent parallax shift ``(\\theta)`` along the sky observed between them:
+	Revisiting our schematic in the Introduction, let's modify it a bit by annotating the baseline distance ``(b)`` between observers, the distance ``(d)`` to what is being observed, and the apparent parallax shift ``(\\theta)`` along the sky observed between them:
 
 	$(Resource("https://raw.githubusercontent.com/icweaver/UCAN/refs/heads/main/asteroid_astrometry/asteroid_parallax/data/parallax_diagram.svg"))
 	
@@ -247,7 +247,10 @@ img_compare
 	\\end{align}
 	```
 
-	where ``b`` is measured in kilometers, and ``\\theta`` is measured in arseconds for convenience.
+	where ``b`` is measured in kilometers, and ``\\theta`` is measured in arseconds for convenience. We turn next to measuring the parallax shift on sky (``\\theta``).
+
+	!!! tip "Fun fact"
+		Due to symmetry, θ/2 is known as the "parallax angle". When an object 1 AU away appears to shift through a parallax angle of 1 arcsecond, then by definition it is 1 [parsec](https://en.wikipedia.org/wiki/Parsec) away.
 """
 
 # ╔═╡ 3e475b77-638c-4bb2-81c6-d7146b72c41f
