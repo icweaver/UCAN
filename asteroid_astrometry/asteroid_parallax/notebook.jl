@@ -260,19 +260,19 @@ img_compare
 !!! note " "
 	To measure this shift, we can first estimate how many pixels the asteroid appears to move between our two stacked images, and then use the pixel scale of our reference (destination) image to convert to an angle.
 
-	Thanks to our image stacking routine, the correpsonding objects in each image should be in roughly the same spot as we zoom in. Use the graph below to fill out the coordinates for the asteroid's location in each image: 
+	Thanks to our image stacking routine, the correpsonding objects in each image should be in roughly the same spot as we zoom in. Use the plots below to fill out the coordinates for the asteroid's location in each image: 
 """
 
 # ╔═╡ 983de6ee-76f1-4e26-af2e-3b19854364d2
 @bind asteroid_px PlutoUI.combine() do Child
 	@mdx """
 	Left (destination) image:\\
-	X $(Child("dest_x", NumberField(1:300; default=240)))
-	Y $(Child("dest_y", NumberField(1:10; default=222)))
+	X $(Child("dest_x", NumberField(1:size(img_1, 1); default=240)))
+	Y $(Child("dest_y", NumberField(1:size(img_1, 2); default=162)))
 
 	Right (source) image:\\
-	X $(Child("src_x", NumberField(1:10; default=162)))
-	Y $(Child("src_y", NumberField(1:10; default=158)))
+	X $(Child("src_x", NumberField(1:size(img_2, 1); default=222)))
+	Y $(Child("src_y", NumberField(1:size(img_2, 2); default=158)))
 	"""
 end
 
@@ -280,30 +280,28 @@ end
 plate_scale = 0.99 # ""/px
 
 # ╔═╡ aabbcb9d-4310-437f-b7da-03b385916400
-yee = let
+θ = let
 	ΔX = asteroid_px.dest_x - asteroid_px.src_x
 	ΔY = asteroid_px.dest_y - asteroid_px.src_y
 	sqrt(ΔX^2 + ΔY^2) * plate_scale
-end
+end |> x -> round(Int, x)
 
-# ╔═╡ 0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
- # Number of pixels that asteroid moved
- # Note that the coords are relative to the first image
-θ = (sqrt((240 - 222)^2 + (162 - 158)^2)) * 0.99 # arcsec
+# ╔═╡ 43a16d76-7de9-4f19-b1e4-a03457fd1e11
+@mdx """
+!!! note " "
+	Multiplying the Pythagorean distance between these two points by the known [plate scale](https://en.wikipedia.org/wiki/Plate_scale) of our reference image ($(plate_scale) "/pixel) then gives a parallax shift of ``\\theta = $(θ)`` to the nearest pixel.
+"""
 
 # ╔═╡ 864d23ed-d44e-4d3b-887c-73e49a909071
 @mdx """
-<h3>Distance to asteroid</h3>
+<h3>Parallax distance</h3>
 
 !!! note " "
-	Measure more stuff
+	We now have everything we need to estimate the distance to our near-Earth asteroid.
 """
 
-# ╔═╡ 6d49f686-ab50-4526-9d2c-91848abd8909
-# Colgate plate scale: 0.99" per pixel
-
 # ╔═╡ 6bed5463-00a8-4c73-b0dc-6c7397c7a099
-b = 3172 # kilometers
+b = 3172 # baseline in kilometers
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
 @mdx """
@@ -1560,12 +1558,11 @@ version = "17.4.0+2"
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
-# ╠═983de6ee-76f1-4e26-af2e-3b19854364d2
-# ╠═527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
-# ╠═aabbcb9d-4310-437f-b7da-03b385916400
-# ╠═0ba8d6fc-0dcc-4bb3-8559-9364c25ef105
+# ╟─983de6ee-76f1-4e26-af2e-3b19854364d2
+# ╟─43a16d76-7de9-4f19-b1e4-a03457fd1e11
+# ╟─527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
+# ╟─aabbcb9d-4310-437f-b7da-03b385916400
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
-# ╠═6d49f686-ab50-4526-9d2c-91848abd8909
 # ╠═6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
 # ╠═202acfd6-1123-4e16-8d93-b9071006666c
