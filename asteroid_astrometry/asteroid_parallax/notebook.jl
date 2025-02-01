@@ -113,7 +113,7 @@ img_2 = OBSERVATORIES["NURO, Flagstaff, AZ: 0.8 m"];
 	Replace with eVscope data and baseline distance when available.
 
 !!! note " "
-	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizon's example, _all of the objects_ in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
+	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizons example, _all of the objects_ in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
 """
 
 # ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
@@ -142,7 +142,7 @@ header(OBSERVATORIES[observatory])
 <h2>Image alignment</h2>
 
 !!! note " "
-	We start by assuming about one image, say `img_2`, can be rotated, translated, and/or scaled to fit onto `img_1`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images.
+	We start by assuming that one image, say `img_2`, can be rotated, translated, and/or scaled to fit onto `img_1`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images.
 
 	We will use the [`AffineMap`](https://github.com/JuliaGeometry/CoordinateTransformations.jl?tab=readme-ov-file#affine-maps) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `img_2` that we would like to correspond to ending (destination) points (e.g., point ``\\boldsymbol{q}``) in `img_1` as in the schematic below:
 
@@ -260,7 +260,7 @@ img_compare
 !!! note " "
 	To measure this shift, we can first estimate how many pixels the asteroid appears to move between our two stacked images, and then use the pixel scale of our reference (destination) image to convert to an angle.
 
-	Thanks to our image stacking routine, the correpsonding objects in each image should be in roughly the same spot as we zoom in. Use the plots below to fill out the coordinates for the asteroid's location in each image:
+	Thanks to our image stacking routine, the correpsonding objects in each image should be in roughly the same spot as we zoom in now. Use the plots below to fill out the coordinates for the asteroid's location in each image:
 """
 
 # ╔═╡ 117751ce-7c9e-461f-9ef9-6310ff0ecfac
@@ -286,7 +286,7 @@ end |> x -> round(Int, x)
 # ╔═╡ 43a16d76-7de9-4f19-b1e4-a03457fd1e11
 @mdx """
 !!! note " "
-	Multiplying the Pythagorean distance between these two points by the known [plate scale](https://en.wikipedia.org/wiki/Plate_scale) of our reference image ($(plate_scale) "/pixel) then gives a parallax shift of ``\\theta = $(θ)`` to the nearest pixel.
+	Multiplying the Pythagorean distance between these two points by the known [plate scale](https://en.wikipedia.org/wiki/Plate_scale) of our reference image ($(plate_scale) "/pixel) then gives a parallax shift of ``\\theta = $(θ)''`` to the nearest pixel.
 """
 
 # ╔═╡ 864d23ed-d44e-4d3b-887c-73e49a909071
@@ -352,7 +352,7 @@ md"""
 		* **Image transformation parameters:** We relied on an affine transformation to stack our images. While flexible, the increased number of parameters relative to simpler transformation schemes can introduce additional error. Perhaps only rotatation and translation would be enough, although this might require using telescopes with comparable plate scales (like an eVscope!).
 		* **Center identification:** Regardless of the stacking scheme and coordinate system chosen, our parallax measurement is only as good as our ability to identify the approximate center of the asteroid in each image. Fitting a point spread function ([PSF](https://en.wikipedia.org/wiki/Point_spread_function)) would be useful for accurately identifying the center coordinates of our asteroid, instead of eyeballing it as we did in this lab.
 
-	To date, [almost 40_000 near-Earth asteroids](https://cneos.jpl.nasa.gov/stats/totals.html) have been discovered, and that number is expected to rise not only from the last bits of data released by the now concluded [WISE/NEOWISE](https://science.nasa.gov/mission/neowise/) mission in November 2024, but also from the [Near-Earth Object Surveyor](https://science.nasa.gov/mission/neo-surveyor/) telescope that is scheduled for launch in 2028. Keeping track of these asteroids and their measured distances will be a crucial component for [Planetary Defense](https://science.nasa.gov/planetary-defense/).
+	To date, [almost 40_000 near-Earth asteroids](https://cneos.jpl.nasa.gov/stats/totals.html) have been discovered, and that number is expected to rise not only from the last bits of data released in November 2024 by the now concluded [WISE/NEOWISE](https://wise2.ipac.caltech.edu/docs/release/neowise/) mission, but also from the [Near-Earth Object Surveyor](https://science.nasa.gov/mission/neo-surveyor/) telescope that is scheduled for launch in 2028. Keeping track of these asteroids and their measured distances through parallax measurements and other means like [elliptical path fitting](https://www.nasa.gov/solar-system/asteroids/asteroid-fast-facts/) are crucial components for [Planetary Defense](https://science.nasa.gov/planetary-defense/).
 """ |> Markdown.parse
 
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
