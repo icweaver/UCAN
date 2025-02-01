@@ -36,7 +36,7 @@ end
 
 # ╔═╡ 75d03ef4-d8b2-11ef-076a-058846f3b6ba
 @mdx """
-<h1>Parallax Lab</h1>
+<h1>Parallax Lab 👥</h1>
 
 !!! note " "
 	In this lab we will estimate the distance to a near-Earth object (NEO) based on its measured parallax. For more on taking these types of science observations, see our [Unistellar Planetary Defense](https://science.unistellar.com/planetary-defense/) page here.
@@ -87,14 +87,6 @@ end
 
 !!! note " "
 	For the first time, the parallax method had been used to measure the distance to another star. We do not have 4 billion miles to work with here on Earth, so instead we will use simultaneous observations from two separate ground-based telescopes to measure the distance to a near-Earth asteroid. Keeping track of these distances is a crucial step for detecting, and [potentially diverting](https://science.nasa.gov/mission/dart/), objects that may be on a collision course with Earth.
-"""
-
-# ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
-@mdx """
-<h2>Data</h2>
-
-!!! note " "
-	For this lab, we will use observations taken from the following two `OBSERVATORIES` located ``x`` miles apart:
 """
 
 # ╔═╡ d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
@@ -171,7 +163,7 @@ point_map = (
 # ╔═╡ 6193211b-8ec0-4f88-87df-35247c01353a
 @mdx"""
 !!! note " "
-	If curious, this is known as an [affine transformation](https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations) and the corresponding linear transformation and translation parameters are shown below. It will update in real time in the local version of this notebook each time `point_map` is modified.
+	For those curious about the linear algebra, the respective linear transformation and translation parameters are shown below. It will update in real time in the local version of this notebook each time `point_map` is modified.
 """
 
 # ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
@@ -183,11 +175,20 @@ PlutoUI.ExperimentalLayout.hbox([tfm.linear, tfm.translation])
 # ╔═╡ a3a65c1c-a44e-475e-8044-35c453709483
 @mdx """
 !!! note " "
-	We now apply this transform and stack our images together.
+	We now apply this transformation and stack our images together using the [`warp`](https://juliaimages.org/ImageTransformations.jl/stable/reference/#ImageTransformations.warp) function from [ImageTransformations.jl](https://juliaimages.org/ImageTransformations.jl/stable/). This is analogous to the [`warp`](https://scikit-image.org/docs/stable/api/skimage.transform.html#skimage.transform.warp) function from [scikit-image](https://scikit-image.org/) in Python.
 """
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 img_westw = shareheader(img_west, warp(img_west, tfm, axes(img_east)));
+
+# ╔═╡ 4ed0072f-6159-4893-b21b-e035e51a6689
+details(md"What is `shareheader` and `axes`?",
+@mdx """
+We are using [AstroImages.jl](https://juliaastro.org/dev/modules/AstroImages/) to view and process our images. This allows for fits files to be displayed directly in the notebook, and for interactions with the larger [JuliaImages.jl](https://juliaimages.org/latest/) and [DimensionalData.jl](https://rafaqz.github.io/DimensionalData.jl/stable/) ecosystems.
+
+`AstroImages.shareheader` syncs the header stored in our original image with our `JuliaImages.ImageTransformations.warp`ep image, and `axes` makes sure that the coordinates of our transformed image are shown relative to our `destination` image reference frame of the underlying `DimensionalData`. For more information on this, see [this section of the AstroImages.jl documentation](https://juliaastro.org/dev/modules/AstroImages/manual/dimensions-and-world-coordinates/).
+"""
+)
 
 # ╔═╡ 28a823e7-66ee-4688-b0a3-1ebd776f129f
 @bind img_compare Select([img_east => "reference", img_westw => "stacked"])
@@ -253,6 +254,14 @@ img_compare
 
 # ╔═╡ 6bed5463-00a8-4c73-b0dc-6c7397c7a099
 b = 3172 # kilometers
+
+# ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
+@mdx """
+<h2>Data</h2>
+
+!!! note " "
+	In this lab, we will use observations taken from the following two `OBSERVATORIES` located $(b) kilometers apart:
+"""
 
 # ╔═╡ 53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
 d = 206_265 * b / θ / 1.486e8 # AU
@@ -1483,11 +1492,12 @@ version = "17.4.0+2"
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
-# ╠═6193211b-8ec0-4f88-87df-35247c01353a
+# ╟─6193211b-8ec0-4f88-87df-35247c01353a
 # ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
 # ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
 # ╟─a3a65c1c-a44e-475e-8044-35c453709483
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
+# ╟─4ed0072f-6159-4893-b21b-e035e51a6689
 # ╟─28a823e7-66ee-4688-b0a3-1ebd776f129f
 # ╟─983a1c03-0344-4905-8cf2-b799003eb94c
 # ╟─5a0b3e26-7271-4b08-aa67-68c3af1421c0
