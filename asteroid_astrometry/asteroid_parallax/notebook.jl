@@ -148,7 +148,7 @@ header(OBSERVATORIES[observatory])
 
 	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
 
-	_Source: [JuliaImages Org](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
+	_Source: [JuliaImages](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
 
 	Using the comparison plot in the previous section, identify the ``(X, Y)`` pixel coordinates for at least three stars in the source image and corresponding stars in the destination image, respectively. Record these values in the `point_map` variable below, where ``\\boldsymbol{p} = (p_X, p_Y) \\Rightarrow \\boldsymbol{q} = (q_X, q_Y)``.
 """
@@ -160,14 +160,14 @@ point_map = (
 	[358, 48] => [266, 108], # Star 3
 );
 
+# ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
+tfm = AffineMap(last.(point_map) => first.(point_map));
+
 # ╔═╡ 6193211b-8ec0-4f88-87df-35247c01353a
 @mdx"""
 !!! note " "
-	For those curious about the linear algebra, the respective linear transformation and translation parameters are shown below. It will update in real time in the local version of this notebook each time `point_map` is modified.
+	For those curious about the linear algebra, the respective linear transformation matrix and translation vector are shown below. They will update in real time in the local version of this notebook each time `point_map` is modified.
 """
-
-# ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
-tfm = AffineMap(last.(point_map) => first.(point_map));
 
 # ╔═╡ 568347fb-92a3-4435-8204-80a1a0a1eaef
 PlutoUI.ExperimentalLayout.hbox([tfm.linear, tfm.translation])
@@ -175,7 +175,7 @@ PlutoUI.ExperimentalLayout.hbox([tfm.linear, tfm.translation])
 # ╔═╡ a3a65c1c-a44e-475e-8044-35c453709483
 @mdx """
 !!! note " "
-	We now apply this transformation and stack our images together using the [`warp`](https://juliaimages.org/ImageTransformations.jl/stable/reference/#ImageTransformations.warp) function from [ImageTransformations.jl](https://juliaimages.org/ImageTransformations.jl/stable/). This is analogous to the [`warp`](https://scikit-image.org/docs/stable/api/skimage.transform.html#skimage.transform.warp) function from [scikit-image](https://scikit-image.org/) in Python.
+	We now apply this transformation and stack our images together using the [`warp`](https://juliaimages.org/ImageTransformations.jl/stable/reference/#ImageTransformations.warp) function from [ImageTransformations.jl](https://juliaimages.org/ImageTransformations.jl/stable/). This is analogous to Python's [`warp`](https://scikit-image.org/docs/stable/api/skimage.transform.html#skimage.transform.warp) function in [scikit-image](https://scikit-image.org/).
 """
 
 # ╔═╡ a9960706-4f5b-41e9-8dd4-2fbf24f4daec
@@ -184,16 +184,16 @@ img_2w = shareheader(img_2, warp(img_2, tfm, axes(img_1)));
 # ╔═╡ 4ed0072f-6159-4893-b21b-e035e51a6689
 details(md"What is `shareheader` and `axes`?",
 @mdx """
-We are using [AstroImages.jl](https://juliaastro.org/dev/modules/AstroImages/) to view and process our images. This allows for fits files to be displayed directly in the notebook, and for interactions with the larger [JuliaImages.jl](https://juliaimages.org/latest/) and [DimensionalData.jl](https://rafaqz.github.io/DimensionalData.jl/stable/) ecosystems.
+We are using [AstroImages.jl](https://juliaastro.org/dev/modules/AstroImages/) to view and process our images. This allows for fits files to be displayed directly in the notebook, and for interactions with the larger [JuliaImages](https://juliaimages.org/latest/) and [DimensionalData.jl](https://rafaqz.github.io/DimensionalData.jl/stable/) ecosystems.
 
-`AstroImages.shareheader` syncs the header stored in our original image with our `JuliaImages.ImageTransformations.warp`ep image, and `axes` makes sure that the coordinates of our transformed image are shown relative to our `destination` image reference frame of the underlying `DimensionalData`. For more information on this, see [this section of the AstroImages.jl documentation](https://juliaastro.org/dev/modules/AstroImages/manual/dimensions-and-world-coordinates/).
+`AstroImages.shareheader` syncs the header stored in our original image with our `JuliaImages.ImageTransformations.warp`ed image, and `axes` makes sure that the coordinates of our transformed image are shown relative to our `destination` image reference frame of the underlying `DimensionalData`. For more information on this, see [this section of the AstroImages.jl documentation](https://juliaastro.org/dev/modules/AstroImages/manual/dimensions-and-world-coordinates/).
 """
 )
 
 # ╔═╡ 5a0b3e26-7271-4b08-aa67-68c3af1421c0
 @mdx """
 !!! note " "
-	With our images now aligned, we can flip back and forth to view our asteroid's parallax shift that remains.
+	With our images now aligned, we can flip back and forth to view the remaining parallax shift from our asteroid.
 """
 
 # ╔═╡ 28a823e7-66ee-4688-b0a3-1ebd776f129f
@@ -243,7 +243,7 @@ img_compare
 		\\times \\frac{1\\text{ AU}}{1.496\\times10^{8}\\text{ km}}
 		\\times \\frac{206,265''}{1\\text{ rad}} \\\\
 	
-	&= \\boxed{0.00138 \\times \\frac{b\\text{ km}}{\\theta\\text{ arcsec}}} \\ .
+	&= \\boxed{0.00138 \\times \\frac{b\\text{ km}}{\\theta\\text{ arcsec}}} \\ ,
 	\\end{align}
 	```
 
@@ -264,7 +264,7 @@ img_compare
 """
 
 # ╔═╡ 117751ce-7c9e-461f-9ef9-6310ff0ecfac
-@bind asteroid_px PlutoUI.combine() do Child
+@bindname asteroid_px PlutoUI.combine() do Child
 	@mdx """
 	|image|X|Y
 	|------------------|------------------|---|
@@ -274,19 +274,19 @@ img_compare
 end
 
 # ╔═╡ 527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
-plate_scale = 0.99 # ""/px
+plate_scale = 0.99 # ''/px
 
 # ╔═╡ aabbcb9d-4310-437f-b7da-03b385916400
 θ = let
 	ΔX = asteroid_px.dest_x - asteroid_px.src_x
 	ΔY = asteroid_px.dest_y - asteroid_px.src_y
-	sqrt(ΔX^2 + ΔY^2) * plate_scale
-end |> x -> round(Int, x)
+	norm((ΔX, ΔY)) * plate_scale
+end
 
 # ╔═╡ 43a16d76-7de9-4f19-b1e4-a03457fd1e11
 @mdx """
 !!! note " "
-	Multiplying the Pythagorean distance between these two points by the known [plate scale](https://en.wikipedia.org/wiki/Plate_scale) of our reference image ($(plate_scale) "/pixel) then gives a parallax shift of ``\\theta = $(θ)''`` to the nearest pixel.
+	Multiplying the Pythagorean distance between these two points by the known [plate scale](https://en.wikipedia.org/wiki/Plate_scale) of our reference image ($(plate_scale) "/pixel) then gives a parallax shift of approximately ``\\theta = $(round(θ; digits=2))''``.
 """
 
 # ╔═╡ 864d23ed-d44e-4d3b-887c-73e49a909071
@@ -298,7 +298,8 @@ end |> x -> round(Int, x)
 """
 
 # ╔═╡ 6bed5463-00a8-4c73-b0dc-6c7397c7a099
-b = 3172 # Baseline (kilometers)
+# Baseline (kilometers)
+b = 3172
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
 @mdx """
@@ -309,7 +310,8 @@ b = 3172 # Baseline (kilometers)
 """
 
 # ╔═╡ 53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
-d = 0.00138 * b / θ # Distance to asteroid (AU)
+# Distance to asteroid (AU)
+d = 0.00138 * b / θ
 
 # ╔═╡ 202acfd6-1123-4e16-8d93-b9071006666c
 d0 = 0.26173027005421 # Actual distance
@@ -328,11 +330,12 @@ md"""
 !!! tip
 	To query the distance to other asteroids at a given date:
 	
-	* edit field 2 in the Horizons System to search for the asteroid by name
-	* edit field 4 to specify the desired date range to query. For this target, we specified data within three minutes of the `DATE-OBS` field reported in the header of our image files.
-	* click `Generate Ephemeris`
+	* Edit field 2 in the Horizons System to search for the asteroid by name.
+	* Edit field 4 to specify the desired date range to query. For this target, we specified data within three minutes of the `DATE-OBS` field reported in the header of our image files.
+	* Click `Generate Ephemeris`.
 	* Read off the `delta` field in the data table generated (you may need to scroll down a bit). This will be the distance to the asteroid measured in AU. [See here](https://ssd.jpl.nasa.gov/horizons/manual.html#obsquan) for definitions of the other table column names.
-	* The associated [Small-Body Database Lookup](https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/) tool on this site also provides a 3D simulation of the asteroid's approximate orbit over time (below) and other quick facts.
+
+	The associated [Small-Body Database Lookup](https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/) tool on this site also provides a 3D simulation of the asteroid's approximate orbit over time (below) and other quick facts.
 
 	![fig1](https://github.com/icweaver/UCAN/blob/main/asteroid_astrometry/asteroid_parallax/data/orbit_sim.png?raw=true)
 """
@@ -350,9 +353,9 @@ md"""
 		* **Baseline:** Since ``\\theta`` goes like ``\\frac{b}{d}``, taking measurements over a larger baseline would yield a larger parallax shift that we could then measure to a more accurate degree.
 		* **Equatorial coordinates:** We could use a tool like [astrometry.net](https://nova.astrometry.net/) to [plate solve](https://en.wikipedia.org/wiki/Astrometric_solving) our images. This would allow us to directly calculate the ``\\Delta\\text{RA}`` and ``\\Delta\\text{DEC}`` of the asteroid to a high precision instead of relying on pixel coordinates.
 		* **Image transformation parameters:** We relied on an affine transformation to stack our images. While flexible, the increased number of parameters relative to simpler transformation schemes can introduce additional error. Perhaps only rotatation and translation would be enough, although this might require using telescopes with comparable plate scales (like an eVscope!).
-		* **Center identification:** Regardless of the stacking scheme and coordinate system chosen, our parallax measurement is only as good as our ability to identify the approximate center of the asteroid in each image. Fitting a point spread function ([PSF](https://en.wikipedia.org/wiki/Point_spread_function)) would be useful for accurately identifying the center coordinates of our asteroid, instead of eyeballing it as we did in this lab.
+		* **Center identification:** Regardless of the stacking scheme and coordinate system chosen, our parallax measurement is only as good as our ability to identify the approximate center of the asteroid in each image. Fitting a point spread function ([PSF](https://en.wikipedia.org/wiki/Point_spread_function)) would be useful for accurately identifying the center coordinates of our asteroid instead of eyeballing it as we did in this lab.
 
-	To date, [almost 40_000 near-Earth asteroids](https://cneos.jpl.nasa.gov/stats/totals.html) have been discovered, and that number is expected to rise not only from the last bits of data released in November 2024 by the now concluded [WISE/NEOWISE](https://wise2.ipac.caltech.edu/docs/release/neowise/) mission, but also from the [Near-Earth Object Surveyor](https://science.nasa.gov/mission/neo-surveyor/) telescope that is scheduled for launch in 2028. Keeping track of these asteroids and their measured distances through parallax measurements and other means like [elliptical path fitting](https://www.nasa.gov/solar-system/asteroids/asteroid-fast-facts/) are crucial components for [Planetary Defense](https://science.nasa.gov/planetary-defense/).
+	As of February 1st, 2025, [nearly 40,000 near-Earth asteroids](https://cneos.jpl.nasa.gov/stats/totals.html) have been discovered. That number is expected to rise not only from the last bits of data released in November 2024 by the now concluded [WISE/NEOWISE](https://wise2.ipac.caltech.edu/docs/release/neowise/) mission, but also from the [Near-Earth Object Surveyor](https://science.nasa.gov/mission/neo-surveyor/) telescope that is scheduled for launch in 2028. Keeping track of these asteroids and their measured distances through parallax measurements and other means like [elliptical path fitting](https://www.nasa.gov/solar-system/asteroids/asteroid-fast-facts/) are important components for defending our planet ([NASA](https://science.nasa.gov/planetary-defense/), [ESA](https://www.esa.int/Space_Safety/Planetary_Defence)).
 """ |> Markdown.parse
 
 # ╔═╡ e99ae23f-c998-4e09-8d24-5df55b4385ee
@@ -1561,9 +1564,9 @@ version = "17.4.0+2"
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
+# ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
 # ╟─6193211b-8ec0-4f88-87df-35247c01353a
 # ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
-# ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
 # ╟─a3a65c1c-a44e-475e-8044-35c453709483
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╟─4ed0072f-6159-4893-b21b-e035e51a6689
@@ -1581,8 +1584,8 @@ version = "17.4.0+2"
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
 # ╟─117751ce-7c9e-461f-9ef9-6310ff0ecfac
 # ╟─43a16d76-7de9-4f19-b1e4-a03457fd1e11
-# ╟─527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
-# ╟─aabbcb9d-4310-437f-b7da-03b385916400
+# ╠═527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
+# ╠═aabbcb9d-4310-437f-b7da-03b385916400
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
