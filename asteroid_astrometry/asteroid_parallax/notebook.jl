@@ -91,8 +91,8 @@ md"""
 
 # ╔═╡ d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 OBSERVATORIES = OrderedDict(
-	"FBO Colgate, Hamilton, NY: 0.4 m" => load("./data/ASTEAST.FTS")[:, :, 1],
-	"NURO, Flagstaff, AZ: 0.8 m" => load("./data/ASTWEST.FTS")[:, :, 1],
+	"FBO Colgate, Hamilton, NY: 0.4 m" => load(download("https://github.com/icweaver/UCAN/raw/refs/heads/main/asteroid_astrometry/asteroid_parallax/data/ASTEAST.FTS"))[:, :, 1],
+	"NURO, Flagstaff, AZ: 0.8 m" => load(download("https://github.com/icweaver/UCAN/raw/refs/heads/main/asteroid_astrometry/asteroid_parallax/data/ASTWEST.FTS"))[:, :, 1],
 );
 
 # ╔═╡ b4119602-990d-47b0-8ea5-7f14e17d9e9f
