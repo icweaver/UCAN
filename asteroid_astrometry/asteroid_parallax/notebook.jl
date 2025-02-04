@@ -25,13 +25,12 @@ begin
 	# Viz
 	using AstroImages, PlutoPlotly
 	colormap = :cividis
-	
 	zscale = Zscale(contrast=0.15)
 	AstroImages.set_clims!(zscale)
 	AstroImages.set_cmap!(colormap)
 	
 	# Analysis
-	using CoordinateTransformations, ImageTransformations, TypedTables, LinearAlgebra, OrderedCollections
+	using CoordinateTransformations, ImageTransformations, LinearAlgebra, OrderedCollections
 end
 
 # ╔═╡ 75d03ef4-d8b2-11ef-076a-058846f3b6ba
@@ -144,7 +143,7 @@ header(OBSERVATORIES[observatory])
 !!! note " "
 	We start by assuming that one image, say `img_2`, can be rotated, translated, and/or scaled to fit onto `img_1`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images.
 
-	We will use the [`AffineMap`](https://github.com/JuliaGeometry/CoordinateTransformations.jl?tab=readme-ov-file#affine-maps) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `img_2` that we would like to correspond to ending (destination) points (e.g., point ``\\boldsymbol{q}``) in `img_1` as in the schematic below:
+	We will use the [`kabsch`](https://juliageometry.github.io/CoordinateTransformations.jl/dev/api/#CoordinateTransformations.kabsch) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `img_2` that we would like to correspond to ending (destination) points (e.g., point ``\\boldsymbol{q}``) in `img_1` as in the schematic below:
 
 	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
 
@@ -160,8 +159,8 @@ point_map = (
 	[358, 48] => [266, 108], # Star 3
 );
 
-# ╔═╡ 3de77f41-729e-46e6-9bcd-324a5f597bc1
-tfm = AffineMap(last.(point_map) => first.(point_map));
+# ╔═╡ cf81d974-2bf7-4da0-a781-3519953554ff
+tfm = kabsch(last.(point_map) => first.(point_map); scale=true);
 
 # ╔═╡ 6193211b-8ec0-4f88-87df-35247c01353a
 @mdx"""
@@ -268,8 +267,8 @@ img_compare
 	@mdx """
 	|image|X|Y
 	|------------------|------------------|---|
-	|left (destination)|$(Child("dest_x", NumberField(1:size(img_1, 1); default=240)))|$(Child("dest_y", NumberField(1:size(img_1, 2); default=162)))
-	|right (source)|$(Child("src_x", NumberField(1:size(img_2, 1); default=222)))|$(Child("src_y", NumberField(1:size(img_2, 2); default=158)))
+	|left (destination)|$(Child("dest_x", NumberField(1:size(img_1, 1); default=240)))|$(Child("dest_y", NumberField(1:size(img_1, 2); default=163)))
+	|right (source)|$(Child("src_x", NumberField(1:size(img_2, 1); default=223)))|$(Child("src_y", NumberField(1:size(img_2, 2); default=158)))
 	"""
 end
 
@@ -352,7 +351,7 @@ md"""
 	!!! hint " "
 		* **Baseline:** Since ``\\theta`` goes like ``\\frac{b}{d}``, taking measurements over a larger baseline would yield a larger parallax shift that we could then measure to a more accurate degree.
 		* **Equatorial coordinates:** We could use a tool like [astrometry.net](https://nova.astrometry.net/) to [plate solve](https://en.wikipedia.org/wiki/Astrometric_solving) our images. This would allow us to directly calculate the ``\\Delta\\text{RA}`` and ``\\Delta\\text{DEC}`` of the asteroid to a high precision instead of relying on pixel coordinates.
-		* **Image transformation parameters:** We relied on an affine transformation to stack our images. While flexible, the increased number of parameters relative to simpler transformation schemes can introduce additional error. Perhaps only rotatation and translation would be enough, although this might require using telescopes with comparable plate scales (like an eVscope!).
+		* **Image transformation parameters:** We relied on an affine transformation to stack our images. While flexible, the increased number of parameters relative to simpler transformation schemes can introduce additional error. Perhaps only rotatation and translation would be enough, although this might require using telescopes with comparable plate scales and apertures (like an eVscope!).
 		* **Center identification:** Regardless of the stacking scheme and coordinate system chosen, our parallax measurement is only as good as our ability to identify the approximate center of the asteroid in each image. Fitting a point spread function ([PSF](https://en.wikipedia.org/wiki/Point_spread_function)) would be useful for accurately identifying the center coordinates of our asteroid instead of eyeballing it as we did in this lab.
 
 	As of February 1st, 2025, [nearly 40,000 near-Earth asteroids](https://cneos.jpl.nasa.gov/stats/totals.html) have been discovered. That number is expected to rise not only from the last bits of data released in November 2024 by the now concluded [WISE/NEOWISE](https://wise2.ipac.caltech.edu/docs/release/neowise/) mission, but also from the [Near-Earth Object Surveyor](https://science.nasa.gov/mission/neo-surveyor/) telescope that is scheduled for launch in 2028. Keeping track of these asteroids and their measured distances through parallax measurements and other means like [elliptical path fitting](https://www.nasa.gov/solar-system/asteroids/asteroid-fast-facts/) are important components for defending our planet ([NASA](https://science.nasa.gov/planetary-defense/), [ESA](https://www.esa.int/Space_Safety/Planetary_Defence)).
@@ -434,17 +433,15 @@ MarkdownLiteral = "736d6165-7244-6769-4267-6b50796e6954"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 
 [compat]
 AstroImages = "~0.5.0"
-CoordinateTransformations = "~0.6.3"
+CoordinateTransformations = "~0.6.4"
 ImageTransformations = "~0.10.1"
 MarkdownLiteral = "~0.1.1"
-OrderedCollections = "~1.7.0"
+OrderedCollections = "~1.8.0"
 PlutoPlotly = "~0.6.2"
 PlutoUI = "~0.7.61"
-TypedTables = "~1.4.6"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -453,7 +450,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "75c1c6e339d03232fdc085681fff3f1734f622f7"
+project_hash = "59b53094058e92ac63f381adaea282b96e19cf20"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -640,9 +637,9 @@ weakdeps = ["IntervalSets", "LinearAlgebra", "StaticArrays"]
 
 [[deps.CoordinateTransformations]]
 deps = ["LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "f9d7112bfff8a19a3a4ea4e03a8e6a91fe8456bf"
+git-tree-sha1 = "a692f5e257d332de1e554e4566a4e5a8a72de2b2"
 uuid = "150eb455-5306-5404-9cee-2592286d6298"
-version = "0.6.3"
+version = "0.6.4"
 
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
@@ -675,12 +672,6 @@ deps = ["Mmap"]
 git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 version = "1.9.1"
-
-[[deps.Dictionaries]]
-deps = ["Indexing", "Random", "Serialization"]
-git-tree-sha1 = "61ab242274c0d44412d8eab38942a49aa46de9d0"
-uuid = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
-version = "0.4.3"
 
 [[deps.DimensionalData]]
 deps = ["Adapt", "ArrayInterface", "ConstructionBase", "DataAPI", "Dates", "Extents", "Interfaces", "IntervalSets", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "PrecompileTools", "Random", "RecipesBase", "SparseArrays", "Statistics", "TableTraits", "Tables"]
@@ -821,11 +812,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "0936ba688c6d201805a83da835b55c61a180db52"
 uuid = "905a6f67-0a94-5f89-b386-d35d92009cd1"
 version = "3.1.11+0"
-
-[[deps.Indexing]]
-git-tree-sha1 = "ce1566720fd6b19ff3411404d4b977acd4814f9f"
-uuid = "313cdc1a-70c2-5d6a-ae34-0150d3930a38"
-version = "1.1.1"
 
 [[deps.IndirectArrays]]
 git-tree-sha1 = "012e604e1c7458645cb8b436f8fba789a51b257f"
@@ -1075,9 +1061,9 @@ uuid = "18a262bb-aa17-5467-a713-aee519bc75cb"
 version = "3.2.4+0"
 
 [[deps.OrderedCollections]]
-git-tree-sha1 = "12f1439c4f986bb868acda6ea33ebc78e19b95ad"
+git-tree-sha1 = "cc4054e898b852042d7b503313f7ad03de99c3dd"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "1.7.0"
+version = "1.8.0"
 
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
@@ -1295,12 +1281,6 @@ deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 version = "1.11.0"
 
-[[deps.SplitApplyCombine]]
-deps = ["Dictionaries", "Indexing"]
-git-tree-sha1 = "c06d695d51cfb2187e6848e98d6252df9101c588"
-uuid = "03a91e81-4c3e-53e1-a0a4-9c0c8f19dd66"
-version = "1.2.3"
-
 [[deps.StableRNGs]]
 deps = ["Random"]
 git-tree-sha1 = "83e6cce8324d49dfaf9ef059227f91ed4441a8e5"
@@ -1391,12 +1371,6 @@ version = "0.11.3"
 git-tree-sha1 = "6cae795a5a9313bbb4f60683f7263318fc7d1505"
 uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
 version = "0.1.10"
-
-[[deps.TypedTables]]
-deps = ["Adapt", "Dictionaries", "Indexing", "SplitApplyCombine", "Tables", "Unicode"]
-git-tree-sha1 = "84fd7dadde577e01eb4323b7e7b9cb51c62c60d4"
-uuid = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
-version = "1.4.6"
 
 [[deps.URIs]]
 git-tree-sha1 = "67db6cc7b3821e19ebe75791a9dd19c9b1188f2b"
@@ -1564,7 +1538,7 @@ version = "17.4.0+2"
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
-# ╠═3de77f41-729e-46e6-9bcd-324a5f597bc1
+# ╠═cf81d974-2bf7-4da0-a781-3519953554ff
 # ╟─6193211b-8ec0-4f88-87df-35247c01353a
 # ╟─568347fb-92a3-4435-8204-80a1a0a1eaef
 # ╟─a3a65c1c-a44e-475e-8044-35c453709483
