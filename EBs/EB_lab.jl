@@ -933,10 +933,10 @@ md"""
 """
 
 # ╔═╡ ab2bac2b-b2ba-4eaa-8444-439485627bad
-const width = round(Int, size(img_sci, 1) / 4) + 100
+# const width = round(Int, size(img_sci, 1) / 4) + 100
 
 # ╔═╡ 48f4cdf3-b3d7-4cd6-8071-78292fec0db9
-const height = round(Int, width * size(img_sci, 2) / size(img_sci, 1))
+# const height = round(Int, width * size(img_sci, 2) / size(img_sci, 1))
 
 # ╔═╡ 285a56b7-bb3e-4929-a853-2fc69c77bdcb
 const clims = (150, 700);
@@ -1001,8 +1001,8 @@ function plot_img(i, img; restrict=true)
 	hm = htrace(img; restrict)
 	
 	l = Layout(;
-		width,
-		height,
+		#width,
+		#height,
 		title = string("Frame $(i): ", timestamp(img)),
 		xaxis = attr(title="X", constrain=:domain),
 		yaxis = attr(title="Y", scaleanchor=:x, constrain=:domain),
@@ -2796,7 +2796,7 @@ version = "17.4.0+2"
 # ╟─d6bba196-213e-4c90-8d8e-f2ffc8108da6
 # ╟─e7ad4e24-5dc9-4713-836a-be001304e45c
 # ╟─73e16c0e-873c-46a3-a0fd-d7ed5405ed7b
-# ╠═f3683998-543c-4bc4-8b73-fc1de6a6a955
+# ╟─f3683998-543c-4bc4-8b73-fc1de6a6a955
 # ╟─102ce649-e560-470e-afa5-699db577e148
 # ╟─3d77a38f-1e2f-40a7-bfec-90acf382f042
 # ╠═b944bc98-ff4b-4851-89ea-1ee4e3191759
