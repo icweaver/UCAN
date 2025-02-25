@@ -44,7 +44,7 @@ end
 	
 
 !!! warning "TODO"
-	Using sample data from [Gettysburg College](http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf). Replace with Unistellar data when it thaws.
+	This notebook is currently using sample ground-based data from [Gettysburg College](http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf). This will be updated with eVscope data when it becomes available.
 """
 
 # ╔═╡ 4cc6fb84-cefe-4571-850c-762643ff4ffc
