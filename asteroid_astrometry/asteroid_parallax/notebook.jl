@@ -16,6 +16,9 @@ macro bind(def, element)
     #! format: on
 end
 
+# ╔═╡ 50f77772-c419-4ad7-b9d6-12554302a518
+using DynamicQuantities
+
 # ╔═╡ db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 begin
 	# Notebook
@@ -324,6 +327,15 @@ accuracy = 100.0 * (d - d0) / d0 # Percent diff
 	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)!
 """
 
+# ╔═╡ df00e717-2574-4281-9838-1f446960731a
+md"""
+!!! tip
+	We can also do a quick unit check to verify our results.
+"""
+
+# ╔═╡ 8479dc29-366f-43b2-bfed-2c2b38dd72f8
+d_units = (b * u"km") / (θ * u"arcsec") |> us"Constants.au"
+
 # ╔═╡ dd382487-c181-4aad-b9c5-2e9bc422ed01
 md"""
 !!! tip
@@ -427,6 +439,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
+DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MarkdownLiteral = "736d6165-7244-6769-4267-6b50796e6954"
@@ -437,6 +450,7 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 [compat]
 AstroImages = "~0.5.0"
 CoordinateTransformations = "~0.6.4"
+DynamicQuantities = "~1.7.0"
 ImageTransformations = "~0.10.1"
 MarkdownLiteral = "~0.1.1"
 OrderedCollections = "~1.8.0"
@@ -448,9 +462,9 @@ PlutoUI = "~0.7.61"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.3"
+julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "59b53094058e92ac63f381adaea282b96e19cf20"
+project_hash = "bb8419f6abacf934540c8ff999ede1f9f1ce3ceb"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -687,6 +701,20 @@ version = "0.27.9"
     CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
     Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 
+[[deps.DispatchDoctor]]
+deps = ["MacroTools", "Preferences"]
+git-tree-sha1 = "f311fe66bfe4e38b2f1c8d1081f06920092b57aa"
+uuid = "8d63f2c5-f18a-4cf2-ba9d-b3f60fc568c8"
+version = "0.4.19"
+
+    [deps.DispatchDoctor.extensions]
+    DispatchDoctorChainRulesCoreExt = "ChainRulesCore"
+    DispatchDoctorEnzymeCoreExt = "EnzymeCore"
+
+    [deps.DispatchDoctor.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
+
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -702,6 +730,24 @@ version = "0.9.3"
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
+
+[[deps.DynamicQuantities]]
+deps = ["DispatchDoctor", "PrecompileTools", "TestItems", "Tricks"]
+git-tree-sha1 = "2cf4f27ea6997aabf4b3e3b97355af3d757efd6b"
+uuid = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
+version = "1.7.0"
+
+    [deps.DynamicQuantities.extensions]
+    DynamicQuantitiesLinearAlgebraExt = "LinearAlgebra"
+    DynamicQuantitiesMeasurementsExt = "Measurements"
+    DynamicQuantitiesScientificTypesExt = "ScientificTypes"
+    DynamicQuantitiesUnitfulExt = "Unitful"
+
+    [deps.DynamicQuantities.weakdeps]
+    LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    ScientificTypes = "321657f4-b219-11e9-178b-2701a2544e81"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.Extents]]
 git-tree-sha1 = "063512a13dbe9c40d999c439268539aa552d1ae6"
@@ -1361,6 +1407,11 @@ deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 version = "1.11.0"
 
+[[deps.TestItems]]
+git-tree-sha1 = "42fd9023fef18b9b78c8343a4e2f3813ffbcefcb"
+uuid = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
+version = "1.0.0"
+
 [[deps.TiffImages]]
 deps = ["ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "Mmap", "OffsetArrays", "PkgVersion", "ProgressMeter", "SIMD", "UUIDs"]
 git-tree-sha1 = "f21231b166166bebc73b99cea236071eb047525b"
@@ -1566,6 +1617,9 @@ version = "17.4.0+2"
 # ╟─2c5f91b7-4baf-4bbe-8634-c69223916e8f
 # ╟─202acfd6-1123-4e16-8d93-b9071006666c
 # ╟─0043f0a6-d309-4527-a554-d37c73c36dfa
+# ╟─df00e717-2574-4281-9838-1f446960731a
+# ╠═50f77772-c419-4ad7-b9d6-12554302a518
+# ╠═8479dc29-366f-43b2-bfed-2c2b38dd72f8
 # ╟─dd382487-c181-4aad-b9c5-2e9bc422ed01
 # ╟─9159cb78-6d0e-4c12-8f42-6b8e8316d167
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
