@@ -45,10 +45,6 @@ end
 	In this lab we will estimate the distance to a near-Earth object (NEO) based on its measured parallax. For more on taking these types of science observations, see our [Unistellar Planetary Defense](https://science.unistellar.com/planetary-defense/) page here.
 
 	Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing general parallax observations, as well as understand the principles behind other astronomical software at a broad level.
-	
-
-!!! warning "TODO"
-	This notebook is currently using sample ground-based data from [Gettysburg College](http://public.gettysburg.edu/~marschal/clea/clea_products/manuals/Ast_sm.pdf). This will be updated with eVscope data when it becomes available.
 """
 
 # ╔═╡ 4cc6fb84-cefe-4571-850c-762643ff4ffc
@@ -92,6 +88,14 @@ md"""
 	For the first time, the parallax method had been used to measure the distance to another star. We do not have 4 billion miles to work with here on Earth, so instead we will use simultaneous observations from two separate ground-based telescopes to measure the distance to a near-Earth asteroid. Keeping track of these distances is a crucial step for detecting, and [potentially diverting](https://science.nasa.gov/mission/dart/), objects that may be on a collision course with Earth.
 """
 
+# ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
+@mdx """
+<h2>Data</h2>
+
+!!! note " "
+	In this lab, we will use observations of the near-Earth asteroid [(153591) 2001 SN263](https://en.wikipedia.org/wiki/(153591)_2001_SN263) taken from the following two eVscopes (`OBSERVATORIES`):
+"""
+
 # ╔═╡ d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 OBSERVATORIES = OrderedDict(
 	"eVscope West" => load(download("https://github.com/icweaver/UCAN/raw/refs/heads/main/asteroid_astrometry/asteroid_parallax/data/nctq52_2022-02-25T19-58-34.991_Science_Defense_103.fits")),
@@ -113,12 +117,6 @@ img_1 = OBSERVATORIES[observatory_1];
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
 img_2 = OBSERVATORIES[observatory_2];
 
-# ╔═╡ f4d52a6a-644e-4ff1-861f-a0531c596040
-@mdx """
-!!! note " "
-	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizons example, _all of the objects_ in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
-"""
-
 # ╔═╡ 9477e1ef-92e7-49fe-9319-e894ef45852a
 @mdx """
 **$(observatory_1)**
@@ -132,7 +130,7 @@ OBSERVATORIES[observatory]
 # ╔═╡ 738ef43b-0433-405a-9a63-9074edbfeb14
 @mdx """
 !!! tip " "
-	Associated header file information for $(observatory)
+	Associated header file information for the above image.
 """
 
 # ╔═╡ 21afa6af-1df0-4c47-b106-1b9d1e161aa7
@@ -324,12 +322,12 @@ end
 # Baseline (kilometers)
 b = 621
 
-# ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
+# ╔═╡ f4d52a6a-644e-4ff1-861f-a0531c596040
 @mdx """
-<h2>Data</h2>
-
 !!! note " "
-	In this lab, we will use observations taken from the following two `OBSERVATORIES` located $(b) kilometers apart:
+	These eVscopes were located at a baseline of b = $(b) kilometers apart from each other at the time of observation on February 25th, 2022 at 19:58 UTC.	
+
+	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizons example, _all of the objects_ in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
 """
 
 # ╔═╡ 53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
@@ -1913,7 +1911,7 @@ version = "17.4.0+2"
 # ╟─4cc6fb84-cefe-4571-850c-762643ff4ffc
 # ╟─7d10737f-1691-43e5-891f-118e41cd771a
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
-# ╟─d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
+# ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╟─b4119602-990d-47b0-8ea5-7f14e17d9e9f
 # ╠═94cccd09-ccb9-48d2-b533-246ac0acd405
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
