@@ -30,8 +30,6 @@ begin
 	
 	# Viz
 	using AstroImages, PlutoPlotly
-	colormap = :cividis
-	zscale = Zscale(contrast=0.15)
 	
 	# Analysis
 	using CoordinateTransformations, ImageTransformations, LinearAlgebra, OrderedCollections
@@ -155,7 +153,7 @@ header(OBSERVATORIES[observatory])
 !!! note " "
 	We start by assuming that one image, say `img_2`, can be rotated, translated, and/or scaled to fit onto `img_1`. This type of process is known as an [affine transformation](https://en.wikipedia.org/wiki/Affine_transformation), and it is a common tool for aligning and stacking images.
 
-	We will use the [`kabsch`](https://juliageometry.github.io/CoordinateTransformations.jl/dev/api/#CoordinateTransformations.kabsch) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `img_2` that we would like to correspond to ending (destination) points (e.g., point ``\\boldsymbol{q}``) in `img_1` as in the schematic below:
+	We will use the [`kabsch`](https://juliageometry.github.io/CoordinateTransformations.jl/dev/api/#CoordinateTransformations.kabsch) function from [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl) to compute this transformation ``\\boldsymbol{(\\phi)}`` for us, given a set of starting (source) points (e.g., point ``\\boldsymbol{p}``) in `img_2` that we would like to map to ending (destination) points (e.g., point ``\\boldsymbol{q}``) in `img_1` as in the schematic below:
 
 	$(Resource("https://juliaimages.org/ImageTransformations.jl/stable/assets/warp_resize.png"))
 
@@ -165,6 +163,7 @@ header(OBSERVATORIES[observatory])
 """
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
+# img_2 points => img_1 points
 point_map = (
 	[1893, 1343] => [1219, 845],
 	[1779, 1177] => [1077, 709],
@@ -337,7 +336,7 @@ d = 0.00138 * b / θ
 # ╔═╡ df00e717-2574-4281-9838-1f446960731a
 md"""
 !!! note " "
-	We can do a quick unit check to verify our results, and to a higher accuracy than our approximate multiplicative factor of 0.00138.
+	We can do a quick unit check with [DynamicQuantities.jl](https://ai.damtp.cam.ac.uk/dynamicquantities/stable/) to verify our results, and to a higher accuracy than our approximate equation from earlier allowed.
 """
 
 # ╔═╡ 8479dc29-366f-43b2-bfed-2c2b38dd72f8
@@ -345,7 +344,7 @@ d_units = (b * u"km") / (θ * u"arcsec") |> us"Constants.au"
 
 # ╔═╡ dd382487-c181-4aad-b9c5-2e9bc422ed01
 md"""
-!!! tip
+!!! note " "
 	To query the distance to other asteroids at a given date:
 	
 	* Edit field 2 in the Horizons System to search for the asteroid by name.
@@ -355,12 +354,12 @@ md"""
 
 	The associated [Small-Body Database Lookup](https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/) tool on this site also provides a 3D simulation of the asteroid's approximate orbit over time (below) and other quick facts.
 
-	![fig1](https://github.com/icweaver/UCAN/blob/main/asteroid_astrometry/asteroid_parallax/data/orbit_sim.png?raw=true)
+	![fig1](https://github.com/icweaver/UCAN/blob/main/asteroid_astrometry/asteroid_parallax/fig/orbit_sim.png?raw=true)
 """
 
 # ╔═╡ 7db58c7e-4642-4295-80ae-ef3fd968bf9d
 md"""
-!!! note " "
+!!! tip
 
 	For a more automatic approach, we can also use the ephemeris lookup tool in [`EphemerisSources.jl`](https://juliaastro.org/EphemerisSources.jl/docs/stable/)
 """
@@ -382,7 +381,7 @@ accuracy = 100.0 * (d - d0) / d0 # Percent diff
 # ╔═╡ 2c5f91b7-4baf-4bbe-8634-c69223916e8f
 @mdx """
 !!! note " "
-	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)! Try exerimenting with different pixel centers to see how this affects the calculated distance.
+	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)! Try exerimenting with different pixel centers to see how this affects our calculated distance.
 """
 
 # ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
@@ -414,6 +413,9 @@ TableOfContents()
 # ╔═╡ 05b2f9fe-61d2-4640-bbae-78d6d7465597
 # Heuristic for keeping plotted images from blowing up
 const MAXPIXELS = 10^6
+
+# ╔═╡ 2e50b8bc-457e-42da-9bc7-7dd168e59f5e
+zscale = Zscale(contrast=0.15)
 
 # ╔═╡ 64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
 function trace_hm(img; colorbar_x=0)
@@ -470,16 +472,17 @@ plot_pair(img_1, img_2)
 plot_pair(img_1, img_2w)
 
 # ╔═╡ fa433777-d76f-4c8a-b3f5-862ea5611328
+# For placing images on a common color scale
 const ZMIN, ZMAX = let
 	lims = zscale.((img_1, img_2))
 	minimum(first, lims), maximum(last, lims)
 end
 
-# ╔═╡ 0495f2cf-9cf9-4402-85a2-67d537cfbdfb
-AstroImages.set_cmap!(colormap)
-
 # ╔═╡ b484f2c6-e8ea-4c0b-88ee-958cc53a9bff
 AstroImages.set_clims!((ZMIN, ZMAX))
+
+# ╔═╡ 0495f2cf-9cf9-4402-85a2-67d537cfbdfb
+AstroImages.set_cmap!(:cividis)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1967,9 +1970,10 @@ version = "17.4.0+2"
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
 # ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
+# ╠═2e50b8bc-457e-42da-9bc7-7dd168e59f5e
 # ╠═fa433777-d76f-4c8a-b3f5-862ea5611328
-# ╠═0495f2cf-9cf9-4402-85a2-67d537cfbdfb
 # ╠═b484f2c6-e8ea-4c0b-88ee-958cc53a9bff
+# ╠═0495f2cf-9cf9-4402-85a2-67d537cfbdfb
 # ╠═db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
