@@ -245,7 +245,7 @@ imgs[i]
 !!! note " "
 	Revisiting our schematic in the Introduction, let's modify it a bit by annotating the baseline distance ``(b)`` between observers, the distance ``(d)`` to what is being observed, and the apparent parallax shift ``(\\theta)`` along the sky observed between them:
 
-	$(Resource("https://raw.githubusercontent.com/icweaver/UCAN/refs/heads/main/asteroid_astrometry/asteroid_parallax/data/parallax_diagram.svg"))
+	$(Resource("https://raw.githubusercontent.com/icweaver/UCAN/refs/heads/main/asteroid_astrometry/asteroid_parallax/fig/parallax_diagram.svg"))
 	
 !!! note " "
 	From this model, we can work out the distance ``(d)`` as the following:
@@ -1939,7 +1939,7 @@ version = "17.4.0+2"
 # ╠═376cb78b-765a-4d8a-aaef-884ec579a2b5
 # ╟─cd32b1d0-f455-4822-ad19-6560044d6c4a
 # ╟─2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
-# ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
+# ╠═8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
 # ╟─117751ce-7c9e-461f-9ef9-6310ff0ecfac
