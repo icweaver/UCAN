@@ -212,8 +212,12 @@ We are using [AstroImages.jl](https://juliaastro.org/dev/modules/AstroImages/) t
 	With our images now aligned, we can flip back and forth to view the remaining parallax shift from our asteroid.
 """
 
-# ╔═╡ 28a823e7-66ee-4688-b0a3-1ebd776f129f
-@bind img_compare Select([img_1 => "eVscope East", img_2w => "eVscope West (stacked)"])
+# ╔═╡ 49b6c887-17fb-45f0-9dff-3aff12e03be5
+@mdx """
+**$(observatory_1)**
+$(@bind img_compare Slider([img_1, img_2w]))
+**$(observatory_2) (stacked)**
+"""
 
 # ╔═╡ 983a1c03-0344-4905-8cf2-b799003eb94c
 img_compare
@@ -287,13 +291,13 @@ imgs[i]
 	@mdx """
 	|image|X|Y
 	|------------------|------------------|---|
-	|left (destination)|$(Child("dest_x", NumberField(1:size(img_1, 1); default=240)))|$(Child("dest_y", NumberField(1:size(img_1, 2); default=163)))
-	|right (source)|$(Child("src_x", NumberField(1:size(img_2, 1); default=223)))|$(Child("src_y", NumberField(1:size(img_2, 2); default=158)))
+	|left (destination)|$(Child("dest_x", NumberField(1:size(img_1, 1); default=1017)))|$(Child("dest_y", NumberField(1:size(img_1, 2); default=747)))
+	|right (source)|$(Child("src_x", NumberField(1:size(img_2, 1); default=1023)))|$(Child("src_y", NumberField(1:size(img_2, 2); default=747)))
 	"""
 end
 
 # ╔═╡ 527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
-plate_scale = 1.326 #0.99 # ''/px
+plate_scale = 1.326 # eVscope 2 pixel scale (''/px)
 
 # ╔═╡ aabbcb9d-4310-437f-b7da-03b385916400
 θ = let
@@ -318,7 +322,7 @@ end
 
 # ╔═╡ 6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # Baseline (kilometers)
-b = 621 #3172
+b = 621
 
 # ╔═╡ 65d2286a-2786-4f96-8193-d0c4fe77d57a
 @mdx """
@@ -332,23 +336,14 @@ b = 621 #3172
 # Distance to asteroid (AU)
 d = 0.00138 * b / θ
 
-# ╔═╡ 202acfd6-1123-4e16-8d93-b9071006666c
-# ╠═╡ disabled = true
-#=╠═╡
-# d0 = 0.26173027005421 # Actual distance
-  ╠═╡ =#
-
 # ╔═╡ df00e717-2574-4281-9838-1f446960731a
 md"""
-!!! tip
-	We can also do a quick unit check to verify our results.
+!!! note " "
+	We can do a quick unit check to verify our results, and to a higher accuracy than our approximate multiplicative factor of 0.00138.
 """
 
 # ╔═╡ 8479dc29-366f-43b2-bfed-2c2b38dd72f8
 d_units = (b * u"km") / (θ * u"arcsec") |> us"Constants.au"
-
-# ╔═╡ 95410159-1270-4e44-9ed3-ca41bf61a05c
-ustrip(d_units)
 
 # ╔═╡ dd382487-c181-4aad-b9c5-2e9bc422ed01
 md"""
@@ -374,7 +369,10 @@ md"""
 
 # ╔═╡ 53512b8f-3120-4f9a-bb5f-ff8aefc96408
 # Query 1 minute before and after the parallax observation
-df_ephem = ephemeris("153591", "2022-02-25T19:57", "2022-02-25T19:59", "1 minute"; wrt="earth", units="AU-D") |> DataFrame
+df_ephem = ephemeris("153591", "2022-02-25T19:57", "2022-02-25T19:59", "1 minute";
+	wrt = "earth",
+	units = "AU-D"
+) |> DataFrame
 
 # ╔═╡ 7869c86f-52c3-4b3b-be59-b4f7626faf12
 # Row 2 has our desired timestamp
@@ -386,7 +384,7 @@ accuracy = 100.0 * (d - d0) / d0 # Percent diff
 # ╔═╡ 2c5f91b7-4baf-4bbe-8634-c69223916e8f
 @mdx """
 !!! note " "
-	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)!
+	Based on our measurements, we estimate that the asteroid was about **$(round(d; digits=3)) AU** away from the Earth at the time of observation. This is within **$(abs(round(Int, accuracy)))%** of the true distance reported by [JPL](https://ssd.jpl.nasa.gov/horizons/app.html#/)! Try exerimenting with different pixel centers to see how this affects the calculated distance.
 """
 
 # ╔═╡ 9159cb78-6d0e-4c12-8f42-6b8e8316d167
@@ -439,13 +437,14 @@ end
 
 # ╔═╡ fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
 function plot_pair(img1, img2)
+	loc1, loc2 = keys(OBSERVATORIES)
 	# Set up some subplots
 	fig = make_subplots(;
 		rows = 1,	
 		cols = 2,
 		shared_xaxes = true,
 		shared_yaxes = true,
-		column_titles = keys(OBSERVATORIES) |> collect,
+		column_titles = [loc1, loc2 * " (stacked)"],
 	)
 	
 	# Make the subplot titles a smidgen bit smaller
@@ -1937,32 +1936,30 @@ version = "17.4.0+2"
 # ╠═a9960706-4f5b-41e9-8dd4-2fbf24f4daec
 # ╟─4ed0072f-6159-4893-b21b-e035e51a6689
 # ╟─5a0b3e26-7271-4b08-aa67-68c3af1421c0
-# ╟─28a823e7-66ee-4688-b0a3-1ebd776f129f
+# ╟─49b6c887-17fb-45f0-9dff-3aff12e03be5
 # ╟─983a1c03-0344-4905-8cf2-b799003eb94c
 # ╟─961db3d8-9b31-4489-98d3-a66be4c9034c
 # ╟─13e464bb-30d2-4e6e-b038-69871acbba65
 # ╠═376cb78b-765a-4d8a-aaef-884ec579a2b5
 # ╟─cd32b1d0-f455-4822-ad19-6560044d6c4a
 # ╟─2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
-# ╠═8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
+# ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
 # ╟─84c11014-8890-4348-96b6-8e701e458de4
 # ╟─117751ce-7c9e-461f-9ef9-6310ff0ecfac
 # ╟─43a16d76-7de9-4f19-b1e4-a03457fd1e11
 # ╠═527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
 # ╠═aabbcb9d-4310-437f-b7da-03b385916400
-# ╠═fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
-# ╠═64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
+# ╟─fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
+# ╟─64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
-# ╠═95410159-1270-4e44-9ed3-ca41bf61a05c
-# ╟─2c5f91b7-4baf-4bbe-8634-c69223916e8f
-# ╠═202acfd6-1123-4e16-8d93-b9071006666c
-# ╟─0043f0a6-d309-4527-a554-d37c73c36dfa
 # ╟─df00e717-2574-4281-9838-1f446960731a
 # ╠═50f77772-c419-4ad7-b9d6-12554302a518
 # ╠═8479dc29-366f-43b2-bfed-2c2b38dd72f8
+# ╟─2c5f91b7-4baf-4bbe-8634-c69223916e8f
+# ╟─0043f0a6-d309-4527-a554-d37c73c36dfa
 # ╟─dd382487-c181-4aad-b9c5-2e9bc422ed01
 # ╟─7db58c7e-4642-4295-80ae-ef3fd968bf9d
 # ╠═1f68afec-5916-4fcf-905a-f83a42bdf09b
