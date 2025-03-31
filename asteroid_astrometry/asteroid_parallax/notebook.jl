@@ -414,8 +414,12 @@ TableOfContents()
 # Heuristic for keeping plotted images from blowing up
 const MAXPIXELS = 10^6
 
-# ╔═╡ 2e50b8bc-457e-42da-9bc7-7dd168e59f5e
-zscale = Zscale(contrast=0.15)
+# ╔═╡ fa433777-d76f-4c8a-b3f5-862ea5611328
+# For placing images on a common color scale
+const ZMIN, ZMAX = let
+	lims = Zscale(contrast=0.4).((img_1, img_2))
+	minimum(first, lims), maximum(last, lims)
+end
 
 # ╔═╡ 64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
 function trace_hm(img; colorbar_x=0)
@@ -426,10 +430,10 @@ function trace_hm(img; colorbar_x=0)
 		imgv = restrict(imgv)
 	end
 	imgv = permutedims(imgv)
-	zmin, zmax = zscale(imgv)
+	
 	return heatmap(x=dims(imgv, X).val, y=dims(imgv, Y).val, z=imgv.data;
-		zmin = 2496.0,
-		zmax = 9029.4,
+		zmin=ZMIN,
+		zmax=ZMAX,
 		colorscale = :Cividis,
 		colorbar=attr(x=colorbar_x, thickness=10, title="Counts"),
 	)
@@ -471,14 +475,8 @@ plot_pair(img_1, img_2)
 # ╔═╡ 84c11014-8890-4348-96b6-8e701e458de4
 plot_pair(img_1, img_2w)
 
-# ╔═╡ fa433777-d76f-4c8a-b3f5-862ea5611328
-# For placing images on a common color scale
-const ZMIN, ZMAX = let
-	lims = zscale.((img_1, img_2))
-	minimum(first, lims), maximum(last, lims)
-end
-
 # ╔═╡ b484f2c6-e8ea-4c0b-88ee-958cc53a9bff
+# AstroImages.set_clims!(zscale)
 AstroImages.set_clims!((ZMIN, ZMAX))
 
 # ╔═╡ 0495f2cf-9cf9-4402-85a2-67d537cfbdfb
@@ -1938,7 +1936,7 @@ version = "17.4.0+2"
 # ╟─4ed0072f-6159-4893-b21b-e035e51a6689
 # ╟─5a0b3e26-7271-4b08-aa67-68c3af1421c0
 # ╟─49b6c887-17fb-45f0-9dff-3aff12e03be5
-# ╟─983a1c03-0344-4905-8cf2-b799003eb94c
+# ╠═983a1c03-0344-4905-8cf2-b799003eb94c
 # ╟─961db3d8-9b31-4489-98d3-a66be4c9034c
 # ╟─13e464bb-30d2-4e6e-b038-69871acbba65
 # ╠═376cb78b-765a-4d8a-aaef-884ec579a2b5
@@ -1946,13 +1944,13 @@ version = "17.4.0+2"
 # ╟─2f9fed6d-0fb0-4a1e-afad-6d7beda95ba1
 # ╟─8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 # ╟─3e475b77-638c-4bb2-81c6-d7146b72c41f
-# ╟─84c11014-8890-4348-96b6-8e701e458de4
+# ╠═84c11014-8890-4348-96b6-8e701e458de4
 # ╟─117751ce-7c9e-461f-9ef9-6310ff0ecfac
 # ╟─43a16d76-7de9-4f19-b1e4-a03457fd1e11
 # ╠═527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
-# ╠═aabbcb9d-4310-437f-b7da-03b385916400
+# ╟─aabbcb9d-4310-437f-b7da-03b385916400
 # ╟─fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
-# ╟─64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
+# ╠═64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
@@ -1970,7 +1968,6 @@ version = "17.4.0+2"
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
 # ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
-# ╠═2e50b8bc-457e-42da-9bc7-7dd168e59f5e
 # ╠═fa433777-d76f-4c8a-b3f5-862ea5611328
 # ╠═b484f2c6-e8ea-4c0b-88ee-958cc53a9bff
 # ╠═0495f2cf-9cf9-4402-85a2-67d537cfbdfb
