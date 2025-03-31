@@ -94,8 +94,8 @@ md"""
 
 # ╔═╡ d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 OBSERVATORIES = OrderedDict(
-	"eVscope East" => load("./data/nctq52_2022-02-25T19-58-34.991_Science_Defense_103.fits"),
-	"eVscope West" => load("./data/p4eaaw_2022-02-25T19-58-34.183_Science_Defense_125.fits"),
+	"eVscope West" => load(download("https://github.com/icweaver/UCAN/raw/refs/heads/main/asteroid_astrometry/asteroid_parallax/data/nctq52_2022-02-25T19-58-34.991_Science_Defense_103.fits")),
+	"eVscope East" => load(download("https://github.com/icweaver/UCAN/raw/refs/heads/main/asteroid_astrometry/asteroid_parallax/data/p4eaaw_2022-02-25T19-58-34.183_Science_Defense_125.fits")),
 );
 
 # ╔═╡ b4119602-990d-47b0-8ea5-7f14e17d9e9f
@@ -104,23 +104,27 @@ OBSERVATORIES = OrderedDict(
 	and store them into `img_1` and `img_2` for convenience:
 """
 
+# ╔═╡ 94cccd09-ccb9-48d2-b533-246ac0acd405
+observatory_1, observatory_2 = keys(OBSERVATORIES)
+
 # ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
-img_1 = OBSERVATORIES["eVscope East"];
+img_1 = OBSERVATORIES[observatory_1];
 
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
-img_2 = OBSERVATORIES["eVscope West"];
+img_2 = OBSERVATORIES[observatory_2];
 
 # ╔═╡ f4d52a6a-644e-4ff1-861f-a0531c596040
 @mdx """
-!!! warning "TODO"
-	Replace with eVscope data and baseline distance when available.
-
 !!! note " "
 	Flipping back and forth, we can see that the field is roughly the same, but unlike the New Horizons example, _all of the objects_ in the frame appear to move, making identifying the apparent parallax shift of the asteroid harder to pick out.
 """
 
-# ╔═╡ 59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
-@bind observatory Select(collect(keys(OBSERVATORIES)))
+# ╔═╡ 9477e1ef-92e7-49fe-9319-e894ef45852a
+@mdx """
+**$(observatory_1)**
+$(@bind observatory Slider([observatory_1, observatory_2]))
+**$(observatory_2)**
+"""
 
 # ╔═╡ 10c77d40-dcb9-4620-b9c1-a47a56621a0c
 OBSERVATORIES[observatory]
@@ -1910,12 +1914,13 @@ version = "17.4.0+2"
 # ╟─4cc6fb84-cefe-4571-850c-762643ff4ffc
 # ╟─7d10737f-1691-43e5-891f-118e41cd771a
 # ╟─65d2286a-2786-4f96-8193-d0c4fe77d57a
-# ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
+# ╟─d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╟─b4119602-990d-47b0-8ea5-7f14e17d9e9f
+# ╠═94cccd09-ccb9-48d2-b533-246ac0acd405
 # ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
 # ╟─f4d52a6a-644e-4ff1-861f-a0531c596040
-# ╟─59c58698-bb4f-4cc1-b8e7-721b1d70f5ef
+# ╟─9477e1ef-92e7-49fe-9319-e894ef45852a
 # ╟─10c77d40-dcb9-4620-b9c1-a47a56621a0c
 # ╟─738ef43b-0433-405a-9a63-9074edbfeb14
 # ╠═21afa6af-1df0-4c47-b106-1b9d1e161aa7
