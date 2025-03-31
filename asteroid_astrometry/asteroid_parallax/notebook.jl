@@ -245,7 +245,7 @@ imgs[i]
 
 # ╔═╡ 8e0e738d-6bdf-4992-bc0e-ea00ea9617ba
 @mdx """
-<h2>Parallax distance</h2>
+<h2>Parallax technique</h2>
 
 !!! note " "
 	Revisiting our schematic in the Introduction, let's modify it a bit by annotating the baseline distance ``(b)`` between observers, the distance ``(d)`` to what is being observed, and the apparent parallax shift ``(\\theta)`` along the sky observed between them:
