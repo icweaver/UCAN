@@ -159,13 +159,14 @@ header(OBSERVATORIES[observatory])
 
 	_Source: [JuliaImages](https://juliaimages.org/ImageTransformations.jl/stable/#index_image_warping)_
 
+!!! note " "
 	Using the comparison plot in the previous section, identify the ``(X, Y)`` pixel coordinates for at least three stars in the source image and corresponding stars in the destination image, respectively. Record these values in the `point_map` variable below, where ``\\boldsymbol{p} = (p_X, p_Y) \\Rightarrow \\boldsymbol{q} = (q_X, q_Y)``.
 """
 
 # ╔═╡ 6fc4ec56-0591-4f61-bdce-43ef796ab3a5
 # img_2 points => img_1 points
 point_map = (
-	[1893, 1343] => [1219, 845],
+	[1891, 1341] => [1219, 845],
 	[1779, 1177] => [1077, 709],
 	[1525, 1039] => [799, 625],
 );
@@ -219,8 +220,11 @@ $(@bind img_compare Slider([img_1, img_2w]))
 # ╔═╡ 983a1c03-0344-4905-8cf2-b799003eb94c
 img_compare
 
-# ╔═╡ 961db3d8-9b31-4489-98d3-a66be4c9034c
+# ╔═╡ 38d3228b-abf6-435f-b287-ef5b40464bfa
 @mdx """
+!!! hint
+	The asteroid is very small compared to the other point sources in the image. Look closely for an object near the center of both frames that appears to shift.
+
 !!! note " "
 	For convenience, we also provide an animated version below, which blinks the images back and forth automatically.
 
@@ -314,7 +318,7 @@ end
 <h3>Parallax distance</h3>
 
 !!! note " "
-	We now have everything we need to estimate the distance to our near-Earth asteroid.
+	We now have everything we need to estimate the distance (d) to our near-Earth asteroid.
 """
 
 # ╔═╡ 6bed5463-00a8-4c73-b0dc-6c7397c7a099
@@ -336,7 +340,7 @@ d = 0.00138 * b / θ
 # ╔═╡ df00e717-2574-4281-9838-1f446960731a
 md"""
 !!! note " "
-	We can do a quick unit check with [DynamicQuantities.jl](https://ai.damtp.cam.ac.uk/dynamicquantities/stable/) to verify our results, and to a higher accuracy than our approximate equation from earlier allowed.
+	We can do a quick units check with [DynamicQuantities.jl](https://ai.damtp.cam.ac.uk/dynamicquantities/stable/) to verify our results. Note that this will differ slightly from our estimated result because we are internally using a more accurate value for the AU when we make our conversion.
 """
 
 # ╔═╡ 8479dc29-366f-43b2-bfed-2c2b38dd72f8
@@ -344,6 +348,8 @@ d_units = (b * u"km") / (θ * u"arcsec") |> us"Constants.au"
 
 # ╔═╡ dd382487-c181-4aad-b9c5-2e9bc422ed01
 md"""
+### JPL Horizons
+
 !!! note " "
 	To query the distance to other asteroids at a given date:
 	
@@ -476,7 +482,6 @@ plot_pair(img_1, img_2)
 plot_pair(img_1, img_2w)
 
 # ╔═╡ b484f2c6-e8ea-4c0b-88ee-958cc53a9bff
-# AstroImages.set_clims!(zscale)
 AstroImages.set_clims!((ZMIN, ZMAX))
 
 # ╔═╡ 0495f2cf-9cf9-4402-85a2-67d537cfbdfb
@@ -1923,7 +1928,7 @@ version = "17.4.0+2"
 # ╟─738ef43b-0433-405a-9a63-9074edbfeb14
 # ╠═21afa6af-1df0-4c47-b106-1b9d1e161aa7
 # ╟─8bbccbde-4850-4f9d-941a-b163e2133afc
-# ╟─2bbcab7e-ee23-4136-b686-5472e61cd117
+# ╠═2bbcab7e-ee23-4136-b686-5472e61cd117
 # ╟─51186ae1-baac-4868-950f-1c9a86d720d8
 # ╟─867445e3-e2f7-4cca-bf70-26dfcae825dd
 # ╠═6fc4ec56-0591-4f61-bdce-43ef796ab3a5
@@ -1936,8 +1941,8 @@ version = "17.4.0+2"
 # ╟─4ed0072f-6159-4893-b21b-e035e51a6689
 # ╟─5a0b3e26-7271-4b08-aa67-68c3af1421c0
 # ╟─49b6c887-17fb-45f0-9dff-3aff12e03be5
-# ╠═983a1c03-0344-4905-8cf2-b799003eb94c
-# ╟─961db3d8-9b31-4489-98d3-a66be4c9034c
+# ╟─983a1c03-0344-4905-8cf2-b799003eb94c
+# ╟─38d3228b-abf6-435f-b287-ef5b40464bfa
 # ╟─13e464bb-30d2-4e6e-b038-69871acbba65
 # ╠═376cb78b-765a-4d8a-aaef-884ec579a2b5
 # ╟─cd32b1d0-f455-4822-ad19-6560044d6c4a
@@ -1950,7 +1955,7 @@ version = "17.4.0+2"
 # ╠═527c1ad3-02d1-4ea5-98b2-d0054f6b5a91
 # ╟─aabbcb9d-4310-437f-b7da-03b385916400
 # ╟─fdd7bfe6-d4f7-434e-bac3-dc8994a17a6e
-# ╠═64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
+# ╟─64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
 # ╟─864d23ed-d44e-4d3b-887c-73e49a909071
 # ╠═6bed5463-00a8-4c73-b0dc-6c7397c7a099
 # ╠═53e5fca6-41ee-4a46-9a41-d9f4e0673c8e
