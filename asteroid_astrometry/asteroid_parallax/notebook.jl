@@ -30,6 +30,7 @@ begin
 	
 	# Viz
 	using AstroImages, PlutoPlotly
+	AstroImages.set_cmap!(:cividis)
 	
 	# Analysis
 	using CoordinateTransformations, ImageTransformations, LinearAlgebra, OrderedCollections
@@ -40,9 +41,12 @@ end
 <h1>Parallax Lab 👥</h1>
 
 !!! note " "
-	In this lab we will estimate the distance to a near-Earth object (NEO) based on its measured parallax. For more on taking these types of science observations, see our [Unistellar Planetary Defense](https://science.unistellar.com/planetary-defense/) page here.
+	In this lab we will estimate the distance to a near-Earth object (NEO) based on its measured parallax. For more on taking these types of science observations, see our [Unistellar Planetary Defense page](https://science.unistellar.com/planetary-defense/).
 
 	Having some familiarity in high-level programming languages like Julia or Python will be useful, but not necessary, for following along with the topics covered. At the end of this notebook, you will hopefully have the tools to build your own analysis pipelines for processing general parallax observations, as well as understand the principles behind other astronomical software at a broad level.
+
+!!! warning "Coffee?"
+	The first time this notebook runs might take a while (~ couple minutes) because it will download and compile everything for us. This is your chance to take a stretch or grab a nice beverage ☕
 """
 
 # ╔═╡ 4cc6fb84-cefe-4571-850c-762643ff4ffc
@@ -109,11 +113,19 @@ OBSERVATORIES = OrderedDict(
 # ╔═╡ 94cccd09-ccb9-48d2-b533-246ac0acd405
 observatory_1, observatory_2 = keys(OBSERVATORIES)
 
-# ╔═╡ 0b7fcb43-ccb0-4708-9aed-9f8774ef8749
-img_1 = OBSERVATORIES[observatory_1];
-
 # ╔═╡ 5523bfd6-4d1c-472f-a028-266b9a891df8
+begin
+img_1 = OBSERVATORIES[observatory_1];
 img_2 = OBSERVATORIES[observatory_2];
+
+# Place images on a common color scale
+const ZMIN, ZMAX = let
+	lims = Zscale(contrast=0.4).((img_1, img_2))
+	minimum(first, lims), maximum(last, lims)
+end
+
+AstroImages.set_clims!((ZMIN, ZMAX))
+end;
 
 # ╔═╡ 9477e1ef-92e7-49fe-9319-e894ef45852a
 @mdx """
@@ -420,13 +432,6 @@ TableOfContents()
 # Heuristic for keeping plotted images from blowing up
 const MAXPIXELS = 10^6
 
-# ╔═╡ fa433777-d76f-4c8a-b3f5-862ea5611328
-# For placing images on a common color scale
-const ZMIN, ZMAX = let
-	lims = Zscale(contrast=0.4).((img_1, img_2))
-	minimum(first, lims), maximum(last, lims)
-end
-
 # ╔═╡ 64cf11a7-09ef-459a-98b5-3e5f8a8cd1b5
 function trace_hm(img; colorbar_x=0)
 	imgv = copy(img)
@@ -480,12 +485,6 @@ plot_pair(img_1, img_2)
 
 # ╔═╡ 84c11014-8890-4348-96b6-8e701e458de4
 plot_pair(img_1, img_2w)
-
-# ╔═╡ b484f2c6-e8ea-4c0b-88ee-958cc53a9bff
-AstroImages.set_clims!((ZMIN, ZMAX))
-
-# ╔═╡ 0495f2cf-9cf9-4402-85a2-67d537cfbdfb
-AstroImages.set_cmap!(:cividis)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1920,7 +1919,6 @@ version = "17.4.0+2"
 # ╠═d12e83b5-8351-44ef-aa4c-b5ace3b4eb39
 # ╟─b4119602-990d-47b0-8ea5-7f14e17d9e9f
 # ╠═94cccd09-ccb9-48d2-b533-246ac0acd405
-# ╠═0b7fcb43-ccb0-4708-9aed-9f8774ef8749
 # ╠═5523bfd6-4d1c-472f-a028-266b9a891df8
 # ╟─f4d52a6a-644e-4ff1-861f-a0531c596040
 # ╟─9477e1ef-92e7-49fe-9319-e894ef45852a
@@ -1973,9 +1971,6 @@ version = "17.4.0+2"
 # ╟─e99ae23f-c998-4e09-8d24-5df55b4385ee
 # ╠═a23c40dc-0af3-4c3a-8172-203f58603bbb
 # ╠═05b2f9fe-61d2-4640-bbae-78d6d7465597
-# ╠═fa433777-d76f-4c8a-b3f5-862ea5611328
-# ╠═b484f2c6-e8ea-4c0b-88ee-958cc53a9bff
-# ╠═0495f2cf-9cf9-4402-85a2-67d537cfbdfb
 # ╠═db72ee5e-070b-4dff-b3b6-8b9915ed7b3e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
