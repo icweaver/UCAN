@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.4
+# v0.20.13
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     #! format: off
-    quote
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
@@ -25,7 +25,7 @@ begin
 	using PlutoUI, CommonMark
 	
 	# Data wrangling
-	using CCDReduction, DataFramesMeta
+	using CCDReduction, DataDeps, DataFramesMeta
 
 	# Web
 	using HTTP, JSONTables, TableScraper
@@ -41,6 +41,21 @@ begin
 	using PythonCall, CondaPkg
 	CondaPkg.add_pip("astroalign")
 	CondaPkg.add("numpy"; version="<2")
+
+	# Use DataDeps.jl for dataset management
+	# Auto-download data to current directory by default
+	ENV["DATADEPS_ALWAYS_ACCEPT"] = "true"
+	ENV["DATADEPS_LOAD_PATH"] = @__DIR__
+	DataDep(
+		"data",
+		"""
+		UCAN Data Files
+		Website: https://www.seti.org/education/ucan/unistellar-education-materials/
+		""",
+		["https://www.dropbox.com/scl/fo/uxuluatuh82yy9i9nsixs/ALn9NbC5M4aJEPIAsnZU12M?rlkey=vpbb4tvlt59dtvvssqlpc5v1x&st=x9fbkhlj&dl=1"],
+		["1ee0a7459a5a4e5fcec433a7bfbdcdfaf04844a7b081dcb181ecf5355a38eb25"],
+		post_fetch_method = unpack,
+	) |> register
 end
 
 # ╔═╡ 3d8a4c43-1a17-4a36-84e8-47a98493ca99
@@ -79,7 +94,7 @@ cm"""
 !!! note "Using this notebook"
 	Some parts of this [Pluto notebook](https://plutojl.org/) are partially interactive online, but for full interactive control, it is recommended to download and run this notebook locally. For instructions on how to do this, click the `Edit or run this notebook` button in the top right corner of the page, or [click on this direct link](https://computationalthinking.mit.edu/Fall23/installation/) which includes a video and written instructions for getting started with Julia and Pluto 🌱.
 
-	!!! tip "First time running"
+	!!! tip "Coffee break? ☕"
 		**Note**: This notebook will download all of the analysis packages and data needed for us, so the first time it runs may take a little while (~ a few minutes depending on your internet connection and platform). Clicking on the `Status` tab in the bottom right will bring up a progress window that we can use to monitor this process, and it also includes an option at the bottom marked `Notify when done` that can be selected to give us a notification pop-up in our browser when everything is finished.
 
 	This is a fully hackable notebook, so exploring the [source code](https://github.com/icweaver/UCAN/blob/main/EBs/EB_lab.jl) and making your own modifications is encouraged! Unlike Jupyter notebooks, Pluto notebook are just plain Julia files. Any changes you make in the notebook are automatically saved to the source file.
@@ -176,9 +191,12 @@ Let's use [`fitscollection`](https://juliaastro.org/CCDReduction.jl/stable/api/#
 	Much like an Excel spreadsheet, dependent cells are aware of each other, so package imports can be placed anywhere in the notebook. For organizational purposes, we have placed all package imports (like CCDReductions.jl) at the bottom of this notebook.
 """
 
+# ╔═╡ 7c078085-ff30-400d-a0ab-2680f468c415
+const DATA_DIR = datadep"data";
+
 # ╔═╡ 1356c02f-9ff2-491f-b55d-666ee76e6fae
 df_sci = let
-	df = fitscollection("./data/TRANSIT/ut20240325/sci"; abspath=false)
+	df = fitscollection(DATA_DIR; abspath=false)
 	@transform! df :"DATE-OBS" = DateTime.(:"DATE-OBS")
 end;
 
@@ -633,7 +651,7 @@ msg(md"""
 """; title=md"What is `pretty`?")
 
 # ╔═╡ f2c89a20-09d5-47f4-8f83-e59477723d95
-nrow(df_all) # Total number of targets in our list
+!isempty(username) && nrow(df_all) # Total number of targets in our list
 
 # ╔═╡ a00cbbfc-56ce-413a-a7b8-13de8541fa6f
 if !isempty(username)
@@ -732,7 +750,7 @@ pretty(df) = DataFrames.PrettyTables.pretty_table(HTML, df;
 )
 
 # ╔═╡ edda8d09-ec46-4a0b-b1b2-b1289ee5456e
-first(df_all, 10) |> pretty
+!isempty(username) && first(df_all, 10) |> pretty
 
 # ╔═╡ 1d2bedb1-509d-4956-8e5a-ad1c0f1ffe26
 md"""
@@ -835,10 +853,10 @@ if !isempty(username)
 			:ephem_url
 		end
 	end
-end;
+end
 
 # ╔═╡ 4042bc32-1a14-4408-974d-7405fd8c8ccc
-df_candidates |> pretty
+!isempty(username) && df_candidates |> pretty
 
 # ╔═╡ 95f9803a-86df-4517-adc8-0bcbb0ff6fbc
 if !isempty(username)
@@ -851,37 +869,41 @@ if !isempty(username)
 end
 
 # ╔═╡ a5f3915c-6eed-480d-9aed-8fdd052a324a
-@bind star_name Select(df_candidates.star_name)
+!isempty(username) && @bind star_name Select(df_candidates.star_name)
 
 # ╔═╡ 3f548bb1-37b0-48b7-a35c-d7701405a64e
-df_selected = @rsubset df_candidates :star_name == star_name;
+if !isempty(username)
+	df_selected = @rsubset df_candidates :star_name == star_name
+end
 
 # ╔═╡ 8a39fbbb-6b5b-4744-a875-469c289242fb
-df_ephem = let
-	ephem_title, ephem_data = ephem(only(df_selected.ephem_url))
-	df = DataFrame(
-		stack(ephem_data; dims=1),
-		ephem_title,
-	)
-
-	fmt = dateformat"dd u YYYY HH:MM"
-	@chain df begin
-		@rtransform begin
-			# :Epoch = parse(Float64, :Epoch)
-			:star_name = only(df_selected.star_name)
-			:Start = DateTime(:Start, fmt)
-			:Mid = DateTime(:Mid, fmt)
-			:End = DateTime(:End, fmt)
+if !isempty(username)
+	df_ephem = let
+		ephem_title, ephem_data = ephem(only(df_selected.ephem_url))
+		df = DataFrame(
+			stack(ephem_data; dims=1),
+			ephem_title,
+		)
+	
+		fmt = dateformat"dd u YYYY HH:MM"
+		@chain df begin
+			@rtransform begin
+				# :Epoch = parse(Float64, :Epoch)
+				:star_name = only(df_selected.star_name)
+				:Start = DateTime(:Start, fmt)
+				:Mid = DateTime(:Mid, fmt)
+				:End = DateTime(:End, fmt)
+				
+			end
 			
-		end
-		
-		@rtransform begin
-			:Duration = canonicalize(:End - :Start)
-			:Duration_s = Second(:End - :Start).value
-			:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
+			@rtransform begin
+				:Duration = canonicalize(:End - :Start)
+				:Duration_s = Second(:End - :Start).value
+				:unix_timestamp_ms = 1_000 * datetime2unix(:Mid)
+			end
 		end
 	end
-end;
+end
 
 # ╔═╡ 31c23e2b-1a2d-41aa-81c1-22868e241f7e
 if !isempty(username)
@@ -1039,6 +1061,7 @@ AstroImages = "fe3fc30c-9b16-11e9-1c73-17dabf39f4ad"
 CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
+DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
 DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
@@ -1058,6 +1081,7 @@ AstroImages = "~0.4.2"
 CCDReduction = "~0.2.2"
 CommonMark = "~0.8.12"
 CondaPkg = "~0.2.22"
+DataDeps = "~0.7.13"
 DataFramesMeta = "~0.15.2"
 HTTP = "~1.10.6"
 ImageCore = "~0.9.4"
@@ -1074,9 +1098,9 @@ Unitful = "~1.20.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.3"
+julia_version = "1.11.5"
 manifest_format = "2.0"
-project_hash = "9b28bbce1ad6a7698cec41e2d1438feeaa655fa8"
+project_hash = "521f9e293cbfe090aaf2938682d8c49d88819e04"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1439,6 +1463,12 @@ version = "1.0.2"
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.16.0"
+
+[[deps.DataDeps]]
+deps = ["HTTP", "Libdl", "Reexport", "SHA", "Scratch", "p7zip_jll"]
+git-tree-sha1 = "8ae085b71c462c2cb1cfedcb10c3c877ec6cf03f"
+uuid = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+version = "0.7.13"
 
 [[deps.DataFrames]]
 deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
@@ -2117,7 +2147,7 @@ version = "3.2.4+0"
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
-version = "0.8.1+2"
+version = "0.8.5+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
@@ -2762,6 +2792,7 @@ version = "17.4.0+2"
 # ╟─c1bbb6a2-6996-4fee-a642-a0212b473474
 # ╟─abb9a9c8-5cac-4af3-b0a0-b7a3608dfe1a
 # ╟─b360ad74-58b7-47b5-a8b0-437ef1119303
+# ╠═7c078085-ff30-400d-a0ab-2680f468c415
 # ╠═1356c02f-9ff2-491f-b55d-666ee76e6fae
 # ╟─06d26240-81b6-401b-8eda-eab3a9a0fb20
 # ╠═335a1a12-379a-4e0d-a3de-788369ae3818
