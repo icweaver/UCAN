@@ -162,13 +162,18 @@ A bunch of these are just from hot pixels or other artifacts, so in the next sec
 # ╔═╡ 60063aa9-5dcc-42e2-8deb-9c9d48cce0ac
 md"""
 #### Source characterization
+
+[`Photometry.photometry`](https://juliaastro.org/Photometry/stable/apertures/#Photometry.Aperture.photometry) automatically computes aperture sums and returns them in a nice table for us. Below is a slightly modified version that also computes some PSF statistics for each source and stores them in `phot_all`. Some PSF models will not converge, but I think that is to be expected for really noisy sources and is probably fine since they won't be included in the final filtered list anyway.
+
+!!! todo
+	See if this can be upstreamed to Photometry.jl or maybe some other place.
 """
 
-# ╔═╡ 162c6878-ca56-4295-bd1d-f9edef0097e2
-# sources = filter(first(sources_all, 10)) do source
-# 	source.value ≥ 42_000
-# end
-# sources = sources_all #first(sources_all, 30)
+# ╔═╡ 4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
+function photometry2(aps::AbstractVector{<:Photometry.Aperture.AbstractAperture}, data::AbstractMatrix)
+    rows = tcollect(aps |> Map(ap -> photometry2(ap, data)))
+    return Table(rows)
+end
 
 # ╔═╡ 7edea5b2-75e9-42df-bef0-092b03a6dc72
 function fit_psf(ap, img; fwhm=10)
@@ -187,24 +192,6 @@ function fit_psf(ap, img; fwhm=10)
 	return P_gauss, mod_gauss, psf
 end
 
-# ╔═╡ da1a922c-bad9-4463-b353-039c342c09d2
-function inspect_psf(ap, img; fwhm=10)
-	P_gauss, mod_gauss, psf = fit_psf(ap, img; fwhm)
-	@info P_gauss
-	return AstroImage(psf), imview(mod_gauss.(CartesianIndices(psf)))
-end
-
-# ╔═╡ fc87b633-825a-4333-b54b-9508c0e8dcfb
-@bind i Slider(eachindex(aps); show_value=true)
-
-# ╔═╡ 48aada3c-1b0e-442d-9b84-5c9fa9b18e14
-inspect_psf(aps[i], subt)
-
-# ╔═╡ b6c45b4a-fe54-4289-9931-b36c0b641d7d
-# Convert to plotly objects for plotting
-
-# shapes = circ2.(phot)
-
 # ╔═╡ 219d0de9-8372-48cb-af16-f1ca2126d1af
 function photometry2(ap::Photometry.Aperture.AbstractAperture, data::AbstractMatrix)
     cx, cy = center(ap)
@@ -216,56 +203,84 @@ function photometry2(ap::Photometry.Aperture.AbstractAperture, data::AbstractMat
     return (meta..., aperture_sum = aperture_sum, psf_x, psf_y, psf_fwhm)
 end
 
-# ╔═╡ 4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
-function photometry2(aps::AbstractVector{<:Photometry.Aperture.AbstractAperture}, data::AbstractMatrix)
-    rows = tcollect(aps |> Map(ap -> photometry2(ap, data)))
-    return Table(rows)
-end
-
-# ╔═╡ 64a3508d-c513-47b6-a8b2-a070af4338a7
-function get_photometry(sources, subt; r=16)
-	aps = CircularAperture.(sources.y, sources.x, r)
-	photometry2(aps, subt)
-end
-
 # ╔═╡ f081c699-df73-40ca-972d-9d9273b08fad
 phot_all = photometry2(aps_all, subt)
 
+# ╔═╡ c005beb9-436e-4444-a4f2-21d209888640
+md"""
+Below is a quick visual check that re-computes the PSF models on the fly and displays their fitted parameters:
+"""
+
+# ╔═╡ fc87b633-825a-4333-b54b-9508c0e8dcfb
+@bind i Slider(eachindex(aps_all); show_value=x -> "Source $(x)")
+
+# ╔═╡ da1a922c-bad9-4463-b353-039c342c09d2
+function inspect_psf(ap, img; fwhm=10)
+	P_gauss, mod_gauss, psf = fit_psf(ap, img; fwhm)
+	@info P_gauss
+	return AstroImage(psf), imview(mod_gauss.(CartesianIndices(psf)))
+end
+
+# ╔═╡ 48aada3c-1b0e-442d-9b84-5c9fa9b18e14
+inspect_psf(aps_all[i], subt)
+
+# ╔═╡ d921ef03-31db-47a3-92db-f07c32c2f9c8
+N = 10
+
+# ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
+md"""
+Looks to be fitting alright! Let's just take up to the $(N) largest ones next, based on their FWHM:
+"""
+
 # ╔═╡ 227768ad-f2e5-4345-9ae8-6ee24673caf8
 phot = filter(phot_all) do source
-	1 ≤ source.psf_fwhm #≤ 16
-end |> x -> first(x, 10)
+	1.0 ≤ source.psf_fwhm
+end |> x -> first(x, N)
+
+# ╔═╡ d76f82ca-4430-48ab-88cb-fd90b5a19fca
+md"""
+Here's how they look:
+"""
+
+# ╔═╡ a9ddd793-83dd-4606-a2df-ffceef75cf37
+md"""
+Not perfect, but these will serve as our control points for performing image alignment in the next section.
+
+!!! todo
+	Look into transforming fitted PSF centers from aperture reference frame to image reference frame for nicer viz. Currently just using locations of max pixel from `Photometry.extract_sources`.
+"""
 
 # ╔═╡ 5790765b-874f-41bb-b6ec-e77c42ea3928
 md"""
 ### Transform
 """
 
-# ╔═╡ bdf550cc-76a9-4949-8fc2-b037746412d1
-sources1, subt1, errs1 = get_sources(img1);
+# ╔═╡ 00ae774d-1c82-4a7c-a53f-f9845c97b441
+function get_phot(img; nsigma=1, r=16)
+	sources, subt, errs = get_sources(img; nsigma)
+	aps = CircularAperture.(sources.y, sources.x, r)
+	phot = photometry2(aps, subt)
+	return phot
+end
 
 # ╔═╡ 8fd2bef1-c3ef-4192-80d1-5736f2b03fae
-phot1 = filter(get_photometry(sources1, subt1)) do source
+phot1 = filter(get_phot(img1)) do source
 	1 ≤ source.psf_fwhm
-end |> x -> first(x, 12)
+end |> x -> first(x, N)
 
 # ╔═╡ f2d3b19f-a265-4b42-af0b-ee78eb0346f2
 # C1 = combinations(first(sources1, 10), 3)
 C1 = combinations(phot1, 3)
 
-# ╔═╡ 4b0cdea8-caec-4ab3-8c60-0c08f35e48e5
-first(C1)
-
-# ╔═╡ 54efad8e-d4aa-4373-8467-d90def9cfd53
-sources2, subt2, errs2 = get_sources(img2);
+# ╔═╡ a213f18f-bb50-4c6c-8f9d-fe80c44715b3
+length(C1)
 
 # ╔═╡ 8dd5d6e7-df76-4783-8870-73213fe70c32
-phot2 = filter(get_photometry(sources2, subt2)) do source
+phot2 = filter(get_phot(img2)) do source
 	1 ≤ source.psf_fwhm
-end |> x -> first(x, 12)
+end |> x -> first(x, N)
 
 # ╔═╡ f6060373-995c-4630-a253-cc794dd3c852
-# C2 = combinations(first(sources2, 10), 3)
 C2 = combinations(phot2, 3)
 
 # ╔═╡ 6bac5b7f-1064-4339-8644-315452a19e2c
@@ -417,6 +432,13 @@ end
 let
 	p = plot(trace_hm(img; colorbar_x=1.0))
 	relayout!(p; shapes=circ.(aps_all))
+	p
+end
+
+# ╔═╡ f435b31b-1999-431c-b0ac-a836c14cdc71
+let
+	p = plot(trace_hm(img; colorbar_x=1.0))
+	relayout!(p; shapes=circ2.(phot))
 	p
 end
 
@@ -2284,31 +2306,33 @@ version = "0.41.3+0"
 # ╠═0c1c9b70-7db0-4975-b0a2-64d21490ed70
 # ╠═de352fd2-15ef-4fc4-981f-b5dc09328402
 # ╠═08e09b85-1a27-47a8-85ce-6697016ef730
-# ╠═a6556b3e-0eae-4602-9063-dd55c0f6c6bb
+# ╟─a6556b3e-0eae-4602-9063-dd55c0f6c6bb
 # ╟─b3898685-b7f1-4681-bdb0-34b4e4662e7a
 # ╟─60063aa9-5dcc-42e2-8deb-9c9d48cce0ac
-# ╠═64a3508d-c513-47b6-a8b2-a070af4338a7
-# ╠═162c6878-ca56-4295-bd1d-f9edef0097e2
 # ╠═f081c699-df73-40ca-972d-9d9273b08fad
-# ╠═7edea5b2-75e9-42df-bef0-092b03a6dc72
-# ╠═da1a922c-bad9-4463-b353-039c342c09d2
+# ╟─219d0de9-8372-48cb-af16-f1ca2126d1af
+# ╟─4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
+# ╟─7edea5b2-75e9-42df-bef0-092b03a6dc72
+# ╟─c005beb9-436e-4444-a4f2-21d209888640
+# ╟─fc87b633-825a-4333-b54b-9508c0e8dcfb
 # ╠═48aada3c-1b0e-442d-9b84-5c9fa9b18e14
-# ╠═fc87b633-825a-4333-b54b-9508c0e8dcfb
+# ╟─da1a922c-bad9-4463-b353-039c342c09d2
+# ╟─1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
 # ╠═227768ad-f2e5-4345-9ae8-6ee24673caf8
-# ╠═b6c45b4a-fe54-4289-9931-b36c0b641d7d
-# ╠═219d0de9-8372-48cb-af16-f1ca2126d1af
+# ╠═d921ef03-31db-47a3-92db-f07c32c2f9c8
+# ╟─d76f82ca-4430-48ab-88cb-fd90b5a19fca
+# ╟─f435b31b-1999-431c-b0ac-a836c14cdc71
+# ╟─a9ddd793-83dd-4606-a2df-ffceef75cf37
 # ╠═1bb0e24e-d0e9-4424-98d4-bc495ad770f3
 # ╠═f078cd88-7a6f-41fc-bfa6-bbdbd5313622
 # ╠═a12f0768-c260-431a-9b8f-fdb029216b3d
-# ╠═4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
 # ╠═ef19d29d-736c-45d9-a148-835e5ee48309
 # ╟─5790765b-874f-41bb-b6ec-e77c42ea3928
 # ╠═e3ae42e7-fa75-4ed9-89eb-c40b5be590b2
-# ╠═bdf550cc-76a9-4949-8fc2-b037746412d1
+# ╟─00ae774d-1c82-4a7c-a53f-f9845c97b441
 # ╠═8fd2bef1-c3ef-4192-80d1-5736f2b03fae
 # ╠═f2d3b19f-a265-4b42-af0b-ee78eb0346f2
-# ╠═4b0cdea8-caec-4ab3-8c60-0c08f35e48e5
-# ╠═54efad8e-d4aa-4373-8467-d90def9cfd53
+# ╠═a213f18f-bb50-4c6c-8f9d-fe80c44715b3
 # ╠═8dd5d6e7-df76-4783-8870-73213fe70c32
 # ╠═f6060373-995c-4630-a253-cc794dd3c852
 # ╠═6bac5b7f-1064-4339-8644-315452a19e2c
