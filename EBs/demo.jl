@@ -16,6 +16,18 @@ macro bind(def, element)
     #! format: on
 end
 
+# ╔═╡ 58b5e7d5-3c5c-4ce1-8813-890e84e0a033
+using Printf
+
+# ╔═╡ 5ff90773-ee80-4e5a-a95e-e644c89c36bc
+using NearestNeighbors
+
+# ╔═╡ b75e6595-d097-462a-8ab6-cb85ab181011
+using Distances
+
+# ╔═╡ e3ae42e7-fa75-4ed9-89eb-c40b5be590b2
+using Combinatorics, LinearAlgebra
+
 # ╔═╡ 1bb0e24e-d0e9-4424-98d4-bc495ad770f3
 using PSFModels
 
@@ -27,18 +39,6 @@ using TypedTables
 
 # ╔═╡ ef19d29d-736c-45d9-a148-835e5ee48309
 using Photometry
-
-# ╔═╡ e3ae42e7-fa75-4ed9-89eb-c40b5be590b2
-using Combinatorics, LinearAlgebra
-
-# ╔═╡ 58b5e7d5-3c5c-4ce1-8813-890e84e0a033
-using Printf
-
-# ╔═╡ 5ff90773-ee80-4e5a-a95e-e644c89c36bc
-using NearestNeighbors
-
-# ╔═╡ b75e6595-d097-462a-8ab6-cb85ab181011
-using Distances
 
 # ╔═╡ 305e3688-5ee9-11f0-0325-d384980c3a10
 begin
@@ -55,11 +55,17 @@ end
 # ╔═╡ 38d2ca99-8f1c-474c-a844-beff92d947d3
 md"""
 # 📐 Aligning astronomical images
+
+Like in the days of overhead transparencies
 """
 
 # ╔═╡ 4d73d418-c2cf-4ecf-85ac-a8f712dbfcb2
 md"""
 ## Load images 🖼️
+
+Here are the two sample images that we would like to align with each other. Plate solving is expensive, so instead we will try a quicker way using good ol' triangles, no WCS required.
+
+Credit: [_Beroiz, M., Cabral, J. B., & Sanchez, B. (2020)_](https://ui.adsabs.harvard.edu/abs/2020A%26C....3200384B/abstract)
 """
 
 # ╔═╡ 7b8e7c01-b379-46c8-b63d-02d3f0b39f8a
@@ -80,6 +86,8 @@ end
 # ╔═╡ 9b8176d9-cef9-4662-8c8e-28711911ba49
 md"""
 ## Align -- Python 🐍
+
+First, here is how the process looks using the Python package: [`astroalign`](https://github.com/quatrope/astroalign)
 """
 
 # ╔═╡ 8dc89287-e591-4f94-86b0-3b476188d2a8
@@ -107,6 +115,11 @@ registered_image, footprint = aa.register(
 
 # ╔═╡ 3b3b9605-b77e-42d4-a9be-f9b158259709
 img2_aligned_python = shareheader(img2, PyArray(registered_image));
+
+# ╔═╡ b02f4d0f-c09a-4286-9f64-97b89e8905d3
+md"""
+Alright, nice and aligned! The rest of this notebook will be an attempt to partially reproduce this in Julia.
+"""
 
 # ╔═╡ f15b53cb-af41-4be5-9905-cc49eacce43c
 md"""
@@ -148,7 +161,7 @@ img = img1;
 
 # ╔═╡ 0c1c9b70-7db0-4975-b0a2-64d21490ed70
 # Sources, background subtracted image, background
-sources_all, subt, errs = get_sources(img; nsigma=1);
+sources_all, subt, errs = get_sources(img);
 
 # ╔═╡ 08e09b85-1a27-47a8-85ce-6697016ef730
 # Apertures, for plotting and photometry
@@ -163,10 +176,13 @@ A bunch of these are just from hot pixels or other artifacts, so in the next sec
 md"""
 #### Source characterization
 
-[`Photometry.photometry`](https://juliaastro.org/Photometry/stable/apertures/#Photometry.Aperture.photometry) automatically computes aperture sums and returns them in a nice table for us. Below is a slightly modified version that also computes some PSF statistics for each source and stores them in `phot_all`. Some PSF models will not converge, but I think that is to be expected for really noisy sources and is probably fine since they won't be included in the final filtered list anyway.
+[`Photometry.photometry`](https://juliaastro.org/Photometry/stable/apertures/#Photometry.Aperture.photometry) automatically computes aperture sums and returns them in a nice table for us. Below is a slightly modified version that also computes some PSF statistics for each source and stores them in `phot_all`.
 
 !!! todo
 	See if this can be upstreamed to Photometry.jl or maybe some other place.
+
+!!! note
+	Some PSF models will not converge, but I think that is to be expected for really noisy sources and is probably fine since they won't be included in the final filtered list anyway.
 """
 
 # ╔═╡ 4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
@@ -225,17 +241,17 @@ end
 inspect_psf(aps_all[i], subt)
 
 # ╔═╡ d921ef03-31db-47a3-92db-f07c32c2f9c8
-N = 10
-
-# ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
-md"""
-Looks to be fitting alright! Let's just take up to the $(N) largest ones next, based on their FWHM:
-"""
+N = 10 # Max number of sources to select, based on FWHM criteria
 
 # ╔═╡ 227768ad-f2e5-4345-9ae8-6ee24673caf8
 phot = filter(phot_all) do source
-	1.0 ≤ source.psf_fwhm
+	1.5 ≤ source.psf_fwhm
 end |> x -> first(x, N)
+
+# ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
+md"""
+Looks to be fitting alright! Let's just take up to the $(length(phot)) largest ones next, based on their FWHM:
+"""
 
 # ╔═╡ d76f82ca-4430-48ab-88cb-fd90b5a19fca
 md"""
@@ -252,7 +268,31 @@ Not perfect, but these will serve as our control points for performing image ali
 
 # ╔═╡ 5790765b-874f-41bb-b6ec-e77c42ea3928
 md"""
-### Transform
+### Match sources
+
+This is the secret sauce: _Beroiz, Cabral, & Sanchez_ use the fact that triangles can be uniquely characterized to match sets of three stars (asterisms) between images. This point-to-point correspondence then gives us everything we need to compute the affine transformation between them.
+
+For this implementation, they use the invariant ``\mathscr M`` (the pair of two independent ratios of a triangle's side lengths, ``L_i``) to define this unique characterization:
+
+```math
+\begin{align}
+&\mathscr M = (L_3/L_2, L_2/L_1), \\
+
+&\text{where}\ L_3 > L_2 > L_1\quad.
+\end{align}
+```
+
+So, game plan:
+
+1. Calculate this invariant for all ``N\choose{3}`` possible combinations of ``N`` control points per image.
+1. Calculate the pairwise distances between all ``\mathscr M``.
+1. Take the closest one.
+"""
+
+# ╔═╡ bf72d0c4-4aa9-4fee-ad7e-aff177c69a79
+md"""
+!!! todo
+	Add graceful handling of duplicate matches from, e.g., hot pixels that managed to sneak through.
 """
 
 # ╔═╡ 00ae774d-1c82-4a7c-a53f-f9845c97b441
@@ -2299,10 +2339,11 @@ version = "0.41.3+0"
 # ╠═f2c2c895-fe77-4951-8d3d-5ea51cca9bad
 # ╠═3b3b9605-b77e-42d4-a9be-f9b158259709
 # ╠═552877dd-5a69-414a-9ff3-c338f46f90f6
+# ╟─b02f4d0f-c09a-4286-9f64-97b89e8905d3
 # ╟─f15b53cb-af41-4be5-9905-cc49eacce43c
 # ╟─1ed0ee8b-413a-4c4d-9046-cc0a7bce5779
 # ╟─4305687e-35a6-4515-b06a-48b0d45497af
-# ╟─5cf7c94a-1f27-4ec9-a1f4-6828997a1fbb
+# ╠═5cf7c94a-1f27-4ec9-a1f4-6828997a1fbb
 # ╠═0c1c9b70-7db0-4975-b0a2-64d21490ed70
 # ╠═de352fd2-15ef-4fc4-981f-b5dc09328402
 # ╠═08e09b85-1a27-47a8-85ce-6697016ef730
@@ -2323,12 +2364,8 @@ version = "0.41.3+0"
 # ╟─d76f82ca-4430-48ab-88cb-fd90b5a19fca
 # ╟─f435b31b-1999-431c-b0ac-a836c14cdc71
 # ╟─a9ddd793-83dd-4606-a2df-ffceef75cf37
-# ╠═1bb0e24e-d0e9-4424-98d4-bc495ad770f3
-# ╠═f078cd88-7a6f-41fc-bfa6-bbdbd5313622
-# ╠═a12f0768-c260-431a-9b8f-fdb029216b3d
-# ╠═ef19d29d-736c-45d9-a148-835e5ee48309
-# ╟─5790765b-874f-41bb-b6ec-e77c42ea3928
-# ╠═e3ae42e7-fa75-4ed9-89eb-c40b5be590b2
+# ╠═5790765b-874f-41bb-b6ec-e77c42ea3928
+# ╟─bf72d0c4-4aa9-4fee-ad7e-aff177c69a79
 # ╟─00ae774d-1c82-4a7c-a53f-f9845c97b441
 # ╠═8fd2bef1-c3ef-4192-80d1-5736f2b03fae
 # ╠═f2d3b19f-a265-4b42-af0b-ee78eb0346f2
@@ -2368,6 +2405,11 @@ version = "0.41.3+0"
 # ╠═833f5c31-a9ae-4249-b4a9-14fc539716d2
 # ╠═25809c3f-df3c-4eb3-88ca-1b6ecd8a734d
 # ╠═8dc0c5a1-9e14-49bf-8ccc-fba15a0b5783
+# ╠═e3ae42e7-fa75-4ed9-89eb-c40b5be590b2
+# ╠═1bb0e24e-d0e9-4424-98d4-bc495ad770f3
+# ╠═f078cd88-7a6f-41fc-bfa6-bbdbd5313622
+# ╠═a12f0768-c260-431a-9b8f-fdb029216b3d
+# ╠═ef19d29d-736c-45d9-a148-835e5ee48309
 # ╠═305e3688-5ee9-11f0-0325-d384980c3a10
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
