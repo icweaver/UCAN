@@ -48,25 +48,21 @@ Like in the days of overhead transparencies
 md"""
 ## Load images 🖼️
 
-Here are the two sample images that we would like to align with each other. Plate solving is expensive, so instead we will try a quicker way using good ol' triangles, no WCS required.
+Here are two sample images that we would like to align with eachother. Plate solving is expensive, so instead we will try a quicker approach using good ol' triangles; no WCS required.
 
 Credit: [_Beroiz, M., Cabral, J. B., & Sanchez, B. (2020)_](https://ui.adsabs.harvard.edu/abs/2020A%26C....3200384B/abstract)
 """
 
 # ╔═╡ 7b8e7c01-b379-46c8-b63d-02d3f0b39f8a
-img1 = load(download("https://www.dropbox.com/scl/fi/d6bsy0eevid7vix6fdmo0/mgcc3f_2024-03-25T05-36-57.945_TRANSIT.fits?rlkey=pms7hicmbbergrtqdsefa8z2t&st=hrom2wuk&dl=1"));
+img₁ = load(download("https://www.dropbox.com/scl/fi/vfn63d2afc7ekz1mr1cmv/mgcc3f_2024-03-25T05-55-37.966_TRANSIT.fits?rlkey=oj1dotng1vzfj7znnx9g87eh8&st=53aco5lw&dl=1"));
 
 # ╔═╡ d2567180-8f02-4f49-a53c-dc936cfed048
-img2 = load(download("https://www.dropbox.com/scl/fi/dnsx7tyl8eliqsgozxwis/mgcc3f_2024-03-25T06-35-38.014_TRANSIT.fits?rlkey=eojuywi4a7qz81l0f2jidavt0&st=aw2g3o4h&dl=1"));
+img₂ = load(download("https://www.dropbox.com/scl/fi/uyv0zyx8g8ihbo21qtj7u/mgcc3f_2024-03-25T06-40-58.020_TRANSIT.fits?rlkey=ddj76nfg9anb7iao1hy1ew0zl&st=5nc7e0a1&dl=1"));
 
-# ╔═╡ 04d5a4fe-b806-44c0-bfb9-bac395c5eee3
-const ZMIN, ZMAX = let
-	lims = Zscale(contrast=0.4).((img1, img2))
-	minimum(first, lims), maximum(last, lims)
-end
-
-# ╔═╡ bf89de69-e121-4d05-aaf9-5869ef792938
-# AstroImages.set_clims!((ZMIN, ZMAX))
+# ╔═╡ 8dddb9a9-9b03-4f2d-b724-4c7bfd2e87f7
+md"""
+In this particular case, `img₂` is rotated clockwise and shifted vertically relative to `img₁`. Let's fix it.
+"""
 
 # ╔═╡ 9b8176d9-cef9-4662-8c8e-28711911ba49
 md"""
@@ -92,14 +88,14 @@ end
 
 # ╔═╡ 1d580de0-664c-4d78-a99a-4ff57130a735
 registered_image, footprint = aa.register(
-	to_py(img2),
-	to_py(img1);
+	to_py(img₂),
+	to_py(img₁);
 	min_area = 25,
 	detection_sigma = 2,
 )
 
 # ╔═╡ 3b3b9605-b77e-42d4-a9be-f9b158259709
-img2_aligned_python = shareheader(img2, PyArray(registered_image));
+img₂_aligned_python = shareheader(img₂, PyArray(registered_image));
 
 # ╔═╡ b02f4d0f-c09a-4286-9f64-97b89e8905d3
 md"""
@@ -125,7 +121,7 @@ It looks like `astroalign` uses [`sep`](https://github.com/quatrope/astroalign/b
 md"""
 #### Source extraction
 
-Starting with `extract_sources` with some reasonable defaults wrapped in a convenience `get_sources` function we defined, we get the following candidate sources (`sources_all`) in our first image:
+Starting with `extract_sources` with some reasonable defaults wrapped in a convenience `get_sources` function we defined, we get the following candidate `sources` in our first image:
 """
 
 # ╔═╡ 5cf7c94a-1f27-4ec9-a1f4-6828997a1fbb
@@ -145,15 +141,15 @@ function get_sources(img; box_size=(5, 5), nsigma=1)
 end
 
 # ╔═╡ de352fd2-15ef-4fc4-981f-b5dc09328402
-img = img1;
+img = img₁;
 
 # ╔═╡ 0c1c9b70-7db0-4975-b0a2-64d21490ed70
 # Sources, background subtracted image, background
-sources_all, subt, errs = get_sources(img);
+sources, subt, errs = get_sources(img);
 
 # ╔═╡ 08e09b85-1a27-47a8-85ce-6697016ef730
 # Apertures, for plotting and photometry
-aps_all = CircularAperture.(sources_all.y, sources_all.x, 16)
+aps = CircularAperture.(sources.y, sources.x, 16)
 
 # ╔═╡ b3898685-b7f1-4681-bdb0-34b4e4662e7a
 md"""
@@ -164,7 +160,7 @@ A bunch of these are just from hot pixels or other artifacts, so in the next sec
 md"""
 #### Source characterization
 
-[`Photometry.photometry`](https://juliaastro.org/Photometry/stable/apertures/#Photometry.Aperture.photometry) automatically computes aperture sums and returns them in a nice table for us. Below is a slightly modified version that also computes some PSF statistics for each source and stores them in `phot_all`.
+[`Photometry.photometry`](https://juliaastro.org/Photometry/stable/apertures/#Photometry.Aperture.photometry) automatically computes aperture sums and returns them in a nice table for us. Below is a slightly modified version that also computes some PSF statistics for each source and stores them in `phot`.
 
 !!! todo
 	See if this can be upstreamed to Photometry.jl or maybe some other place.
@@ -176,7 +172,7 @@ md"""
 # ╔═╡ 4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
 function photometry2(aps::AbstractVector{<:Photometry.Aperture.AbstractAperture}, data::AbstractMatrix)
     rows = tcollect(aps |> Map(ap -> photometry2(ap, data)))
-    return Table(rows)
+    return sort(Table(rows); by=x -> x.psf_fwhm, rev=true)
 end
 
 # ╔═╡ 7edea5b2-75e9-42df-bef0-092b03a6dc72
@@ -203,12 +199,20 @@ function photometry2(ap::Photometry.Aperture.AbstractAperture, data::AbstractMat
     idxs = map(intersect, axes(ap), axes(data))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
     aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
-	(psf_x, psf_y, psf_fwhm), psf_mod, psf = fit_psf(ap, data)
-    return (meta..., aperture_sum = aperture_sum, psf_x, psf_y, psf_fwhm)
+	(psf_x, psf_y, psf_fwhm), psf_model, psf_data = fit_psf(ap, data)
+    return (
+		meta...,
+		aperture_sum = aperture_sum,
+		psf_x,
+		psf_y,
+		psf_fwhm,
+		psf_model,
+		psf_data,
+	)
 end
 
 # ╔═╡ f081c699-df73-40ca-972d-9d9273b08fad
-phot_all = photometry2(aps_all, subt)
+phot = photometry2(aps, subt)
 
 # ╔═╡ c005beb9-436e-4444-a4f2-21d209888640
 md"""
@@ -216,30 +220,30 @@ Below is a quick visual check that re-computes the PSF models on the fly and dis
 """
 
 # ╔═╡ fc87b633-825a-4333-b54b-9508c0e8dcfb
-@bind i Slider(eachindex(aps_all); show_value=x -> "Source $(x)")
+@bind i Slider(eachindex(phot); show_value=x -> "Source $(x)")
 
 # ╔═╡ da1a922c-bad9-4463-b353-039c342c09d2
-function inspect_psf(ap, img; fwhm=10)
-	P_gauss, mod_gauss, psf = fit_psf(ap, img; fwhm)
-	@info P_gauss
-	return AstroImage(psf), imview(mod_gauss.(CartesianIndices(psf)))
+function inspect_psf(phot)
+	psf_data, psf_model = phot.psf_data, phot.psf_model
+	# @info P_gauss
+	return AstroImage(psf_data), imview(psf_model.(CartesianIndices(psf_data)))
 end
 
 # ╔═╡ 48aada3c-1b0e-442d-9b84-5c9fa9b18e14
-inspect_psf(aps_all[i], subt)
+inspect_psf(phot[i])
+
+# ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
+md"""
+Looks to be fitting alright! Let's just take up to the $(length(phot)) largest one next based on their FWHM:
+"""
 
 # ╔═╡ d921ef03-31db-47a3-92db-f07c32c2f9c8
 N = 10 # Max number of sources to select, based on FWHM criteria
 
 # ╔═╡ 227768ad-f2e5-4345-9ae8-6ee24673caf8
-phot = filter(phot_all) do source
+phot_selected = filter(phot) do source
 	1.5 ≤ source.psf_fwhm
 end |> x -> first(x, N)
-
-# ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
-md"""
-Looks to be fitting alright! Let's just take up to the $(length(phot)) largest ones next, based on their FWHM:
-"""
 
 # ╔═╡ d76f82ca-4430-48ab-88cb-fd90b5a19fca
 md"""
@@ -298,14 +302,14 @@ function get_phot(img; nsigma=1, r=16)
 	return phot
 end
 
-# ╔═╡ 8fd2bef1-c3ef-4192-80d1-5736f2b03fae
-phot1 = filter(get_phot(img1)) do source
-	1 ≤ source.psf_fwhm
+# ╔═╡ c3367906-18fb-4b7a-bdc7-c30dbfdb1c4e
+phot_selected₁ = filter(get_phot(img₁)) do source
+	1.5 ≤ source.psf_fwhm
 end |> x -> first(x, N)
 
 # ╔═╡ 8dd5d6e7-df76-4783-8870-73213fe70c32
-phot2 = filter(get_phot(img2)) do source
-	1 ≤ source.psf_fwhm
+phot_selected₂ = filter(get_phot(img₂)) do source
+	1.5 ≤ source.psf_fwhm
 end |> x -> first(x, N)
 
 # ╔═╡ a1f67287-86eb-4dd2-acaa-768d77a32a93
@@ -316,10 +320,10 @@ Let's count 'em up
 """
 
 # ╔═╡ f2d3b19f-a265-4b42-af0b-ee78eb0346f2
-C1 = combinations(phot1, 3)
+C₁ = combinations(phot_selected₁, 3)
 
 # ╔═╡ f6060373-995c-4630-a253-cc794dd3c852
-C2 = combinations(phot2, 3)
+C₂ = combinations(phot_selected₂, 3)
 
 # ╔═╡ 7bb7af71-20be-4eeb-a33b-be22d0f94abc
 md"""
@@ -341,14 +345,14 @@ function tri_invars(C)
 	map(C) do (pa, pb, pc)
 		tri = (pa.ycenter, pa.xcenter), (pb.ycenter, pb.xcenter), (pc.ycenter, pc.xcenter)
 		tri_hash(tri)
-	end
+	end |> stack
 end
 
 # ╔═╡ 4c4cc02d-ac73-484b-8970-ecb74cf076cb
-tri_invars1 = tri_invars(C1)
+ℳ₁ = tri_invars(C₁)
 
 # ╔═╡ 013678c2-8b72-4c0e-a744-9ac165c3fa32
-tri_invars2 = tri_invars(C2)
+ℳ₂ = tri_invars(C₂)
 
 # ╔═╡ 3db56a63-0fd1-4756-a1ea-7ec61e46c848
 md"""
@@ -357,23 +361,17 @@ md"""
 
 # ╔═╡ 14685a69-e457-4a95-b66c-61b3d26b563b
 md"""
-We next shape this into a [NearestNeighbors.jl](https://github.com/KristofferC/NearestNeighbors.jl)-friendly format to find which pair of triangles (one from each image) are the closest in this invariant space, and stores it in `sol1` and `sol2`, respectively.
+We next feed this into [NearestNeighbors.jl](https://github.com/KristofferC/NearestNeighbors.jl) to find which pair of triangles (one from each image) are the closest in this invariant space, and store it in `sol₁` and `sol₂`, respectively.
 """
 
-# ╔═╡ f11372c0-9741-4a63-bf13-2e09418eae79
-A = stack(tri_invars1)
-
-# ╔═╡ 9d77cef2-1c85-4f26-a8d2-0d49648ba18a
-B = stack(tri_invars2)
-
 # ╔═╡ e8304e32-a7f0-40d2-8562-0f7acd6e78db
-idxs, dists = nn(KDTree(A), B)
+idxs, dists = nn(KDTree(ℳ₁), ℳ₂)
 
 # ╔═╡ 6f831149-e764-469d-8a3e-710cd6c45d3a
-ixb = argmin(dists)
+idx₂ = argmin(dists)
 
 # ╔═╡ 35415dd4-0986-44e5-a6f7-5339d897d008
-ixa = idxs[ixb]
+idx₁ = idxs[idx₂]
 
 # ╔═╡ d8b0a56c-c969-4e4d-9f59-46e5ecbc1d4e
 md"""
@@ -381,10 +379,10 @@ After performing the match, here are our winners:
 """
 
 # ╔═╡ 610030d8-2826-4a98-914f-c90d4ac858df
-sol1 = collect(C1)[ixa]
+sol₁ = collect(C₁)[idx₁] |> Table
 
 # ╔═╡ 0e914303-7b2a-4108-a931-f30088ffa74e
-sol2 = collect(C2)[ixb]
+sol₂ = collect(C₂)[idx₂] |> Table
 
 # ╔═╡ 33d9d99d-17e8-4ab4-a2b2-d70ee12bdc34
 md"""
@@ -397,14 +395,14 @@ let
 		xaxis = attr(title="L3/L2"),
 		yaxis = attr(title="L2/L1"),
 	)
-	p1 = scatter(x=first.(tri_invars1), y=last.(tri_invars1);
+	p1 = scatter(x=ℳ₁[1, :], y=ℳ₁[2, :];
 		mode = :markers,
-		name = "img1",
+		name = "img₁",
 	)
-	p2 = scatter(x=first.(tri_invars2), y=last.(tri_invars2);
+	p2 = scatter(x=ℳ₂[1, :], y=ℳ₂[2, :];
 		mode = :markers,
 		marker = attr(symbol="circle-open", size=10),
-		name = "img2",
+		name = "img₂",
 	)
 
 	plot([p1, p2], l)
@@ -418,15 +416,15 @@ Now that we have our point-to-point correspondence, we can apply our affine tran
 """
 
 # ╔═╡ 38beec3b-4e05-4973-8f8d-1574154164dc
-point_map = map(sol1, sol2) do sol1i, sol2i
-	[sol2i.xcenter, sol2i.ycenter] => [sol1i.xcenter, sol1i.ycenter]
+point_map = map(sol₁, sol₂) do source₁, source₂
+	[source₂.xcenter, source₂.ycenter] => [source₁.xcenter, source₁.ycenter]
 end
 
 # ╔═╡ a72413e0-cdd9-49bf-8fde-e10f18380fae
 tfm = kabsch(last.(point_map) => first.(point_map); scale=false)
 
 # ╔═╡ 471ee5dd-0ee0-4de9-8d0f-11285687b17b
-img2_aligned_julia = shareheader(img2, warp(img2, tfm, axes(img1)));
+img₂_aligned_julia = shareheader(img₂, warp(img₂, tfm, axes(img₁)));
 
 # ╔═╡ 1c3c46d7-37cc-4135-97e6-a28c34c295c2
 md"""
@@ -435,6 +433,13 @@ md"""
 
 # ╔═╡ b104c98b-462d-4e92-8fb5-9ef1e99dc19d
 TableOfContents(; depth=4)
+
+# ╔═╡ 04d5a4fe-b806-44c0-bfb9-bac395c5eee3
+# Global colorbar lims
+const ZMIN, ZMAX = let
+	lims = Zscale(contrast=0.4).((img₁, img₂))
+	minimum(first, lims), maximum(last, lims)
+end
 
 # ╔═╡ faeaf89c-5f9c-4baa-aebf-47cdbcb5aa88
 md"""
@@ -489,7 +494,7 @@ let
 		yaxis = attr(title="Y"),
 	)
 	p = plot(trace_hm(img; colorbar_x=1.0), l)
-	relayout!(p; shapes=circ.(aps_all))
+	relayout!(p; shapes=circ.(aps))
 	p
 end
 
@@ -500,12 +505,12 @@ let
 		yaxis = attr(title="Y"),
 	)
 	p = plot(trace_hm(img; colorbar_x=1.0), l)
-	relayout!(p; shapes=circ2.(phot))
+	relayout!(p; shapes=circ2.(phot_selected))
 	p
 end
 
 # ╔═╡ 8dc0c5a1-9e14-49bf-8ccc-fba15a0b5783
-function plot_pair(img1, img2; column_titles=["img1", "img2"])
+function plot_pair(img₁, img₂; column_titles=["img₁", "img₂"])
 	# Set up some subplots
 	fig = make_subplots(;
 		rows = 1,	
@@ -519,8 +524,8 @@ function plot_pair(img1, img2; column_titles=["img1", "img2"])
 	update_annotations!(fig, font_size=14)
 	
 	# Manually place the colorbars so they don't clash
-	add_trace!(fig, trace_hm(img1; colorbar_x=0.45), col=1)
-	add_trace!(fig, trace_hm(img2; colorbar_x=1), col=2)
+	add_trace!(fig, trace_hm(img₁; colorbar_x=0.45), col=1)
+	add_trace!(fig, trace_hm(img₂; colorbar_x=1), col=2)
 
 	# Keep the images true to size
 	update_xaxes!(fig, matches="x", scaleanchor=:y, title="X (pixels)")
@@ -534,16 +539,16 @@ function plot_pair(img1, img2; column_titles=["img1", "img2"])
 end
 
 # ╔═╡ 878a9b8e-5fb8-4124-9cee-39fa0c1a2830
-plot_pair(img1, img2)
+plot_pair(img₁, img₂)
 
 # ╔═╡ 552877dd-5a69-414a-9ff3-c338f46f90f6
-plot_pair(img1, img2_aligned_python;
-	column_titles = ["img1", "img2_aligned_python"],
+plot_pair(img₁, img₂_aligned_python;
+	column_titles = ["img₁", "img₂_aligned_python"],
 )
 
 # ╔═╡ c7d50f65-f89e-4169-bfee-ea008fb37309
-plot_pair(img1, img2_aligned_julia;
-	column_titles = ["img1", "img2_aligned_julia"],
+plot_pair(img₁, img₂_aligned_julia;
+	column_titles = ["img₁", "img₂_aligned_julia"],
 )
 
 # ╔═╡ 10d3f8a9-534d-4c4d-bd61-c44a9786df9d
@@ -2355,15 +2360,14 @@ version = "0.41.3+0"
 # ╟─4d73d418-c2cf-4ecf-85ac-a8f712dbfcb2
 # ╠═7b8e7c01-b379-46c8-b63d-02d3f0b39f8a
 # ╠═d2567180-8f02-4f49-a53c-dc936cfed048
-# ╠═04d5a4fe-b806-44c0-bfb9-bac395c5eee3
-# ╠═bf89de69-e121-4d05-aaf9-5869ef792938
-# ╠═878a9b8e-5fb8-4124-9cee-39fa0c1a2830
+# ╟─878a9b8e-5fb8-4124-9cee-39fa0c1a2830
+# ╟─8dddb9a9-9b03-4f2d-b724-4c7bfd2e87f7
 # ╟─9b8176d9-cef9-4662-8c8e-28711911ba49
 # ╠═8dc89287-e591-4f94-86b0-3b476188d2a8
 # ╠═1d580de0-664c-4d78-a99a-4ff57130a735
 # ╠═f2c2c895-fe77-4951-8d3d-5ea51cca9bad
 # ╠═3b3b9605-b77e-42d4-a9be-f9b158259709
-# ╠═552877dd-5a69-414a-9ff3-c338f46f90f6
+# ╟─552877dd-5a69-414a-9ff3-c338f46f90f6
 # ╟─b02f4d0f-c09a-4286-9f64-97b89e8905d3
 # ╟─f15b53cb-af41-4be5-9905-cc49eacce43c
 # ╟─1ed0ee8b-413a-4c4d-9046-cc0a7bce5779
@@ -2381,7 +2385,7 @@ version = "0.41.3+0"
 # ╟─7edea5b2-75e9-42df-bef0-092b03a6dc72
 # ╟─c005beb9-436e-4444-a4f2-21d209888640
 # ╟─fc87b633-825a-4333-b54b-9508c0e8dcfb
-# ╠═48aada3c-1b0e-442d-9b84-5c9fa9b18e14
+# ╟─48aada3c-1b0e-442d-9b84-5c9fa9b18e14
 # ╟─da1a922c-bad9-4463-b353-039c342c09d2
 # ╟─1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
 # ╠═227768ad-f2e5-4345-9ae8-6ee24673caf8
@@ -2392,7 +2396,7 @@ version = "0.41.3+0"
 # ╟─5790765b-874f-41bb-b6ec-e77c42ea3928
 # ╟─bf72d0c4-4aa9-4fee-ad7e-aff177c69a79
 # ╟─1ec2a431-a2c4-45aa-9558-be35f1e77d56
-# ╠═8fd2bef1-c3ef-4192-80d1-5736f2b03fae
+# ╠═c3367906-18fb-4b7a-bdc7-c30dbfdb1c4e
 # ╠═8dd5d6e7-df76-4783-8870-73213fe70c32
 # ╟─00ae774d-1c82-4a7c-a53f-f9845c97b441
 # ╟─a1f67287-86eb-4dd2-acaa-768d77a32a93
@@ -2401,13 +2405,11 @@ version = "0.41.3+0"
 # ╟─7bb7af71-20be-4eeb-a33b-be22d0f94abc
 # ╠═4c4cc02d-ac73-484b-8970-ecb74cf076cb
 # ╠═013678c2-8b72-4c0e-a744-9ac165c3fa32
-# ╟─6beea3bc-18f7-48bd-9fb7-4cc6cef8675a
-# ╟─0677443f-0ac0-4b62-9afe-872f7c5fca91
-# ╟─b56957fc-1d90-468d-a78a-348ce6c30bb9
+# ╠═6beea3bc-18f7-48bd-9fb7-4cc6cef8675a
+# ╠═0677443f-0ac0-4b62-9afe-872f7c5fca91
+# ╠═b56957fc-1d90-468d-a78a-348ce6c30bb9
 # ╟─3db56a63-0fd1-4756-a1ea-7ec61e46c848
 # ╟─14685a69-e457-4a95-b66c-61b3d26b563b
-# ╠═f11372c0-9741-4a63-bf13-2e09418eae79
-# ╠═9d77cef2-1c85-4f26-a8d2-0d49648ba18a
 # ╠═e8304e32-a7f0-40d2-8562-0f7acd6e78db
 # ╠═6f831149-e764-469d-8a3e-710cd6c45d3a
 # ╠═35415dd4-0986-44e5-a6f7-5339d897d008
@@ -2420,9 +2422,10 @@ version = "0.41.3+0"
 # ╠═38beec3b-4e05-4973-8f8d-1574154164dc
 # ╠═a72413e0-cdd9-49bf-8fde-e10f18380fae
 # ╠═471ee5dd-0ee0-4de9-8d0f-11285687b17b
-# ╠═c7d50f65-f89e-4169-bfee-ea008fb37309
+# ╟─c7d50f65-f89e-4169-bfee-ea008fb37309
 # ╟─1c3c46d7-37cc-4135-97e6-a28c34c295c2
 # ╠═b104c98b-462d-4e92-8fb5-9ef1e99dc19d
+# ╠═04d5a4fe-b806-44c0-bfb9-bac395c5eee3
 # ╟─faeaf89c-5f9c-4baa-aebf-47cdbcb5aa88
 # ╟─385ea3fc-58b9-454f-8513-14c7681217c9
 # ╟─833f5c31-a9ae-4249-b4a9-14fc539716d2
