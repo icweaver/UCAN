@@ -16,39 +16,24 @@ macro bind(def, element)
     #! format: on
 end
 
-# ╔═╡ 58b5e7d5-3c5c-4ce1-8813-890e84e0a033
-using Printf
-
-# ╔═╡ 5ff90773-ee80-4e5a-a95e-e644c89c36bc
-using NearestNeighbors
-
-# ╔═╡ b75e6595-d097-462a-8ab6-cb85ab181011
-using Distances
-
-# ╔═╡ e3ae42e7-fa75-4ed9-89eb-c40b5be590b2
-using Combinatorics, LinearAlgebra
-
-# ╔═╡ 1bb0e24e-d0e9-4424-98d4-bc495ad770f3
-using PSFModels
-
-# ╔═╡ f078cd88-7a6f-41fc-bfa6-bbdbd5313622
-using Transducers
-
-# ╔═╡ a12f0768-c260-431a-9b8f-fdb029216b3d
-using TypedTables
-
-# ╔═╡ ef19d29d-736c-45d9-a148-835e5ee48309
-using Photometry
-
 # ╔═╡ 305e3688-5ee9-11f0-0325-d384980c3a10
 begin
-	using AstroImages, PlutoPlotly, PlutoUI
-	using CoordinateTransformations, ImageTransformations
+	# Data I/O
+	using AstroImages, PlutoPlotly, PlutoUI, TypedTables
+	
+	# Source extraction
+	using Photometry, PSFModels, Transducers
 
+	# Image registration
+	using Combinatorics, Distances, NearestNeighbors
+
+	# Image transformation
+	using CoordinateTransformations, ImageTransformations
+	
+	# Python comparison
 	using CondaPkg
 	CondaPkg.add_pip("astroalign")
 	CondaPkg.add("numpy"; version="<2")
-
 	using PythonCall
 end
 
@@ -128,9 +113,12 @@ md"""
 
 # ╔═╡ 1ed0ee8b-413a-4c4d-9046-cc0a7bce5779
 md"""
-### Detect sources
+### Detect
 
 It looks like `astroalign` uses [`sep`](https://github.com/quatrope/astroalign/blob/d7463b4ca48fc35f3d86a72343015491cdf20d6a/astroalign.py#L537) under the hood for its source extraction, so we'll use a combination of [`Photometry.extract_sources`](https://juliaastro.org/Photometry/stable/detection/#Photometry.Detection.extract_sources) to pull out the regions around the brightest pixels, and [`PSFModels.fit`](https://juliaastro.org/PSFModels/stable/api/#PSFModels.fit) to just pick out the ones that look like stars (vs. hot pixels, artifacts, etc.).
+
+!!! todo
+	Explore other point source detection algorithms in Julia.
 """
 
 # ╔═╡ 4305687e-35a6-4515-b06a-48b0d45497af
@@ -268,7 +256,7 @@ Not perfect, but these will serve as our control points for performing image ali
 
 # ╔═╡ 5790765b-874f-41bb-b6ec-e77c42ea3928
 md"""
-### Match sources
+### Match
 
 This is the secret sauce: _Beroiz, Cabral, & Sanchez_ use the fact that triangles can be uniquely characterized to match sets of three stars (asterisms) between images. This point-to-point correspondence then gives us everything we need to compute the affine transformation between them.
 
@@ -284,15 +272,22 @@ For this implementation, they use the invariant ``\mathscr M`` (the pair of two 
 
 So, game plan:
 
-1. Calculate this invariant for all ``N\choose{3}`` possible combinations of ``N`` control points per image.
-1. Calculate the pairwise distances between all ``\mathscr M``.
-1. Take the closest one.
+1. Identify up to ``N`` control points in each image (could be less depending on viewing conditions).
+1. Calculate the invariant ``\mathscr M`` for all ``N\choose{3}`` possible combinations of triangles made up of these control points.
+1. Calculate the pairwise distances between them and choose the closest pair. This will be our point-to-point correspondence.
 """
 
 # ╔═╡ bf72d0c4-4aa9-4fee-ad7e-aff177c69a79
 md"""
 !!! todo
 	Add graceful handling of duplicate matches from, e.g., hot pixels that managed to sneak through.
+"""
+
+# ╔═╡ 1ec2a431-a2c4-45aa-9558-be35f1e77d56
+md"""
+#### Step 1: Identify control points
+
+Luckily, we've automated this already with our source extraction routine, which is summarized in `get_phot`:
 """
 
 # ╔═╡ 00ae774d-1c82-4a7c-a53f-f9845c97b441
@@ -308,23 +303,28 @@ phot1 = filter(get_phot(img1)) do source
 	1 ≤ source.psf_fwhm
 end |> x -> first(x, N)
 
-# ╔═╡ f2d3b19f-a265-4b42-af0b-ee78eb0346f2
-# C1 = combinations(first(sources1, 10), 3)
-C1 = combinations(phot1, 3)
-
-# ╔═╡ a213f18f-bb50-4c6c-8f9d-fe80c44715b3
-length(C1)
-
 # ╔═╡ 8dd5d6e7-df76-4783-8870-73213fe70c32
 phot2 = filter(get_phot(img2)) do source
 	1 ≤ source.psf_fwhm
 end |> x -> first(x, N)
 
+# ╔═╡ a1f67287-86eb-4dd2-acaa-768d77a32a93
+md"""
+#### Step 2: Calculate invariants
+
+Let's count 'em up
+"""
+
+# ╔═╡ f2d3b19f-a265-4b42-af0b-ee78eb0346f2
+C1 = combinations(phot1, 3)
+
 # ╔═╡ f6060373-995c-4630-a253-cc794dd3c852
 C2 = combinations(phot2, 3)
 
-# ╔═╡ 6bac5b7f-1064-4339-8644-315452a19e2c
-length(C2)
+# ╔═╡ 7bb7af71-20be-4eeb-a33b-be22d0f94abc
+md"""
+and calculate it out
+"""
 
 # ╔═╡ b56957fc-1d90-468d-a78a-348ce6c30bb9
 edist(p1, p2) = evaluate(Euclidean(), p1, p2)
@@ -345,31 +345,40 @@ function tri_invars(C)
 end
 
 # ╔═╡ 4c4cc02d-ac73-484b-8970-ecb74cf076cb
-tri_invars1 = tri_invars(C1);
+tri_invars1 = tri_invars(C1)
+
+# ╔═╡ 013678c2-8b72-4c0e-a744-9ac165c3fa32
+tri_invars2 = tri_invars(C2)
+
+# ╔═╡ 3db56a63-0fd1-4756-a1ea-7ec61e46c848
+md"""
+#### Step 3: Select nearest
+"""
+
+# ╔═╡ 14685a69-e457-4a95-b66c-61b3d26b563b
+md"""
+We next shape this into a [NearestNeighbors.jl](https://github.com/KristofferC/NearestNeighbors.jl)-friendly format to find which pair of triangles (one from each image) are the closest in this invariant space, and stores it in `sol1` and `sol2`, respectively.
+"""
 
 # ╔═╡ f11372c0-9741-4a63-bf13-2e09418eae79
 A = stack(tri_invars1)
-
-# ╔═╡ 3999b3e8-7ffb-4c6a-9009-2ee75063a695
-kdtree = KDTree(A)
-
-# ╔═╡ 013678c2-8b72-4c0e-a744-9ac165c3fa32
-tri_invars2 = tri_invars(C2);
 
 # ╔═╡ 9d77cef2-1c85-4f26-a8d2-0d49648ba18a
 B = stack(tri_invars2)
 
 # ╔═╡ e8304e32-a7f0-40d2-8562-0f7acd6e78db
-idxs, dists = nn(kdtree, B)
+idxs, dists = nn(KDTree(A), B)
 
-# ╔═╡ 8a0e3443-a7e0-41f8-96b7-827309e300cf
+# ╔═╡ 6f831149-e764-469d-8a3e-710cd6c45d3a
 ixb = argmin(dists)
 
 # ╔═╡ 35415dd4-0986-44e5-a6f7-5339d897d008
 ixa = idxs[ixb]
 
-# ╔═╡ 384c55f3-a38b-473e-a773-55665fddce26
-@printf("A[:,%i] = (%.4f, %.4f)\n", ixa, A[:,ixa]...)   # splatted values supported
+# ╔═╡ d8b0a56c-c969-4e4d-9f59-46e5ecbc1d4e
+md"""
+After performing the match, here are our winners:
+"""
 
 # ╔═╡ 610030d8-2826-4a98-914f-c90d4ac858df
 sol1 = collect(C1)[ixa]
@@ -377,31 +386,36 @@ sol1 = collect(C1)[ixa]
 # ╔═╡ 0e914303-7b2a-4108-a931-f30088ffa74e
 sol2 = collect(C2)[ixb]
 
-# ╔═╡ 1b4ec718-5469-4f31-9fbe-73aeb9234a89
-@printf("Minimum distance = %.5f, at:", dists[ixb])
-
-# ╔═╡ 1c59085c-e19d-4c91-9be4-110830f52758
-@printf("B[:,%i] = (%.4f, %.4f)\n", ixb, B[:,ixb]...)   #
+# ╔═╡ 33d9d99d-17e8-4ab4-a2b2-d70ee12bdc34
+md"""
+For completeness, we also plot all contenders below. Compare to Fig 1. in [_Beroiz, M., Cabral, J. B., & Sanchez, B. (2020)_](https://arxiv.org/pdf/1909.02946)
+"""
 
 # ╔═╡ 1ab16d49-d92d-4c12-8d61-91ce3f417e16
 let
-	p1 = scatter(x=first.(tri_invars1), y=last.(tri_invars1); mode=:markers)
+	l = Layout(;
+		xaxis = attr(title="L3/L2"),
+		yaxis = attr(title="L2/L1"),
+	)
+	p1 = scatter(x=first.(tri_invars1), y=last.(tri_invars1);
+		mode = :markers,
+		name = "img1",
+	)
 	p2 = scatter(x=first.(tri_invars2), y=last.(tri_invars2);
 		mode = :markers,
 		marker = attr(symbol="circle-open", size=10),
+		name = "img2",
 	)
 
-	plot([p1, p2])
+	plot([p1, p2], l)
 end
 
-# ╔═╡ 6d0d3b02-4717-4a29-838f-3a05fa94b950
-# img2 points => img1 points
-# This is the bit I'm hoping to automate
-# point_map = (
-# 	[873, 1215] => [825, 947],
-# 	[939, 959] => [1029, 779],
-# 	[1149, 1017] => [1163, 949],
-# )
+# ╔═╡ 38308f51-6918-4cf9-9d5c-fc8133cb47d7
+md"""
+### Transform
+
+Now that we have our point-to-point correspondence, we can apply our affine transformation and produce our aligned image.
+"""
 
 # ╔═╡ 38beec3b-4e05-4973-8f8d-1574154164dc
 point_map = map(sol1, sol2) do sol1i, sol2i
@@ -409,14 +423,14 @@ point_map = map(sol1, sol2) do sol1i, sol2i
 end
 
 # ╔═╡ a72413e0-cdd9-49bf-8fde-e10f18380fae
-tfm = kabsch(last.(point_map) => first.(point_map); scale=true)
+tfm = kabsch(last.(point_map) => first.(point_map); scale=false)
 
 # ╔═╡ 471ee5dd-0ee0-4de9-8d0f-11285687b17b
 img2_aligned_julia = shareheader(img2, warp(img2, tfm, axes(img1)));
 
 # ╔═╡ 1c3c46d7-37cc-4135-97e6-a28c34c295c2
 md"""
-# 📦 Notebook setup
+# 🔧 Notebook setup
 """
 
 # ╔═╡ b104c98b-462d-4e92-8fb5-9ef1e99dc19d
@@ -470,14 +484,22 @@ end
 
 # ╔═╡ a6556b3e-0eae-4602-9063-dd55c0f6c6bb
 let
-	p = plot(trace_hm(img; colorbar_x=1.0))
+	l = Layout(;
+		xaxis = attr(title="X"),
+		yaxis = attr(title="Y"),
+	)
+	p = plot(trace_hm(img; colorbar_x=1.0), l)
 	relayout!(p; shapes=circ.(aps_all))
 	p
 end
 
 # ╔═╡ f435b31b-1999-431c-b0ac-a836c14cdc71
 let
-	p = plot(trace_hm(img; colorbar_x=1.0))
+	l = Layout(;
+		xaxis = attr(title="X"),
+		yaxis = attr(title="Y"),
+	)
+	p = plot(trace_hm(img; colorbar_x=1.0), l)
 	relayout!(p; shapes=circ2.(phot))
 	p
 end
@@ -524,6 +546,11 @@ plot_pair(img1, img2_aligned_julia;
 	column_titles = ["img1", "img2_aligned_julia"],
 )
 
+# ╔═╡ 10d3f8a9-534d-4c4d-bd61-c44a9786df9d
+md"""
+## Packages 📦
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -533,13 +560,11 @@ CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 ImageTransformations = "02fcd773-0e25-5acc-982a-7f6622650795"
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 PSFModels = "9ba017d1-7760-46cd-84a3-1e79e9ae9ddc"
 Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
@@ -567,7 +592,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "8571d76ee9c4e13021b1e052e3692df84a777511"
+project_hash = "6726382ce235214ec498cfacbe2638e06d9e4756"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "be7ae030256b8ef14a441726c4c37766b90b93a3"
@@ -2344,8 +2369,8 @@ version = "0.41.3+0"
 # ╟─1ed0ee8b-413a-4c4d-9046-cc0a7bce5779
 # ╟─4305687e-35a6-4515-b06a-48b0d45497af
 # ╠═5cf7c94a-1f27-4ec9-a1f4-6828997a1fbb
-# ╠═0c1c9b70-7db0-4975-b0a2-64d21490ed70
 # ╠═de352fd2-15ef-4fc4-981f-b5dc09328402
+# ╠═0c1c9b70-7db0-4975-b0a2-64d21490ed70
 # ╠═08e09b85-1a27-47a8-85ce-6697016ef730
 # ╟─a6556b3e-0eae-4602-9063-dd55c0f6c6bb
 # ╟─b3898685-b7f1-4681-bdb0-34b4e4662e7a
@@ -2364,52 +2389,46 @@ version = "0.41.3+0"
 # ╟─d76f82ca-4430-48ab-88cb-fd90b5a19fca
 # ╟─f435b31b-1999-431c-b0ac-a836c14cdc71
 # ╟─a9ddd793-83dd-4606-a2df-ffceef75cf37
-# ╠═5790765b-874f-41bb-b6ec-e77c42ea3928
+# ╟─5790765b-874f-41bb-b6ec-e77c42ea3928
 # ╟─bf72d0c4-4aa9-4fee-ad7e-aff177c69a79
-# ╟─00ae774d-1c82-4a7c-a53f-f9845c97b441
+# ╟─1ec2a431-a2c4-45aa-9558-be35f1e77d56
 # ╠═8fd2bef1-c3ef-4192-80d1-5736f2b03fae
-# ╠═f2d3b19f-a265-4b42-af0b-ee78eb0346f2
-# ╠═a213f18f-bb50-4c6c-8f9d-fe80c44715b3
 # ╠═8dd5d6e7-df76-4783-8870-73213fe70c32
+# ╟─00ae774d-1c82-4a7c-a53f-f9845c97b441
+# ╟─a1f67287-86eb-4dd2-acaa-768d77a32a93
+# ╠═f2d3b19f-a265-4b42-af0b-ee78eb0346f2
 # ╠═f6060373-995c-4630-a253-cc794dd3c852
-# ╠═6bac5b7f-1064-4339-8644-315452a19e2c
-# ╠═6beea3bc-18f7-48bd-9fb7-4cc6cef8675a
+# ╟─7bb7af71-20be-4eeb-a33b-be22d0f94abc
 # ╠═4c4cc02d-ac73-484b-8970-ecb74cf076cb
-# ╠═f11372c0-9741-4a63-bf13-2e09418eae79
 # ╠═013678c2-8b72-4c0e-a744-9ac165c3fa32
+# ╟─6beea3bc-18f7-48bd-9fb7-4cc6cef8675a
+# ╟─0677443f-0ac0-4b62-9afe-872f7c5fca91
+# ╟─b56957fc-1d90-468d-a78a-348ce6c30bb9
+# ╟─3db56a63-0fd1-4756-a1ea-7ec61e46c848
+# ╟─14685a69-e457-4a95-b66c-61b3d26b563b
+# ╠═f11372c0-9741-4a63-bf13-2e09418eae79
 # ╠═9d77cef2-1c85-4f26-a8d2-0d49648ba18a
-# ╠═3999b3e8-7ffb-4c6a-9009-2ee75063a695
 # ╠═e8304e32-a7f0-40d2-8562-0f7acd6e78db
+# ╠═6f831149-e764-469d-8a3e-710cd6c45d3a
 # ╠═35415dd4-0986-44e5-a6f7-5339d897d008
-# ╠═8a0e3443-a7e0-41f8-96b7-827309e300cf
-# ╠═58b5e7d5-3c5c-4ce1-8813-890e84e0a033
-# ╠═1b4ec718-5469-4f31-9fbe-73aeb9234a89
-# ╠═384c55f3-a38b-473e-a773-55665fddce26
-# ╠═1c59085c-e19d-4c91-9be4-110830f52758
+# ╟─d8b0a56c-c969-4e4d-9f59-46e5ecbc1d4e
 # ╠═610030d8-2826-4a98-914f-c90d4ac858df
 # ╠═0e914303-7b2a-4108-a931-f30088ffa74e
-# ╠═5ff90773-ee80-4e5a-a95e-e644c89c36bc
-# ╠═1ab16d49-d92d-4c12-8d61-91ce3f417e16
-# ╠═b75e6595-d097-462a-8ab6-cb85ab181011
-# ╠═b56957fc-1d90-468d-a78a-348ce6c30bb9
-# ╠═0677443f-0ac0-4b62-9afe-872f7c5fca91
-# ╠═6d0d3b02-4717-4a29-838f-3a05fa94b950
+# ╟─33d9d99d-17e8-4ab4-a2b2-d70ee12bdc34
+# ╟─1ab16d49-d92d-4c12-8d61-91ce3f417e16
+# ╟─38308f51-6918-4cf9-9d5c-fc8133cb47d7
 # ╠═38beec3b-4e05-4973-8f8d-1574154164dc
 # ╠═a72413e0-cdd9-49bf-8fde-e10f18380fae
 # ╠═471ee5dd-0ee0-4de9-8d0f-11285687b17b
 # ╠═c7d50f65-f89e-4169-bfee-ea008fb37309
 # ╟─1c3c46d7-37cc-4135-97e6-a28c34c295c2
 # ╠═b104c98b-462d-4e92-8fb5-9ef1e99dc19d
-# ╠═faeaf89c-5f9c-4baa-aebf-47cdbcb5aa88
-# ╠═385ea3fc-58b9-454f-8513-14c7681217c9
-# ╠═833f5c31-a9ae-4249-b4a9-14fc539716d2
-# ╠═25809c3f-df3c-4eb3-88ca-1b6ecd8a734d
-# ╠═8dc0c5a1-9e14-49bf-8ccc-fba15a0b5783
-# ╠═e3ae42e7-fa75-4ed9-89eb-c40b5be590b2
-# ╠═1bb0e24e-d0e9-4424-98d4-bc495ad770f3
-# ╠═f078cd88-7a6f-41fc-bfa6-bbdbd5313622
-# ╠═a12f0768-c260-431a-9b8f-fdb029216b3d
-# ╠═ef19d29d-736c-45d9-a148-835e5ee48309
+# ╟─faeaf89c-5f9c-4baa-aebf-47cdbcb5aa88
+# ╟─385ea3fc-58b9-454f-8513-14c7681217c9
+# ╟─833f5c31-a9ae-4249-b4a9-14fc539716d2
+# ╟─25809c3f-df3c-4eb3-88ca-1b6ecd8a734d
+# ╟─8dc0c5a1-9e14-49bf-8ccc-fba15a0b5783
+# ╟─10d3f8a9-534d-4c4d-bd61-c44a9786df9d
 # ╠═305e3688-5ee9-11f0-0325-d384980c3a10
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
