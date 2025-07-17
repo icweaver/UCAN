@@ -61,7 +61,7 @@ img₂ = load(download("https://www.dropbox.com/scl/fi/uyv0zyx8g8ihbo21qtj7u/mgc
 
 # ╔═╡ 8dddb9a9-9b03-4f2d-b724-4c7bfd2e87f7
 md"""
-In this particular case, `img₂` is rotated clockwise and shifted vertically relative to `img₁`. Let's fix it.
+In this particular case, `img₂` is rotated clockwise, and shifted vertically upwards and horizontally to the left relative to `img₁` in the above plot. Let's fix it.
 """
 
 # ╔═╡ 9b8176d9-cef9-4662-8c8e-28711911ba49
@@ -232,11 +232,6 @@ end
 # ╔═╡ 48aada3c-1b0e-442d-9b84-5c9fa9b18e14
 inspect_psf(phot[i])
 
-# ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
-md"""
-Looks to be fitting alright! Let's just take up to the $(length(phot)) largest one next based on their FWHM:
-"""
-
 # ╔═╡ d921ef03-31db-47a3-92db-f07c32c2f9c8
 N = 10 # Max number of sources to select, based on FWHM criteria
 
@@ -244,6 +239,11 @@ N = 10 # Max number of sources to select, based on FWHM criteria
 phot_selected = filter(phot) do source
 	1.5 ≤ source.psf_fwhm
 end |> x -> first(x, N)
+
+# ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
+md"""
+Looks to be fitting alright! Let's just take up to the $(length(phot_selected)) largest ones next based on their FWHM:
+"""
 
 # ╔═╡ d76f82ca-4430-48ab-88cb-fd90b5a19fca
 md"""
@@ -303,12 +303,12 @@ function get_phot(img; nsigma=1, r=16)
 end
 
 # ╔═╡ c3367906-18fb-4b7a-bdc7-c30dbfdb1c4e
-phot_selected₁ = filter(get_phot(img₁)) do source
+phot_selected₁ = filter!(get_phot(img₁)) do source
 	1.5 ≤ source.psf_fwhm
 end |> x -> first(x, N)
 
 # ╔═╡ 8dd5d6e7-df76-4783-8870-73213fe70c32
-phot_selected₂ = filter(get_phot(img₂)) do source
+phot_selected₂ = filter!(get_phot(img₂)) do source
 	1.5 ≤ source.psf_fwhm
 end |> x -> first(x, N)
 
@@ -316,7 +316,7 @@ end |> x -> first(x, N)
 md"""
 #### Step 2: Calculate invariants
 
-Let's count 'em up
+Let's count 'em up:
 """
 
 # ╔═╡ f2d3b19f-a265-4b42-af0b-ee78eb0346f2
@@ -327,32 +327,27 @@ C₂ = combinations(phot_selected₂, 3)
 
 # ╔═╡ 7bb7af71-20be-4eeb-a33b-be22d0f94abc
 md"""
-and calculate it out
+and calculate it out:
 """
 
-# ╔═╡ b56957fc-1d90-468d-a78a-348ce6c30bb9
-edist(p1, p2) = evaluate(Euclidean(), p1, p2)
-
-# ╔═╡ 0677443f-0ac0-4b62-9afe-872f7c5fca91
-function tri_hash(tri)
-	a, b, c = tri
-	Ls = sort!([edist(a, b), edist(b, c), edist(a, c)])
-	ℳ = (Ls[3] / Ls[2], Ls[2] / Ls[1])
-end
-
 # ╔═╡ 6beea3bc-18f7-48bd-9fb7-4cc6cef8675a
-function tri_invars(C)
+function triangle_invariants(C)
 	map(C) do (pa, pb, pc)
-		tri = (pa.ycenter, pa.xcenter), (pb.ycenter, pb.xcenter), (pc.ycenter, pc.xcenter)
-		tri_hash(tri)
+		a, b, c = (
+			(pa.ycenter, pa.xcenter),
+			(pb.ycenter, pb.xcenter),
+			(pc.ycenter, pc.xcenter),
+		)
+		Ls = sort!([euclidean(a, b), euclidean(b, c), euclidean(a, c)])
+		ℳ = (Ls[3] / Ls[2], Ls[2] / Ls[1])
 	end |> stack
 end
 
 # ╔═╡ 4c4cc02d-ac73-484b-8970-ecb74cf076cb
-ℳ₁ = tri_invars(C₁)
+ℳ₁ = triangle_invariants(C₁)
 
 # ╔═╡ 013678c2-8b72-4c0e-a744-9ac165c3fa32
-ℳ₂ = tri_invars(C₂)
+ℳ₂ = triangle_invariants(C₂)
 
 # ╔═╡ 3db56a63-0fd1-4756-a1ea-7ec61e46c848
 md"""
@@ -425,6 +420,11 @@ tfm = kabsch(last.(point_map) => first.(point_map); scale=false)
 
 # ╔═╡ 471ee5dd-0ee0-4de9-8d0f-11285687b17b
 img₂_aligned_julia = shareheader(img₂, warp(img₂, tfm, axes(img₁)));
+
+# ╔═╡ b3fab579-e482-4aca-8573-2b63140b17c1
+md"""
+Looks pretty good!
+"""
 
 # ╔═╡ 1c3c46d7-37cc-4135-97e6-a28c34c295c2
 md"""
@@ -2396,18 +2396,16 @@ version = "0.41.3+0"
 # ╟─5790765b-874f-41bb-b6ec-e77c42ea3928
 # ╟─bf72d0c4-4aa9-4fee-ad7e-aff177c69a79
 # ╟─1ec2a431-a2c4-45aa-9558-be35f1e77d56
+# ╠═00ae774d-1c82-4a7c-a53f-f9845c97b441
 # ╠═c3367906-18fb-4b7a-bdc7-c30dbfdb1c4e
 # ╠═8dd5d6e7-df76-4783-8870-73213fe70c32
-# ╟─00ae774d-1c82-4a7c-a53f-f9845c97b441
 # ╟─a1f67287-86eb-4dd2-acaa-768d77a32a93
 # ╠═f2d3b19f-a265-4b42-af0b-ee78eb0346f2
 # ╠═f6060373-995c-4630-a253-cc794dd3c852
 # ╟─7bb7af71-20be-4eeb-a33b-be22d0f94abc
+# ╠═6beea3bc-18f7-48bd-9fb7-4cc6cef8675a
 # ╠═4c4cc02d-ac73-484b-8970-ecb74cf076cb
 # ╠═013678c2-8b72-4c0e-a744-9ac165c3fa32
-# ╠═6beea3bc-18f7-48bd-9fb7-4cc6cef8675a
-# ╠═0677443f-0ac0-4b62-9afe-872f7c5fca91
-# ╠═b56957fc-1d90-468d-a78a-348ce6c30bb9
 # ╟─3db56a63-0fd1-4756-a1ea-7ec61e46c848
 # ╟─14685a69-e457-4a95-b66c-61b3d26b563b
 # ╠═e8304e32-a7f0-40d2-8562-0f7acd6e78db
@@ -2423,6 +2421,7 @@ version = "0.41.3+0"
 # ╠═a72413e0-cdd9-49bf-8fde-e10f18380fae
 # ╠═471ee5dd-0ee0-4de9-8d0f-11285687b17b
 # ╟─c7d50f65-f89e-4169-bfee-ea008fb37309
+# ╟─b3fab579-e482-4aca-8573-2b63140b17c1
 # ╟─1c3c46d7-37cc-4135-97e6-a28c34c295c2
 # ╠═b104c98b-462d-4e92-8fb5-9ef1e99dc19d
 # ╠═04d5a4fe-b806-44c0-bfb9-bac395c5eee3
