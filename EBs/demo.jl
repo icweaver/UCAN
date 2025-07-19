@@ -16,10 +16,18 @@ macro bind(def, element)
     #! format: on
 end
 
+# ╔═╡ 05a2c51b-8825-4d69-b017-f744702d957d
+using Photometry.Aperture: AbstractAperture
+
 # ╔═╡ 305e3688-5ee9-11f0-0325-d384980c3a10
 begin
+	# import Pkg
+
+	# Pkg.activate(Base.current_project())
+	
 	# Data I/O
 	using AstroImages, PlutoPlotly, PlutoUI, TypedTables
+	AstroImages.set_cmap!(:cividis)
 	
 	# Source extraction
 	using Photometry, PSFModels, Transducers
@@ -28,7 +36,7 @@ begin
 	using Combinatorics, Distances, NearestNeighbors
 
 	# Image transformation
-	using CoordinateTransformations, ImageTransformations
+	using CoordinateTransformations, ImageTransformations, Rotations
 	
 	# Python comparison
 	using CondaPkg
@@ -46,18 +54,66 @@ Like in the days of overhead transparencies
 
 # ╔═╡ 4d73d418-c2cf-4ecf-85ac-a8f712dbfcb2
 md"""
-## Load images 🖼️
+## Load images 📷
 
-Here are two sample images that we would like to align with eachother. Plate solving is expensive, so instead we will try a quicker approach using good ol' triangles; no WCS required.
+Here are two sample images that we would like to align with each other. Plate solving is expensive, so instead we will try a quicker approach using good ol' triangles; no WCS required. Throughout this notebook, we will use the convention that we transform `from` the second image `to` the first image.
 
 Credit: [_Beroiz, M., Cabral, J. B., & Sanchez, B. (2020)_](https://ui.adsabs.harvard.edu/abs/2020A%26C....3200384B/abstract)
 """
 
-# ╔═╡ 7b8e7c01-b379-46c8-b63d-02d3f0b39f8a
-img₁ = load(download("https://www.dropbox.com/scl/fi/vfn63d2afc7ekz1mr1cmv/mgcc3f_2024-03-25T05-55-37.966_TRANSIT.fits?rlkey=oj1dotng1vzfj7znnx9g87eh8&st=53aco5lw&dl=1"));
+# ╔═╡ 3633d1f6-f9cf-45dc-83d1-1e39353675ad
+# Modified from
+# https://github.com/JuliaAstro/PSFModels.jl/blob/main/test/fitting.jl
+function generate_model(model, params, inds)
+	cartinds = CartesianIndices(inds)
+	psf = model.(cartinds; params..., amp=30_000)
+	return psf .+ rand(1000:3000, size(psf))
+end
 
-# ╔═╡ d2567180-8f02-4f49-a53c-dc936cfed048
-img₂ = load(download("https://www.dropbox.com/scl/fi/uyv0zyx8g8ihbo21qtj7u/mgcc3f_2024-03-25T06-40-58.020_TRANSIT.fits?rlkey=ddj76nfg9anb7iao1hy1ew0zl&st=5nc7e0a1&dl=1"));
+# ╔═╡ 375abd89-3e45-470a-a634-2ee4ef3b8983
+const N_sources = 10
+
+# ╔═╡ bb62f132-ca33-448c-8f3d-2d216a147902
+img_size = (1:300, 1:300)
+
+# ╔═╡ 3698e25b-2e8f-42fc-bf1b-df5a7b3f70d4
+md"""
+### Generate some fake data
+
+For simplicity, we'll just create $(N_sources) Gaussian point sources in a $(length(first(img_size))) x $(length(last(img_size))) grid with some noise over the whole image. We can then check our fitted values against these "truth" values at the end.
+"""
+
+# ╔═╡ 22885d66-b682-4eed-a41c-273893284b14
+fwhms = rand(2:3:20, N_sources)
+
+# ╔═╡ 6d80964d-c2e5-4b59-b784-fda63bf2a429
+positions_to = rand(20:minimum(fwhms):280, N_sources, 2)
+
+# ╔═╡ 2d5aca8e-91ed-4392-9856-a7d4cd9c3bef
+positions_from = round.(Int, positions_to * RotMatrix2(π/8) .+  [-80 120])
+
+# ╔═╡ 5c63e233-bc3d-43ca-be9c-b54027a2c373
+sources_to = map(zip(eachrow(positions_to), fwhms)) do ((x, y), fwhm)
+	generate_model(gaussian, (; x, y, fwhm), img_size)
+end;
+
+# ╔═╡ 5cea66f7-1a2c-4686-96a2-ff5288749b49
+sources_from = map(zip(eachrow(positions_from), fwhms)) do ((x, y), fwhm)
+	generate_model(gaussian, (; x, y, fwhm), img_size)
+end
+
+# ╔═╡ f520a0cc-4a18-414a-a6ba-4a1328e8f7c6
+md"""
+### View
+
+We view our fake data below. Rerun the `fwhm` and/or `positions_to` field to generate new star fields.
+"""
+
+# ╔═╡ 98dca593-f0cf-4ea7-a44f-20721b490941
+img_to = sum(sources_to) |> AstroImage
+
+# ╔═╡ 5dd434ec-74e6-47e6-a5bc-1520e75a9673
+img_from = sum(sources_from) |> AstroImage
 
 # ╔═╡ 8dddb9a9-9b03-4f2d-b724-4c7bfd2e87f7
 md"""
@@ -88,14 +144,14 @@ end
 
 # ╔═╡ 1d580de0-664c-4d78-a99a-4ff57130a735
 registered_image, footprint = aa.register(
-	to_py(img₂),
-	to_py(img₁);
-	min_area = 25,
-	detection_sigma = 2,
-)
+	to_py(img_from),
+	to_py(img_to);
+	min_area = maximum(fwhms),
+	detection_sigma = 1,
+);
 
 # ╔═╡ 3b3b9605-b77e-42d4-a9be-f9b158259709
-img₂_aligned_python = shareheader(img₂, PyArray(registered_image));
+img_from_aligned_python = shareheader(img_from, PyArray(registered_image));
 
 # ╔═╡ b02f4d0f-c09a-4286-9f64-97b89e8905d3
 md"""
@@ -124,9 +180,12 @@ md"""
 Starting with `extract_sources` with some reasonable defaults wrapped in a convenience `get_sources` function we defined, we get the following candidate `sources` in our first image:
 """
 
+# ╔═╡ cae77a2c-0d38-4ee6-9984-6b1f4abbe5af
+img = img_to
+
 # ╔═╡ 5cf7c94a-1f27-4ec9-a1f4-6828997a1fbb
-function get_sources(img; box_size=(5, 5), nsigma=1)
-	clipped = sigma_clip(img, 1, fill=NaN)
+function get_sources(img; box_size=(3, 3), nsigma=1)
+	clipped = sigma_clip(copy(img), 1, fill=NaN)
 	bkg, bkg_rms = estimate_background(clipped, box_size)
 	subt = img .- bkg[axes(img)...]
 	errs = bkg
@@ -140,16 +199,21 @@ function get_sources(img; box_size=(5, 5), nsigma=1)
 	)
 end
 
-# ╔═╡ de352fd2-15ef-4fc4-981f-b5dc09328402
-img = img₁;
+# ╔═╡ 55245c66-c56f-4636-91e2-36134562e3cd
+const box_size = let
+	w = maximum(fwhms)
+	iseven(w) ? w + 1 : w 
+end
+
+# ╔═╡ 8e8d9f4c-720d-4460-9648-f6be815ca6f6
+const ap_radius = sum(fwhms) / length(fwhms)
 
 # ╔═╡ 0c1c9b70-7db0-4975-b0a2-64d21490ed70
 # Sources, background subtracted image, background
-sources, subt, errs = get_sources(img);
+sources, subt, errs = get_sources(img; box_size);
 
-# ╔═╡ 08e09b85-1a27-47a8-85ce-6697016ef730
-# Apertures, for plotting and photometry
-aps = CircularAperture.(sources.y, sources.x, 16)
+# ╔═╡ ba16f528-f067-43f6-a492-43365b64a5a2
+aps = CircularAperture.(sources.y, sources.x, ap_radius)
 
 # ╔═╡ b3898685-b7f1-4681-bdb0-34b4e4662e7a
 md"""
@@ -163,69 +227,68 @@ md"""
 [`Photometry.photometry`](https://juliaastro.org/Photometry/stable/apertures/#Photometry.Aperture.photometry) automatically computes aperture sums and returns them in a nice table for us. Below is a slightly modified version that also computes some PSF statistics for each source and stores them in `phot`.
 
 !!! todo
-	See if this can be upstreamed to Photometry.jl or maybe some other place.
+	See if this can be [upstreamed to Photometry.jl](https://github.com/JuliaAstro/Photometry.jl/pull/74) or maybe some other place.
 
 !!! note
 	Some PSF models will not converge, but I think that is to be expected for really noisy sources and is probably fine since they won't be included in the final filtered list anyway.
 """
 
-# ╔═╡ 4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
-function photometry2(aps::AbstractVector{<:Photometry.Aperture.AbstractAperture}, data::AbstractMatrix)
-    rows = tcollect(aps |> Map(ap -> photometry2(ap, data)))
-    return sort(Table(rows); by=x -> x.psf_fwhm, rev=true)
-end
-
-# ╔═╡ 7edea5b2-75e9-42df-bef0-092b03a6dc72
-function fit_psf(ap, img; fwhm=10)
-	# Find overlap of aperture with image
-	idxs = map(intersect, axes(ap), axes(img))
-	
+# ╔═╡ 7fb3ef72-212a-4cf7-bcb4-c029d2835e20
+function fit_psf(img_ap; fwhm=2, kernel=gaussian)
 	# Normalize
-	psf = Matrix{Float32}(img[idxs...])
-	psf ./= maximum(psf)
-
-	# Fit
-	xcen, ycen = Tuple(argmax(psf))
-	params = (x=ycen, y=xcen, fwhm)
-	P_gauss, mod_gauss = PSFModels.fit(gaussian, params, psf)
+	psf_data = collect(Float32, img_ap)
+	psf_data ./= maximum(psf_data)
 	
-	return P_gauss, mod_gauss, psf
+	# Fit
+	xcen, ycen = Tuple(argmax(psf_data))
+	params = (x=ycen, y=xcen, fwhm)
+	psf_P, psf_model = PSFModels.fit(kernel, params, psf_data)
+	return (; psf_P, psf_model, psf_data)
 end
 
-# ╔═╡ 219d0de9-8372-48cb-af16-f1ca2126d1af
-function photometry2(ap::Photometry.Aperture.AbstractAperture, data::AbstractMatrix)
-    cx, cy = center(ap)
-    meta = (xcenter = cx, ycenter = cy)
+# ╔═╡ 7ae425a3-1f99-47fa-88bc-a647f6ca7ada
+function photometry2(ap::AbstractAperture, data::AbstractMatrix; f::Function = sum)
+	cx, cy = Photometry.Aperture.center(ap)
+	meta = (xcenter = cx, ycenter = cy)
     idxs = map(intersect, axes(ap), axes(data))
     any(isempty, idxs) && return (meta..., aperture_sum = 0.0)
-    aperture_sum = sum(CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx]))
-	(psf_x, psf_y, psf_fwhm), psf_model, psf_data = fit_psf(ap, data)
-    return (
-		meta...,
-		aperture_sum = aperture_sum,
-		psf_x,
-		psf_y,
-		psf_fwhm,
-		psf_model,
-		psf_data,
-	)
+    img_ap = CartesianIndices(idxs) |> Map(idx -> ap[idx] * data[idx])
+    aperture_f = f(img_ap)
+    if f == sum
+        return (meta..., aperture_sum = aperture_f)
+    else
+        return (meta..., aperture_f = aperture_f)
+    end
+end
+
+# ╔═╡ 4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
+function photometry2(aps::AbstractVector{<:AbstractAperture}, data::AbstractMatrix; f::Function = sum)
+    rows = tcollect(aps |> Map(ap -> photometry2(ap, data; f)))
+    return Table(rows)
 end
 
 # ╔═╡ f081c699-df73-40ca-972d-9d9273b08fad
-phot = photometry2(aps, subt)
+phot = sort!(photometry2(aps, subt; f = fit_psf);
+	by = x -> x.aperture_f.psf_P.fwhm,
+	rev = true,
+)
 
 # ╔═╡ c005beb9-436e-4444-a4f2-21d209888640
 md"""
-Below is a quick visual check that re-computes the PSF models on the fly and displays their fitted parameters:
+Below is a quick visual check that compares our observed point source with its fitted PSF model:
 """
 
 # ╔═╡ fc87b633-825a-4333-b54b-9508c0e8dcfb
 @bind i Slider(eachindex(phot); show_value=x -> "Source $(x)")
 
+# ╔═╡ 913b05bc-7c13-4ca6-8c1c-fcda302b3965
+# And "truth" fwhms for comparison
+sort(fwhms; rev=true)
+
 # ╔═╡ da1a922c-bad9-4463-b353-039c342c09d2
 function inspect_psf(phot)
-	psf_data, psf_model = phot.psf_data, phot.psf_model
-	# @info P_gauss
+	psf_data, psf_model = phot.aperture_f.psf_data, phot.aperture_f.psf_model
+	@info phot.aperture_f.psf_P
 	return AstroImage(psf_data), imview(psf_model.(CartesianIndices(psf_data)))
 end
 
@@ -237,7 +300,7 @@ N = 10 # Max number of sources to select, based on FWHM criteria
 
 # ╔═╡ 227768ad-f2e5-4345-9ae8-6ee24673caf8
 phot_selected = filter(phot) do source
-	1.5 ≤ source.psf_fwhm
+	0.5 * minimum(fwhms) ≤ source.aperture_f.psf_P.fwhm
 end |> x -> first(x, N)
 
 # ╔═╡ 1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
@@ -295,21 +358,24 @@ Luckily, we've automated this already with our source extraction routine, which 
 """
 
 # ╔═╡ 00ae774d-1c82-4a7c-a53f-f9845c97b441
-function get_phot(img; nsigma=1, r=16)
-	sources, subt, errs = get_sources(img; nsigma)
+function get_phot(img; nsigma=1, r=ap_radius)
+	sources, subt, errs = get_sources(img; nsigma, box_size)
 	aps = CircularAperture.(sources.y, sources.x, r)
-	phot = photometry2(aps, subt)
+	phot = sort(photometry2(aps, subt; f = fit_psf);
+		by = x -> x.aperture_f.psf_P.fwhm,
+		rev = true,
+	)
 	return phot
 end
 
 # ╔═╡ c3367906-18fb-4b7a-bdc7-c30dbfdb1c4e
-phot_selected₁ = filter!(get_phot(img₁)) do source
-	1.5 ≤ source.psf_fwhm
+phot_selected_to = filter!(get_phot(img_to)) do source
+	0.5 * minimum(fwhms) ≤ source.aperture_f.psf_P.fwhm
 end |> x -> first(x, N)
 
 # ╔═╡ 8dd5d6e7-df76-4783-8870-73213fe70c32
-phot_selected₂ = filter!(get_phot(img₂)) do source
-	1.5 ≤ source.psf_fwhm
+phot_selected_from = filter!(get_phot(img_from)) do source
+	0.5 * minimum(fwhms) ≤ source.aperture_f.psf_P.fwhm
 end |> x -> first(x, N)
 
 # ╔═╡ a1f67287-86eb-4dd2-acaa-768d77a32a93
@@ -320,10 +386,10 @@ Let's count 'em up:
 """
 
 # ╔═╡ f2d3b19f-a265-4b42-af0b-ee78eb0346f2
-C₁ = combinations(phot_selected₁, 3)
+C_to = combinations(phot_selected_to, 3)
 
 # ╔═╡ f6060373-995c-4630-a253-cc794dd3c852
-C₂ = combinations(phot_selected₂, 3)
+C_from = combinations(phot_selected_from, 3)
 
 # ╔═╡ 7bb7af71-20be-4eeb-a33b-be22d0f94abc
 md"""
@@ -344,10 +410,10 @@ function triangle_invariants(C)
 end
 
 # ╔═╡ 4c4cc02d-ac73-484b-8970-ecb74cf076cb
-ℳ₁ = triangle_invariants(C₁)
+ℳ_to = triangle_invariants(C_to)
 
 # ╔═╡ 013678c2-8b72-4c0e-a744-9ac165c3fa32
-ℳ₂ = triangle_invariants(C₂)
+ℳ_from = triangle_invariants(C_from)
 
 # ╔═╡ 3db56a63-0fd1-4756-a1ea-7ec61e46c848
 md"""
@@ -360,13 +426,13 @@ We next feed this into [NearestNeighbors.jl](https://github.com/KristofferC/Near
 """
 
 # ╔═╡ e8304e32-a7f0-40d2-8562-0f7acd6e78db
-idxs, dists = nn(KDTree(ℳ₁), ℳ₂)
+idxs, dists = nn(KDTree(ℳ_to), ℳ_from)
 
 # ╔═╡ 6f831149-e764-469d-8a3e-710cd6c45d3a
-idx₂ = argmin(dists)
+idx_from = argmin(dists)
 
 # ╔═╡ 35415dd4-0986-44e5-a6f7-5339d897d008
-idx₁ = idxs[idx₂]
+idx_to = idxs[idx_from]
 
 # ╔═╡ d8b0a56c-c969-4e4d-9f59-46e5ecbc1d4e
 md"""
@@ -374,10 +440,10 @@ After performing the match, here are our winners:
 """
 
 # ╔═╡ 610030d8-2826-4a98-914f-c90d4ac858df
-sol₁ = collect(C₁)[idx₁] |> Table
+sol_to = collect(C_to)[idx_to] |> Table
 
 # ╔═╡ 0e914303-7b2a-4108-a931-f30088ffa74e
-sol₂ = collect(C₂)[idx₂] |> Table
+sol_from = collect(C_from)[idx_from] |> Table
 
 # ╔═╡ 33d9d99d-17e8-4ab4-a2b2-d70ee12bdc34
 md"""
@@ -390,11 +456,11 @@ let
 		xaxis = attr(title="L3/L2"),
 		yaxis = attr(title="L2/L1"),
 	)
-	p1 = scatter(x=ℳ₁[1, :], y=ℳ₁[2, :];
+	p1 = scatter(x=ℳ_to[1, :], y=ℳ_to[2, :];
 		mode = :markers,
 		name = "img₁",
 	)
-	p2 = scatter(x=ℳ₂[1, :], y=ℳ₂[2, :];
+	p2 = scatter(x=ℳ_from[1, :], y=ℳ_from[2, :];
 		mode = :markers,
 		marker = attr(symbol="circle-open", size=10),
 		name = "img₂",
@@ -411,19 +477,19 @@ Now that we have our point-to-point correspondence, we can apply our affine tran
 """
 
 # ╔═╡ 38beec3b-4e05-4973-8f8d-1574154164dc
-point_map = map(sol₁, sol₂) do source₁, source₂
-	[source₂.xcenter, source₂.ycenter] => [source₁.xcenter, source₁.ycenter]
+point_map = map(sol_to, sol_from) do source_to, source_from
+	[source_from.xcenter, source_from.ycenter] => [source_to.xcenter, source_to.ycenter]
 end
 
 # ╔═╡ a72413e0-cdd9-49bf-8fde-e10f18380fae
 tfm = kabsch(last.(point_map) => first.(point_map); scale=false)
 
 # ╔═╡ 471ee5dd-0ee0-4de9-8d0f-11285687b17b
-img₂_aligned_julia = shareheader(img₂, warp(img₂, tfm, axes(img₁)));
+img_from_aligned_julia = shareheader(img_from, warp(img_from, tfm, axes(img_to)));
 
 # ╔═╡ b3fab579-e482-4aca-8573-2b63140b17c1
 md"""
-Looks pretty good!
+Not bad!
 """
 
 # ╔═╡ 1c3c46d7-37cc-4135-97e6-a28c34c295c2
@@ -437,7 +503,8 @@ TableOfContents(; depth=4)
 # ╔═╡ 04d5a4fe-b806-44c0-bfb9-bac395c5eee3
 # Global colorbar lims
 const ZMIN, ZMAX = let
-	lims = Zscale(contrast=0.4).((img₁, img₂))
+	# lims = Zscale(contrast=0.4).((img₁, img₂))
+	lims = Percent(99.5).((img_to, img_from))
 	minimum(first, lims), maximum(last, lims)
 end
 
@@ -479,7 +546,7 @@ function trace_hm(img; colorbar_x=0)
 	imgv = permutedims(imgv)
 	
 	# zmin, zmax = Zscale(contrast=0.4)(img)
-	return heatmap(x=dims(imgv, X).val, y=dims(imgv, Y).val, z=imgv.data;
+	return heatmap(x=dims(imgv, X).val, y=dims(imgv, Y).val, z=Matrix(imgv);
 		zmin = ZMIN,
 		zmax = ZMAX,
 		colorscale = :Cividis,
@@ -539,16 +606,16 @@ function plot_pair(img₁, img₂; column_titles=["img₁", "img₂"])
 end
 
 # ╔═╡ 878a9b8e-5fb8-4124-9cee-39fa0c1a2830
-plot_pair(img₁, img₂)
+plot_pair(img_to, img_from)
 
 # ╔═╡ 552877dd-5a69-414a-9ff3-c338f46f90f6
-plot_pair(img₁, img₂_aligned_python;
+plot_pair(img_to, img_from_aligned_python;
 	column_titles = ["img₁", "img₂_aligned_python"],
 )
 
 # ╔═╡ c7d50f65-f89e-4169-bfee-ea008fb37309
-plot_pair(img₁, img₂_aligned_julia;
-	column_titles = ["img₁", "img₂_aligned_julia"],
+plot_pair(img_to, img_from_aligned_julia;
+	column_titles = ["img_to", "img_from_aligned_julia"],
 )
 
 # ╔═╡ 10d3f8a9-534d-4c4d-bd61-c44a9786df9d
@@ -571,6 +638,7 @@ Photometry = "af68cb61-81ac-52ed-8703-edc140936be4"
 PlutoPlotly = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 
@@ -584,9 +652,10 @@ ImageTransformations = "~0.10.2"
 NearestNeighbors = "~0.4.22"
 PSFModels = "~0.8.1"
 Photometry = "~0.9.4"
-PlutoPlotly = "~0.6.3"
+PlutoPlotly = "~0.6.4"
 PlutoUI = "~0.7.68"
-PythonCall = "~0.9.25"
+PythonCall = "~0.9.26"
+Rotations = "~1.7.1"
 Transducers = "~0.4.84"
 TypedTables = "~1.4.6"
 """
@@ -597,7 +666,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.11.6"
 manifest_format = "2.0"
-project_hash = "6726382ce235214ec498cfacbe2638e06d9e4756"
+project_hash = "ec1f3e581b1b895e3b096abde834129e4873b068"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "be7ae030256b8ef14a441726c4c37766b90b93a3"
@@ -993,9 +1062,9 @@ version = "1.15.1"
 
 [[deps.DifferentiationInterface]]
 deps = ["ADTypes", "LinearAlgebra"]
-git-tree-sha1 = "c092fd1dd0d94e609cd0d29e13897b2825c804bb"
+git-tree-sha1 = "f620da805b82bec64ab4d5f881c7592c82dbc08a"
 uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
-version = "0.7.2"
+version = "0.7.3"
 
     [deps.DifferentiationInterface.extensions]
     DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
@@ -1043,9 +1112,9 @@ version = "0.7.2"
 
 [[deps.DimensionalData]]
 deps = ["Adapt", "ArrayInterface", "ConstructionBase", "DataAPI", "Dates", "Extents", "Interfaces", "IntervalSets", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "PrecompileTools", "Random", "RecipesBase", "SparseArrays", "Statistics", "TableTraits", "Tables"]
-git-tree-sha1 = "ea9e2da6a0729ace75f3478f756fc55a29459072"
+git-tree-sha1 = "ba1825eeb826b147c23402038609ade6ec5ebff8"
 uuid = "0703355e-b756-11e9-17c0-8b28908087d0"
-version = "0.29.18"
+version = "0.29.19"
 
     [deps.DimensionalData.extensions]
     DimensionalDataAlgebraOfGraphicsExt = "AlgebraOfGraphics"
@@ -1131,9 +1200,9 @@ version = "3.3.11+0"
 
 [[deps.FITSIO]]
 deps = ["CFITSIO", "Printf", "Reexport", "Tables"]
-git-tree-sha1 = "f4243755388de27c018f4bb6b19334e991532e5f"
+git-tree-sha1 = "f57de3f533590c785210893030736dc11c4a4afb"
 uuid = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
-version = "0.16.13"
+version = "0.17.5"
 
 [[deps.FastRounding]]
 deps = ["ErrorfreeArithmetic", "LinearAlgebra"]
@@ -1339,9 +1408,9 @@ version = "0.3.1"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
-git-tree-sha1 = "0f14a5456bdc6b9731a5682f439a672750a09e48"
+git-tree-sha1 = "ec1debd61c300961f98064cfb21287613ad7f303"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2025.0.4+0"
+version = "2025.2.0+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -1452,9 +1521,9 @@ version = "3.1.1+0"
 
 [[deps.JuMP]]
 deps = ["LinearAlgebra", "MacroTools", "MathOptInterface", "MutableArithmetics", "OrderedCollections", "PrecompileTools", "Printf", "SparseArrays"]
-git-tree-sha1 = "90002c976264d2f571c98cd1d12851f4cba403df"
+git-tree-sha1 = "b4da175208e462c5b380f5b4d43dc9101d12c55c"
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
-version = "1.26.0"
+version = "1.27.0"
 weakdeps = ["DimensionalData"]
 
     [deps.JuMP.extensions]
@@ -1572,9 +1641,9 @@ version = "1.1.0"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
-git-tree-sha1 = "5de60bc6cb3899cd318d80d627560fae2e2d99ae"
+git-tree-sha1 = "282cadc186e7b2ae0eeadbd7a4dffed4196ae2aa"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2025.0.1+1"
+version = "2025.2.0+0"
 
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
@@ -1803,9 +1872,9 @@ version = "0.8.21"
 
 [[deps.PlutoPlotly]]
 deps = ["AbstractPlutoDingetjes", "Artifacts", "ColorSchemes", "Colors", "Dates", "Downloads", "HypertextLiteral", "InteractiveUtils", "LaTeXStrings", "Markdown", "Pkg", "PlotlyBase", "PrecompileTools", "Reexport", "ScopedValues", "Scratch", "TOML"]
-git-tree-sha1 = "4fb7c9595eaad32d817cac8c5fa1f90daa83aa4c"
+git-tree-sha1 = "232630fee92e588c11c2b260741b4fa70784b4c5"
 uuid = "8e989ff0-3d88-8e9f-f020-2b208a939ff0"
-version = "0.6.3"
+version = "0.6.4"
 
     [deps.PlutoPlotly.extensions]
     PlotlyKaleidoExt = "PlotlyKaleido"
@@ -1861,9 +1930,9 @@ version = "1.3.0"
 
 [[deps.PythonCall]]
 deps = ["CondaPkg", "Dates", "Libdl", "MacroTools", "Markdown", "Pkg", "Requires", "Serialization", "Tables", "UnsafePointers"]
-git-tree-sha1 = "ce4a33749e0061fa51dbe40533dc112bf7d2d28e"
+git-tree-sha1 = "f03464b21983fb5af2f8cea99106b8d8f48ac69d"
 uuid = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
-version = "0.9.25"
+version = "0.9.26"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
@@ -1958,9 +2027,9 @@ version = "3.7.1"
 
 [[deps.ScopedValues]]
 deps = ["HashArrayMappedTries", "Logging"]
-git-tree-sha1 = "1147f140b4c8ddab224c94efa9569fc23d63ab44"
+git-tree-sha1 = "7f44eef6b1d284465fafc66baf4d9bdcc239a15b"
 uuid = "7e506255-f358-4e82-b7e4-beb19740aa63"
-version = "1.3.0"
+version = "1.4.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -2068,9 +2137,9 @@ weakdeps = ["OffsetArrays", "StaticArrays"]
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
-git-tree-sha1 = "0feb6b9031bd5c51f9072393eb5ab3efd31bf9e4"
+git-tree-sha1 = "cbea8a6bd7bed51b1619658dec70035e07b8502f"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.9.13"
+version = "1.9.14"
 weakdeps = ["ChainRulesCore", "Statistics"]
 
     [deps.StaticArrays.extensions]
@@ -2358,9 +2427,19 @@ version = "0.41.3+0"
 # ╔═╡ Cell order:
 # ╟─38d2ca99-8f1c-474c-a844-beff92d947d3
 # ╟─4d73d418-c2cf-4ecf-85ac-a8f712dbfcb2
-# ╠═7b8e7c01-b379-46c8-b63d-02d3f0b39f8a
-# ╠═d2567180-8f02-4f49-a53c-dc936cfed048
-# ╟─878a9b8e-5fb8-4124-9cee-39fa0c1a2830
+# ╠═3633d1f6-f9cf-45dc-83d1-1e39353675ad
+# ╟─3698e25b-2e8f-42fc-bf1b-df5a7b3f70d4
+# ╠═375abd89-3e45-470a-a634-2ee4ef3b8983
+# ╠═bb62f132-ca33-448c-8f3d-2d216a147902
+# ╠═22885d66-b682-4eed-a41c-273893284b14
+# ╠═6d80964d-c2e5-4b59-b784-fda63bf2a429
+# ╠═2d5aca8e-91ed-4392-9856-a7d4cd9c3bef
+# ╠═5c63e233-bc3d-43ca-be9c-b54027a2c373
+# ╠═5cea66f7-1a2c-4686-96a2-ff5288749b49
+# ╟─f520a0cc-4a18-414a-a6ba-4a1328e8f7c6
+# ╠═98dca593-f0cf-4ea7-a44f-20721b490941
+# ╠═5dd434ec-74e6-47e6-a5bc-1520e75a9673
+# ╠═878a9b8e-5fb8-4124-9cee-39fa0c1a2830
 # ╟─8dddb9a9-9b03-4f2d-b724-4c7bfd2e87f7
 # ╟─9b8176d9-cef9-4662-8c8e-28711911ba49
 # ╠═8dc89287-e591-4f94-86b0-3b476188d2a8
@@ -2372,21 +2451,25 @@ version = "0.41.3+0"
 # ╟─f15b53cb-af41-4be5-9905-cc49eacce43c
 # ╟─1ed0ee8b-413a-4c4d-9046-cc0a7bce5779
 # ╟─4305687e-35a6-4515-b06a-48b0d45497af
+# ╠═cae77a2c-0d38-4ee6-9984-6b1f4abbe5af
 # ╠═5cf7c94a-1f27-4ec9-a1f4-6828997a1fbb
-# ╠═de352fd2-15ef-4fc4-981f-b5dc09328402
+# ╠═55245c66-c56f-4636-91e2-36134562e3cd
+# ╠═8e8d9f4c-720d-4460-9648-f6be815ca6f6
 # ╠═0c1c9b70-7db0-4975-b0a2-64d21490ed70
-# ╠═08e09b85-1a27-47a8-85ce-6697016ef730
+# ╠═ba16f528-f067-43f6-a492-43365b64a5a2
 # ╟─a6556b3e-0eae-4602-9063-dd55c0f6c6bb
 # ╟─b3898685-b7f1-4681-bdb0-34b4e4662e7a
 # ╟─60063aa9-5dcc-42e2-8deb-9c9d48cce0ac
 # ╠═f081c699-df73-40ca-972d-9d9273b08fad
-# ╟─219d0de9-8372-48cb-af16-f1ca2126d1af
-# ╟─4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
-# ╟─7edea5b2-75e9-42df-bef0-092b03a6dc72
+# ╠═7fb3ef72-212a-4cf7-bcb4-c029d2835e20
+# ╠═05a2c51b-8825-4d69-b017-f744702d957d
+# ╠═7ae425a3-1f99-47fa-88bc-a647f6ca7ada
+# ╠═4b2e84b6-af34-455a-9ab8-e9f7fa2044a2
 # ╟─c005beb9-436e-4444-a4f2-21d209888640
 # ╟─fc87b633-825a-4333-b54b-9508c0e8dcfb
 # ╟─48aada3c-1b0e-442d-9b84-5c9fa9b18e14
-# ╟─da1a922c-bad9-4463-b353-039c342c09d2
+# ╠═913b05bc-7c13-4ca6-8c1c-fcda302b3965
+# ╠═da1a922c-bad9-4463-b353-039c342c09d2
 # ╟─1f46fa9d-0e67-4114-b4f3-f8aa428e8ee1
 # ╠═227768ad-f2e5-4345-9ae8-6ee24673caf8
 # ╠═d921ef03-31db-47a3-92db-f07c32c2f9c8
@@ -2420,7 +2503,7 @@ version = "0.41.3+0"
 # ╠═38beec3b-4e05-4973-8f8d-1574154164dc
 # ╠═a72413e0-cdd9-49bf-8fde-e10f18380fae
 # ╠═471ee5dd-0ee0-4de9-8d0f-11285687b17b
-# ╟─c7d50f65-f89e-4169-bfee-ea008fb37309
+# ╠═c7d50f65-f89e-4169-bfee-ea008fb37309
 # ╟─b3fab579-e482-4aca-8573-2b63140b17c1
 # ╟─1c3c46d7-37cc-4135-97e6-a28c34c295c2
 # ╠═b104c98b-462d-4e92-8fb5-9ef1e99dc19d
